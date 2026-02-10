@@ -1,0 +1,73 @@
+"use client";
+
+import type { ExerciseStatus } from "@/hooks/use-exercise";
+import { Button } from "@/components/ui/button";
+
+interface ExerciseShellProps {
+  children: React.ReactNode;
+  status: ExerciseStatus;
+  onCheck: () => void;
+  onContinue: () => void;
+  canCheck: boolean;
+  correctAnswer?: string;
+}
+
+export function ExerciseShell({
+  children,
+  status,
+  onCheck,
+  onContinue,
+  canCheck,
+  correctAnswer,
+}: ExerciseShellProps) {
+  return (
+    <div className="flex flex-col min-h-[400px]">
+      <div className="flex-1">{children}</div>
+
+      {status === "answering" && (
+        <div className="mt-6">
+          <Button
+            onClick={onCheck}
+            disabled={!canCheck}
+            className="w-full"
+          >
+            Check
+          </Button>
+        </div>
+      )}
+
+      {status === "correct" && (
+        <div className="mt-6 animate-slide-up">
+          <div className="rounded-xl bg-green-50 border-2 border-lingo-green p-4 mb-4">
+            <div className="flex items-center gap-2">
+              <span className="text-2xl">&#10003;</span>
+              <span className="font-bold text-lingo-green">Correct!</span>
+            </div>
+          </div>
+          <Button onClick={onContinue} className="w-full">
+            Continue
+          </Button>
+        </div>
+      )}
+
+      {status === "incorrect" && (
+        <div className="mt-6 animate-slide-up">
+          <div className="rounded-xl bg-red-50 border-2 border-lingo-red p-4 mb-4">
+            <div className="flex items-center gap-2">
+              <span className="text-2xl">&#10007;</span>
+              <span className="font-bold text-lingo-red">Incorrect</span>
+            </div>
+            {correctAnswer && (
+              <p className="mt-1 text-sm text-lingo-text">
+                Correct answer: <strong>{correctAnswer}</strong>
+              </p>
+            )}
+          </div>
+          <Button variant="danger" onClick={onContinue} className="w-full">
+            Continue
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+}

@@ -1,0 +1,173 @@
+import {
+  pgTable,
+  text,
+  integer,
+  boolean,
+  timestamp,
+  jsonb,
+  date,
+  uniqueIndex,
+} from "drizzle-orm/pg-core";
+
+// ─── Better Auth tables ───
+
+export const user = pgTable("user", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  email: text("email").notNull().unique(),
+  emailVerified: boolean("email_verified").notNull(),
+  image: text("image"),
+  createdAt: timestamp("created_at").notNull(),
+  updatedAt: timestamp("updated_at").notNull(),
+});
+
+export const session = pgTable("session", {
+  id: text("id").primaryKey(),
+  expiresAt: timestamp("expires_at").notNull(),
+  token: text("token").notNull().unique(),
+  createdAt: timestamp("created_at").notNull(),
+  updatedAt: timestamp("updated_at").notNull(),
+  ipAddress: text("ip_address"),
+  userAgent: text("user_agent"),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+});
+
+export const account = pgTable("account", {
+  id: text("id").primaryKey(),
+  accountId: text("account_id").notNull(),
+  providerId: text("provider_id").notNull(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  accessToken: text("access_token"),
+  refreshToken: text("refresh_token"),
+  idToken: text("id_token"),
+  accessTokenExpiresAt: timestamp("access_token_expires_at"),
+  refreshTokenExpiresAt: timestamp("refresh_token_expires_at"),
+  scope: text("scope"),
+  password: text("password"),
+  createdAt: timestamp("created_at").notNull(),
+  updatedAt: timestamp("updated_at").notNull(),
+});
+
+export const verification = pgTable("verification", {
+  id: text("id").primaryKey(),
+  identifier: text("identifier").notNull(),
+  value: text("value").notNull(),
+  expiresAt: timestamp("expires_at").notNull(),
+  createdAt: timestamp("created_at"),
+  updatedAt: timestamp("updated_at"),
+});
+
+// ─── Custom app tables ───
+
+export const userStats = pgTable("user_stats", {
+  userId: text("user_id")
+    .primaryKey()
+    .references(() => user.id, { onDelete: "cascade" }),
+  xp: integer("xp").notNull().default(0),
+  level: integer("level").notNull().default(1),
+  hearts: integer("hearts").notNull().default(5),
+  maxHearts: integer("max_hearts").notNull().default(5),
+  heartsLastRegenAt: timestamp("hearts_last_regen_at").notNull().defaultNow(),
+  currentStreak: integer("current_streak").notNull().default(0),
+  longestStreak: integer("longest_streak").notNull().default(0),
+  lastPracticeDate: date("last_practice_date"),
+  totalLessonsCompleted: integer("total_lessons_completed").notNull().default(0),
+});
+
+export const userCourseEnrollment = pgTable(
+  "user_course_enrollment",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    courseId: text("course_id").notNull(),
+    currentUnitIndex: integer("current_unit_index").notNull().default(0),
+    currentLessonIndex: integer("current_lesson_index").notNull().default(0),
+  },
+  (table) => [uniqueIndex("enrollment_unique").on(table.userId, table.courseId)]
+);
+
+export const lessonCompletion = pgTable("lesson_completion", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  courseId: text("course_id").notNull(),
+  unitIndex: integer("unit_index").notNull(),
+  lessonIndex: integer("lesson_index").notNull(),
+  xpEarned: integer("xp_earned").notNull().default(0),
+  heartsLost: integer("hearts_lost").notNull().default(0),
+  perfectScore: boolean("perfect_score").notNull().default(false),
+  completedAt: timestamp("completed_at").notNull().defaultNow(),
+});
+
+export const exerciseAttempt = pgTable("exercise_attempt", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  lessonCompletionId: text("lesson_completion_id")
+    .notNull()
+    .references(() => lessonCompletion.id, { onDelete: "cascade" }),
+  exerciseIndex: integer("exercise_index").notNull(),
+  exerciseType: text("exercise_type").notNull(),
+  correct: boolean("correct").notNull(),
+  userAnswer: text("user_answer"),
+});
+
+export const achievementDefinition = pgTable("achievement_definition", {
+  id: text("id").primaryKey(),
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  icon: text("icon").notNull(),
+  category: text("category").notNull(),
+  requirement: jsonb("requirement").notNull(),
+});
+
+export const userAchievement = pgTable(
+  "user_achievement",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    achievementId: text("achievement_id")
+      .notNull()
+      .references(() => achievementDefinition.id, { onDelete: "cascade" }),
+    unlockedAt: timestamp("unlocked_at").notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("user_achievement_unique").on(table.userId, table.achievementId),
+  ]
+);
+
+export const dailyActivity = pgTable(
+  "daily_activity",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    date: date("date").notNull(),
+    xpEarned: integer("xp_earned").notNull().default(0),
+    lessonsCompleted: integer("lessons_completed").notNull().default(0),
+  },
+  (table) => [
+    uniqueIndex("daily_activity_unique").on(table.userId, table.date),
+  ]
+);

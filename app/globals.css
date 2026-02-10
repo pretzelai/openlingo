@@ -2,25 +2,89 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #3c3c3c;
+  --lingo-green: #58CC02;
+  --lingo-green-dark: #46a302;
+  --lingo-blue: #1CB0F6;
+  --lingo-blue-dark: #1899d6;
+  --lingo-purple: #CE82FF;
+  --lingo-red: #FF4B4B;
+  --lingo-red-dark: #ea2b2b;
+  --lingo-orange: #FF9600;
+  --lingo-yellow: #FFC800;
+  --lingo-gray: #E5E5E5;
+  --lingo-gray-dark: #AFAFAF;
+  --lingo-bg: #f7f7f7;
+  --lingo-card: #ffffff;
+  --lingo-border: #e5e5e5;
+  --lingo-text: #3c3c3c;
+  --lingo-text-light: #777777;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-lingo-green: var(--lingo-green);
+  --color-lingo-green-dark: var(--lingo-green-dark);
+  --color-lingo-blue: var(--lingo-blue);
+  --color-lingo-blue-dark: var(--lingo-blue-dark);
+  --color-lingo-purple: var(--lingo-purple);
+  --color-lingo-red: var(--lingo-red);
+  --color-lingo-red-dark: var(--lingo-red-dark);
+  --color-lingo-orange: var(--lingo-orange);
+  --color-lingo-yellow: var(--lingo-yellow);
+  --color-lingo-gray: var(--lingo-gray);
+  --color-lingo-gray-dark: var(--lingo-gray-dark);
+  --color-lingo-bg: var(--lingo-bg);
+  --color-lingo-card: var(--lingo-card);
+  --color-lingo-border: var(--lingo-border);
+  --color-lingo-text: var(--lingo-text);
+  --color-lingo-text-light: var(--lingo-text-light);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+body {
+  background: var(--lingo-bg);
+  color: var(--lingo-text);
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(88, 204, 2, 0.4); }
+  50% { box-shadow: 0 0 0 8px rgba(88, 204, 2, 0); }
+}
+
+@keyframes bounce-in {
+  0% { transform: scale(0.3); opacity: 0; }
+  50% { transform: scale(1.05); }
+  70% { transform: scale(0.9); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes slide-up {
+  from { transform: translateY(100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes xp-count {
+  from { transform: scale(1); }
+  50% { transform: scale(1.2); }
+  to { transform: scale(1); }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s infinite;
+}
+
+.animate-bounce-in {
+  animation: bounce-in 0.5s ease-out;
+}
+
+.animate-slide-up {
+  animation: slide-up 0.3s ease-out;
+}
+
+.animate-xp-count {
+  animation: xp-count 0.3s ease-out;
 }

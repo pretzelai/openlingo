@@ -117,6 +117,18 @@ function getField(lines: string[], key: string): string {
   return line.slice(key.length + 1).trim().replace(/^"(.*)"$/, "$1");
 }
 
+function hasFlag(lines: string[], key: string): boolean {
+  const line = lines.find((l) => l.startsWith(`${key}:`));
+  if (!line) return false;
+  return line.slice(key.length + 1).trim() === "true";
+}
+
+function getOptionalField(lines: string[], key: string): string | undefined {
+  const line = lines.find((l) => l.startsWith(`${key}:`));
+  if (!line) return undefined;
+  return line.slice(key.length + 1).trim().replace(/^"(.*)"$/, "$1");
+}
+
 function parseMultipleChoice(lines: string[]): MultipleChoiceExercise {
   const prompt = getField(lines, "prompt");
   const choiceLines = lines.filter((l) => l.startsWith('- "'));
@@ -131,7 +143,8 @@ function parseMultipleChoice(lines: string[]): MultipleChoiceExercise {
     }
   });
 
-  return { type: "multiple-choice", prompt, choices, correctIndex };
+  const randomOrder = hasFlag(lines, "random_order");
+  return { type: "multiple-choice", prompt, choices, correctIndex, ...(randomOrder && { randomOrder }) };
 }
 
 function parseTranslation(lines: string[]): TranslationExercise {
@@ -161,13 +174,15 @@ function parseMatchingPairs(lines: string[]): MatchingPairsExercise {
     if (!match) throw new Error(`Invalid pair: ${l}`);
     return { left: match[1], right: match[2] };
   });
-  return { type: "matching-pairs", pairs };
+  const randomOrder = hasFlag(lines, "random_order");
+  return { type: "matching-pairs", pairs, ...(randomOrder && { randomOrder }) };
 }
 
 function parseListening(lines: string[]): ListeningExercise {
   const text = getField(lines, "text");
   const ttsLang = getField(lines, "ttsLang");
-  return { type: "listening", text, ttsLang };
+  const mode = getOptionalField(lines, "mode") as "choices" | "word-bank" | undefined;
+  return { type: "listening", text, ttsLang, ...(mode && { mode }) };
 }
 
 function parseWordBank(lines: string[]): WordBankExercise {
@@ -180,5 +195,6 @@ function parseWordBank(lines: string[]): WordBankExercise {
   const answer = answerLine
     ? (answerLine.match(/"([^"]+)"/g) || []).map((m) => m.replace(/"/g, ""))
     : [];
-  return { type: "word-bank", prompt, words, answer };
+  const randomOrder = hasFlag(lines, "random_order");
+  return { type: "word-bank", prompt, words, answer, ...(randomOrder && { randomOrder }) };
 }

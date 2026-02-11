@@ -36,6 +36,7 @@ export interface MultipleChoiceExercise {
   prompt: string;
   choices: string[];
   correctIndex: number;
+  randomOrder?: boolean;
 }
 
 export interface TranslationExercise {
@@ -55,12 +56,14 @@ export interface FillInTheBlankExercise {
 export interface MatchingPairsExercise {
   type: "matching-pairs";
   pairs: { left: string; right: string }[];
+  randomOrder?: boolean;
 }
 
 export interface ListeningExercise {
   type: "listening";
   text: string;
   ttsLang: string;
+  mode?: "choices" | "word-bank";
 }
 
 export interface WordBankExercise {
@@ -68,4 +71,5 @@ export interface WordBankExercise {
   prompt: string;
   words: string[];
   answer: string[];
+  randomOrder?: boolean;
 }

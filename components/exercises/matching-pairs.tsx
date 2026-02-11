@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import type { MatchingPairsExercise } from "@/lib/content/types";
 import { useExercise } from "@/hooks/use-exercise";
 import { ExerciseShell } from "./exercise-shell";
@@ -57,6 +57,26 @@ export function MatchingPairs({ exercise, onResult, onContinue }: Props) {
     onResult(true, "all matched");
   }
 
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if (status !== "answering") return;
+      const num = parseInt(e.key, 10);
+      if (num >= 1 && num <= leftItems.length) {
+        const item = leftItems[num - 1];
+        if (!matched.has(item)) setSelectedLeft(item);
+      } else if (num >= 5 && num <= 4 + rightItems.length) {
+        const item = rightItems[num - 5];
+        if (!matched.has(item)) setSelectedRight(item);
+      }
+    },
+    [status, leftItems, rightItems, matched]
+  );
+
+  useEffect(() => {
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [handleKeyDown]);
+
   return (
     <ExerciseShell
       status={status}
@@ -69,7 +89,7 @@ export function MatchingPairs({ exercise, onResult, onContinue }: Props) {
       </h2>
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          {leftItems.map((item) => (
+          {leftItems.map((item, i) => (
             <button
               key={item}
               disabled={matched.has(item) || status !== "answering"}
@@ -84,12 +104,15 @@ export function MatchingPairs({ exercise, onResult, onContinue }: Props) {
                       : "border-lingo-border bg-white hover:bg-lingo-gray/20"
               }`}
             >
+              <span className="mr-2 inline-flex h-5 w-5 items-center justify-center rounded-full border border-current text-xs">
+                {i + 1}
+              </span>
               {item}
             </button>
           ))}
         </div>
         <div className="space-y-2">
-          {rightItems.map((item) => (
+          {rightItems.map((item, i) => (
             <button
               key={item}
               disabled={matched.has(item) || status !== "answering"}
@@ -104,6 +127,9 @@ export function MatchingPairs({ exercise, onResult, onContinue }: Props) {
                       : "border-lingo-border bg-white hover:bg-lingo-gray/20"
               }`}
             >
+              <span className="mr-2 inline-flex h-5 w-5 items-center justify-center rounded-full border border-current text-xs">
+                {i + 5}
+              </span>
               {item}
             </button>
           ))}

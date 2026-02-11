@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useCallback, useRef } from "react";
 import type { ExerciseStatus } from "@/hooks/use-exercise";
 import { Button } from "@/components/ui/button";
 
@@ -20,6 +21,39 @@ export function ExerciseShell({
   canCheck,
   correctAnswer,
 }: ExerciseShellProps) {
+  const justCheckedRef = useRef(false);
+
+  // When status changes away from "answering", mark that we just checked
+  // and clear the flag after a short delay to allow the user to see feedback
+  useEffect(() => {
+    if (status === "correct" || status === "incorrect") {
+      justCheckedRef.current = true;
+      const timer = setTimeout(() => {
+        justCheckedRef.current = false;
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [status]);
+
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if (e.key !== "Enter") return;
+      if (status === "answering" && canCheck) {
+        e.preventDefault();
+        onCheck();
+      } else if ((status === "correct" || status === "incorrect") && !justCheckedRef.current) {
+        e.preventDefault();
+        onContinue();
+      }
+    },
+    [status, canCheck, onCheck, onContinue]
+  );
+
+  useEffect(() => {
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [handleKeyDown]);
+
   return (
     <div className="flex flex-col min-h-[400px]">
       <div className="flex-1">{children}</div>
@@ -37,7 +71,7 @@ export function ExerciseShell({
       )}
 
       {status === "correct" && (
-        <div className="mt-6 animate-slide-up">
+        <div className="mt-6">
           <div className="rounded-xl bg-green-50 border-2 border-lingo-green p-4 mb-4">
             <div className="flex items-center gap-2">
               <span className="text-2xl">&#10003;</span>
@@ -51,7 +85,7 @@ export function ExerciseShell({
       )}
 
       {status === "incorrect" && (
-        <div className="mt-6 animate-slide-up">
+        <div className="mt-6">
           <div className="rounded-xl bg-red-50 border-2 border-lingo-red p-4 mb-4">
             <div className="flex items-center gap-2">
               <span className="text-2xl">&#10007;</span>

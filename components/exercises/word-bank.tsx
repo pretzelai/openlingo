@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import type { WordBankExercise } from "@/lib/content/types";
 import { useExercise } from "@/hooks/use-exercise";
 import { ExerciseShell } from "./exercise-shell";
@@ -11,14 +11,32 @@ interface Props {
   onContinue: () => void;
 }
 
+function shuffleArr<T>(arr: T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
 export function WordBank({ exercise, onResult, onContinue }: Props) {
   const [selected, setSelected] = useState<string[]>([]);
-  const [available, setAvailable] = useState<string[]>(() => [...exercise.words]);
+  const [available, setAvailable] = useState<string[]>(() =>
+    exercise.randomOrder ? shuffleArr(exercise.words) : [...exercise.words]
+  );
   const { status, checkAnswer } = useExercise();
 
   function addWord(word: string, index: number) {
     setSelected((prev) => [...prev, word]);
     setAvailable((prev) => prev.filter((_, i) => i !== index));
+  }
+
+  function removeLastWord() {
+    if (selected.length === 0) return;
+    const word = selected[selected.length - 1];
+    setSelected((prev) => prev.slice(0, -1));
+    setAvailable((prev) => [...prev, word]);
   }
 
   function removeWord(word: string, index: number) {
@@ -33,6 +51,28 @@ export function WordBank({ exercise, onResult, onContinue }: Props) {
     checkAnswer(correct);
     onResult(correct, selected.join(" "));
   }
+
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if (status !== "answering") return;
+      if (e.key === "Backspace") {
+        e.preventDefault();
+        removeLastWord();
+        return;
+      }
+      const num = parseInt(e.key, 10);
+      if (num >= 1 && num <= available.length) {
+        addWord(available[num - 1], num - 1);
+      }
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [status, available]
+  );
+
+  useEffect(() => {
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [handleKeyDown]);
 
   return (
     <ExerciseShell
@@ -72,6 +112,9 @@ export function WordBank({ exercise, onResult, onContinue }: Props) {
             onClick={() => addWord(word, i)}
             className="rounded-xl border-2 border-lingo-border bg-white px-4 py-2 font-bold text-lingo-text transition-all hover:bg-lingo-gray/30 hover:border-lingo-gray-dark"
           >
+            <span className="mr-2 inline-flex h-5 w-5 items-center justify-center rounded-full border border-current text-xs">
+              {i + 1}
+            </span>
             {word}
           </button>
         ))}

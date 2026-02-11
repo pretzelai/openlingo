@@ -1,6 +1,6 @@
 "use client";
 
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import type { Course } from "@/lib/content/types";
 import { enrollInCourse } from "@/lib/actions/progress";
@@ -31,6 +31,19 @@ function isLessonCompleted(
   );
 }
 
+function findFirstIncompleteLesson(
+  unit: Course["units"][number],
+  unitIndex: number,
+  completions: { unitIndex: number; lessonIndex: number }[]
+) {
+  for (let li = 0; li < unit.lessons.length; li++) {
+    if (!isLessonCompleted(completions, unitIndex, li)) {
+      return li;
+    }
+  }
+  return unit.lessons.length; // all complete
+}
+
 export function LearningPath({
   course,
   enrollment,
@@ -38,6 +51,7 @@ export function LearningPath({
 }: LearningPathProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const [selectedUnitIndex, setSelectedUnitIndex] = useState<number | null>(null);
 
   if (!enrollment) {
     return (
@@ -60,77 +74,90 @@ export function LearningPath({
     );
   }
 
-  // Determine current position: first incomplete lesson
-  let currentUnitIndex = 0;
-  let currentLessonIndex = 0;
-  let found = false;
+  // Unit selector view
+  if (selectedUnitIndex === null) {
+    return (
+      <div className="grid gap-4">
+        {course.units.map((unit, unitIndex) => {
+          const completedLessons = unit.lessons.filter((_, li) =>
+            isLessonCompleted(completions, unitIndex, li)
+          ).length;
 
-  for (let ui = 0; ui < course.units.length && !found; ui++) {
-    for (let li = 0; li < course.units[ui].lessons.length; li++) {
-      if (!isLessonCompleted(completions, ui, li)) {
-        currentUnitIndex = ui;
-        currentLessonIndex = li;
-        found = true;
-        break;
-      }
-    }
+          return (
+            <UnitCard
+              key={unitIndex}
+              title={unit.title}
+              description={unit.description}
+              icon={unit.icon}
+              color={unit.color}
+              unitIndex={unitIndex}
+              totalLessons={unit.lessons.length}
+              completedLessons={completedLessons}
+              onClick={() => setSelectedUnitIndex(unitIndex)}
+            />
+          );
+        })}
+      </div>
+    );
   }
+
+  // Lesson path view for selected unit
+  const unit = course.units[selectedUnitIndex];
+  const completedLessons = unit.lessons.filter((_, li) =>
+    isLessonCompleted(completions, selectedUnitIndex, li)
+  ).length;
+  const currentLessonIndex = findFirstIncompleteLesson(unit, selectedUnitIndex, completions);
 
   return (
     <div>
-      {course.units.map((unit, unitIndex) => {
-        const completedLessons = unit.lessons.filter((_, li) =>
-          isLessonCompleted(completions, unitIndex, li)
-        ).length;
+      <button
+        onClick={() => setSelectedUnitIndex(null)}
+        className="mb-4 flex items-center gap-1 text-sm font-bold text-lingo-text-light hover:text-lingo-text transition-colors"
+      >
+        ← All paths
+      </button>
 
-        return (
-          <UnitCard
-            key={unitIndex}
-            title={unit.title}
-            description={unit.description}
-            icon={unit.icon}
-            color={unit.color}
-            unitIndex={unitIndex}
-            totalLessons={unit.lessons.length}
-            completedLessons={completedLessons}
-          >
-            {unit.lessons.map((lesson, lessonIndex) => {
-              const completed = isLessonCompleted(completions, unitIndex, lessonIndex);
-              const isCurrent =
-                unitIndex === currentUnitIndex && lessonIndex === currentLessonIndex;
-              const isLocked =
-                unitIndex > currentUnitIndex ||
-                (unitIndex === currentUnitIndex && lessonIndex > currentLessonIndex);
+      <UnitCard
+        title={unit.title}
+        description={unit.description}
+        icon={unit.icon}
+        color={unit.color}
+        unitIndex={selectedUnitIndex}
+        totalLessons={unit.lessons.length}
+        completedLessons={completedLessons}
+      >
+        {unit.lessons.map((lesson, lessonIndex) => {
+          const completed = isLessonCompleted(completions, selectedUnitIndex, lessonIndex);
+          const isCurrent = lessonIndex === currentLessonIndex;
+          const isLocked = lessonIndex > currentLessonIndex;
 
-              const state = completed
-                ? "completed"
-                : isCurrent
-                  ? "current"
-                  : isLocked
-                    ? "locked"
-                    : "current";
+          const state = completed
+            ? "completed"
+            : isCurrent
+              ? "current"
+              : isLocked
+                ? "locked"
+                : "current";
 
-              return (
-                <div key={lessonIndex}>
-                  {lessonIndex > 0 && (
-                    <PathConnector
-                      color={unit.color}
-                      completed={completed}
-                    />
-                  )}
-                  <LessonNode
-                    title={lesson.title}
-                    state={state}
-                    href={`/lesson/${course.id}/${unitIndex}/${lessonIndex}`}
-                    color={unit.color}
-                    index={lessonIndex}
-                  />
-                </div>
-              );
-            })}
-          </UnitCard>
-        );
-      })}
+          return (
+            <div key={lessonIndex}>
+              {lessonIndex > 0 && (
+                <PathConnector
+                  color={unit.color}
+                  completed={completed}
+                />
+              )}
+              <LessonNode
+                title={lesson.title}
+                state={state}
+                href={`/lesson/${course.id}/${selectedUnitIndex}/${lessonIndex}`}
+                color={unit.color}
+                index={lessonIndex}
+              />
+            </div>
+          );
+        })}
+      </UnitCard>
     </div>
   );
 }

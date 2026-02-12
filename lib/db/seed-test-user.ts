@@ -13,7 +13,7 @@ import type { UnitLesson } from "../content/types";
 
 const TEST_USER_ID = "test-user-001";
 const TEST_EMAIL = "test@example.com";
-const COURSE_ID = "de-from-en";
+const COURSE_ID = "german";
 
 export async function seedTestUser() {
   // 1. Create test user
@@ -30,8 +30,9 @@ export async function seedTestUser() {
     })
     .onConflictDoNothing();
 
-  // 2. Create email/password account (password: "password123")
-  const passwordHash = await hashPassword("honestly-i-think-i-am-a-potato");
+  // 2. Create email/password account
+  const PASSWORD = "honestly-i-think-i-am-a-potato";
+  const passwordHash = await hashPassword(PASSWORD);
   await db
     .insert(account)
     .values({
@@ -68,7 +69,9 @@ export async function seedTestUser() {
     .where(eq(unit.courseId, COURSE_ID));
 
   if (courseUnits.length === 0) {
-    console.warn(`  No units found for course "${COURSE_ID}" — skipping enrollment`);
+    console.warn(
+      `  No units found for course "${COURSE_ID}" — skipping enrollment`,
+    );
     return;
   }
 
@@ -102,7 +105,8 @@ export async function seedTestUser() {
           userId: TEST_USER_ID,
           unitId: u.id,
           lessonIndex: li,
-          xpEarned: lesson.xpReward + (perfect ? Math.floor(lesson.xpReward * 0.5) : 0),
+          xpEarned:
+            lesson.xpReward + (perfect ? Math.floor(lesson.xpReward * 0.5) : 0),
           heartsLost,
           perfectScore: perfect,
         })
@@ -112,5 +116,7 @@ export async function seedTestUser() {
     }
   }
 
-  console.log(`  ${TEST_EMAIL} / password123 — ${totalCompleted} lessons completed, current: ${currentUnit.title}`);
+  console.log(
+    `  ${TEST_EMAIL} / ${PASSWORD} — ${totalCompleted} lessons completed, current: ${currentUnit.title}`,
+  );
 }

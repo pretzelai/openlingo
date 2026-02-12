@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import type { MatchingPairsExercise } from "@/lib/content/types";
 import { useExercise } from "@/hooks/use-exercise";
 import { ExerciseShell } from "./exercise-shell";
-import { HoverableText } from "@/components/word/hoverable-text";
+
 
 interface Props {
   exercise: MatchingPairsExercise;
@@ -110,7 +110,7 @@ export function MatchingPairs({ exercise, onResult, onContinue, language }: Prop
               <span className="mr-2 inline-flex h-5 w-5 items-center justify-center rounded-full border border-current text-xs">
                 {i + 1}
               </span>
-              <HoverableText text={item} language={language} />
+              {item}
             </button>
           ))}
         </div>
@@ -133,7 +133,7 @@ export function MatchingPairs({ exercise, onResult, onContinue, language }: Prop
               <span className="mr-2 inline-flex h-5 w-5 items-center justify-center rounded-full border border-current text-xs">
                 {i + 5}
               </span>
-              <HoverableText text={item} language={language} />
+              {item}
             </button>
           ))}
         </div>

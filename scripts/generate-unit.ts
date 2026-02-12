@@ -225,7 +225,7 @@ async function main() {
     .toLowerCase()
     .replace(/[^a-z0-9äöüß]+/g, "-")
     .replace(/^-|-$/g, "");
-  const outDir = path.join(process.cwd(), "content", "de-from-en");
+  const outDir = path.join(process.cwd(), "content", "german");
   const outFile = path.join(outDir, `unit-${slug}.md`);
 
   fs.mkdirSync(outDir, { recursive: true });

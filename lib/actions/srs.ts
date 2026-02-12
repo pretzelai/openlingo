@@ -2,7 +2,7 @@
 
 import { db } from "@/lib/db";
 import { srsCard } from "@/lib/db/schema";
-import { and, eq, lte, count, sql } from "drizzle-orm";
+import { and, eq, lte, gt, count, sql } from "drizzle-orm";
 import { requireSession } from "@/lib/auth-server";
 import { calculateNextReview, type Quality } from "@/lib/srs";
 
@@ -147,6 +147,27 @@ export async function getDueCards(language?: string, limit = 20) {
   const conditions = [
     eq(srsCard.userId, session.user.id),
     lte(srsCard.nextReviewAt, now),
+  ];
+
+  if (language) {
+    conditions.push(eq(srsCard.language, language));
+  }
+
+  return db
+    .select()
+    .from(srsCard)
+    .where(and(...conditions))
+    .orderBy(srsCard.nextReviewAt)
+    .limit(limit);
+}
+
+export async function getScheduledCards(language?: string, limit = 20) {
+  const session = await requireSession();
+  const now = new Date();
+
+  const conditions = [
+    eq(srsCard.userId, session.user.id),
+    gt(srsCard.nextReviewAt, now),
   ];
 
   if (language) {

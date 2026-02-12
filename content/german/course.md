@@ -1,6 +1,6 @@
 ---
-id: "de-from-en"
-title: "German for English Speakers"
+id: "german"
+title: "German"
 sourceLanguage: "en"
 targetLanguage: "de"
 level: "beginner"

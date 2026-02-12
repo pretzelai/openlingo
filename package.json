@@ -14,6 +14,7 @@
     "db:seed": "bun run scripts/seed.ts"
   },
   "dependencies": {
+    "@google/genai": "^1.41.0",
     "better-auth": "^1.4.18",
     "drizzle-orm": "^0.45.1",
     "gray-matter": "^4.0.3",
@@ -38,6 +39,8 @@
     "unrs-resolver"
   ],
   "trustedDependencies": [
+    "esbuild",
+    "protobufjs",
     "sharp",
     "unrs-resolver"
   ]

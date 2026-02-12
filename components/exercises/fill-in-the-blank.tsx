@@ -4,14 +4,16 @@ import { useState } from "react";
 import type { FillInTheBlankExercise } from "@/lib/content/types";
 import { useExercise } from "@/hooks/use-exercise";
 import { ExerciseShell } from "./exercise-shell";
+import { HoverableText } from "@/components/word/hoverable-text";
 
 interface Props {
   exercise: FillInTheBlankExercise;
   onResult: (correct: boolean, answer: string) => void;
   onContinue: () => void;
+  language: string;
 }
 
-export function FillInTheBlank({ exercise, onResult, onContinue }: Props) {
+export function FillInTheBlank({ exercise, onResult, onContinue, language }: Props) {
   const [input, setInput] = useState("");
   const { status, checkAnswer } = useExercise();
 
@@ -35,7 +37,7 @@ export function FillInTheBlank({ exercise, onResult, onContinue }: Props) {
         Fill in the blank
       </h2>
       <div className="flex flex-wrap items-center gap-2 text-2xl font-bold text-lingo-text mb-6">
-        <span>{parts[0]}</span>
+        <HoverableText text={parts[0]} language={language} />
         <input
           type="text"
           value={input}
@@ -47,7 +49,7 @@ export function FillInTheBlank({ exercise, onResult, onContinue }: Props) {
           className="w-40 border-b-4 border-lingo-blue bg-transparent text-center focus:outline-none"
           autoFocus
         />
-        <span>{parts[1]}</span>
+        <HoverableText text={parts[1]} language={language} />
       </div>
     </ExerciseShell>
   );

@@ -4,11 +4,13 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import type { MultipleChoiceExercise } from "@/lib/content/types";
 import { useExercise } from "@/hooks/use-exercise";
 import { ExerciseShell } from "./exercise-shell";
+import { HoverableText } from "@/components/word/hoverable-text";
 
 interface Props {
   exercise: MultipleChoiceExercise;
   onResult: (correct: boolean, answer: string) => void;
   onContinue: () => void;
+  language: string;
 }
 
 function shuffleWithSeed<T>(arr: T[], seed: number): T[] {
@@ -22,7 +24,7 @@ function shuffleWithSeed<T>(arr: T[], seed: number): T[] {
   return result;
 }
 
-export function MultipleChoice({ exercise, onResult, onContinue }: Props) {
+export function MultipleChoice({ exercise, onResult, onContinue, language }: Props) {
   const [selected, setSelected] = useState<number | null>(null);
   const { status, checkAnswer } = useExercise();
 
@@ -71,7 +73,7 @@ export function MultipleChoice({ exercise, onResult, onContinue }: Props) {
       correctAnswer={choices[correctIndex]}
     >
       <h2 className="text-xl font-bold text-lingo-text mb-6">
-        {exercise.prompt}
+        <HoverableText text={exercise.prompt} language={language} />
       </h2>
       <div className="space-y-3">
         {choices.map((choice, i) => (

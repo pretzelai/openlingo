@@ -9,6 +9,7 @@ interface Props {
   exercise: MatchingPairsExercise;
   onResult: (correct: boolean, answer: string) => void;
   onContinue: () => void;
+  language: string;
 }
 
 function shuffle<T>(arr: T[]): T[] {

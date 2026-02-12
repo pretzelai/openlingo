@@ -21,6 +21,7 @@ interface LessonViewProps {
   lesson: Lesson;
   lessonTitle: string;
   unitTitle: string;
+  targetLanguage: string;
 }
 
 export function LessonView({
@@ -30,6 +31,7 @@ export function LessonView({
   lesson,
   lessonTitle,
   unitTitle,
+  targetLanguage,
 }: LessonViewProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -118,6 +120,7 @@ export function LessonView({
           exercise={currentExercise}
           onResult={handleResult}
           onContinue={handleContinue}
+          language={targetLanguage}
         />
       )}
 
@@ -134,10 +137,12 @@ function ExerciseRenderer({
   exercise,
   onResult,
   onContinue,
+  language,
 }: {
   exercise: Exercise;
   onResult: (correct: boolean, answer: string) => void;
   onContinue: () => void;
+  language: string;
 }) {
   switch (exercise.type) {
     case "multiple-choice":
@@ -146,6 +151,7 @@ function ExerciseRenderer({
           exercise={exercise}
           onResult={onResult}
           onContinue={onContinue}
+          language={language}
         />
       );
     case "translation":
@@ -154,6 +160,7 @@ function ExerciseRenderer({
           exercise={exercise}
           onResult={onResult}
           onContinue={onContinue}
+          language={language}
         />
       );
     case "fill-in-the-blank":
@@ -162,6 +169,7 @@ function ExerciseRenderer({
           exercise={exercise}
           onResult={onResult}
           onContinue={onContinue}
+          language={language}
         />
       );
     case "matching-pairs":
@@ -170,6 +178,7 @@ function ExerciseRenderer({
           exercise={exercise}
           onResult={onResult}
           onContinue={onContinue}
+          language={language}
         />
       );
     case "listening":
@@ -178,6 +187,7 @@ function ExerciseRenderer({
           exercise={exercise}
           onResult={onResult}
           onContinue={onContinue}
+          language={language}
         />
       );
     case "word-bank":
@@ -186,6 +196,7 @@ function ExerciseRenderer({
           exercise={exercise}
           onResult={onResult}
           onContinue={onContinue}
+          language={language}
         />
       );
   }

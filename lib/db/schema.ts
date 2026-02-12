@@ -199,6 +199,30 @@ export const srsCard = pgTable(
   ]
 );
 
+// ─── Word cache (AI lookup results) ───
+
+export const wordCache = pgTable(
+  "word_cache",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    word: text("word").notNull(),
+    language: text("language").notNull(),
+    baseForm: text("base_form"),
+    translation: text("translation").notNull(),
+    pos: text("pos"),
+    gender: text("gender"),
+    cefrLevel: text("cefr_level"),
+    exampleNative: text("example_native"),
+    exampleEnglish: text("example_english"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("word_cache_unique").on(table.word, table.language),
+  ]
+);
+
 // ─── Course content tables ───
 
 export const course = pgTable("course", {

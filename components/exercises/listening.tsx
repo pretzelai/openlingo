@@ -4,11 +4,13 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import type { ListeningExercise } from "@/lib/content/types";
 import { useExercise } from "@/hooks/use-exercise";
 import { ExerciseShell } from "./exercise-shell";
+import { HoverableText } from "@/components/word/hoverable-text";
 
 interface Props {
   exercise: ListeningExercise;
   onResult: (correct: boolean, answer: string) => void;
   onContinue: () => void;
+  language: string;
 }
 
 function generateDistractors(text: string): string[] {
@@ -52,7 +54,7 @@ function SpeakerButton({ onSpeak }: { onSpeak: () => void }) {
   );
 }
 
-export function Listening({ exercise, onResult, onContinue }: Props) {
+export function Listening({ exercise, onResult, onContinue, language }: Props) {
   const [played, setPlayed] = useState(false);
   const { status, checkAnswer } = useExercise();
 
@@ -75,6 +77,7 @@ export function Listening({ exercise, onResult, onContinue }: Props) {
         onSpeak={speak}
         onResult={onResult}
         onContinue={onContinue}
+        language={language}
       />
     );
   }
@@ -88,6 +91,7 @@ export function Listening({ exercise, onResult, onContinue }: Props) {
       onSpeak={speak}
       onResult={onResult}
       onContinue={onContinue}
+      language={language}
     />
   );
 }
@@ -102,6 +106,7 @@ interface ModeProps {
   onSpeak: () => void;
   onResult: (correct: boolean, answer: string) => void;
   onContinue: () => void;
+  language: string;
 }
 
 function ListeningChoices({
@@ -112,6 +117,7 @@ function ListeningChoices({
   onSpeak,
   onResult,
   onContinue,
+  language,
 }: ModeProps) {
   const [selected, setSelected] = useState<number | null>(null);
 
@@ -187,7 +193,7 @@ function ListeningChoices({
             <span className="mr-3 inline-flex h-7 w-7 items-center justify-center rounded-full border-2 border-current text-sm font-bold">
               {i + 1}
             </span>
-            {choice}
+            <HoverableText text={choice} language={language} />
           </button>
         ))}
       </div>

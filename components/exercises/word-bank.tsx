@@ -4,11 +4,13 @@ import { useState, useEffect, useCallback } from "react";
 import type { WordBankExercise } from "@/lib/content/types";
 import { useExercise } from "@/hooks/use-exercise";
 import { ExerciseShell } from "./exercise-shell";
+import { HoverableText } from "@/components/word/hoverable-text";
 
 interface Props {
   exercise: WordBankExercise;
   onResult: (correct: boolean, answer: string) => void;
   onContinue: () => void;
+  language: string;
 }
 
 function shuffleArr<T>(arr: T[]): T[] {
@@ -20,7 +22,7 @@ function shuffleArr<T>(arr: T[]): T[] {
   return a;
 }
 
-export function WordBank({ exercise, onResult, onContinue }: Props) {
+export function WordBank({ exercise, onResult, onContinue, language }: Props) {
   const [selected, setSelected] = useState<string[]>([]);
   const [available, setAvailable] = useState<string[]>(() =>
     exercise.randomOrder ? shuffleArr(exercise.words) : [...exercise.words]
@@ -83,7 +85,7 @@ export function WordBank({ exercise, onResult, onContinue }: Props) {
       correctAnswer={exercise.answer.join(" ")}
     >
       <h2 className="text-xl font-bold text-lingo-text mb-6">
-        {exercise.prompt}
+        <HoverableText text={exercise.prompt} language={language} />
       </h2>
 
       {/* Answer area */}

@@ -4,14 +4,16 @@ import { useState } from "react";
 import type { TranslationExercise } from "@/lib/content/types";
 import { useExercise } from "@/hooks/use-exercise";
 import { ExerciseShell } from "./exercise-shell";
+import { HoverableText } from "@/components/word/hoverable-text";
 
 interface Props {
   exercise: TranslationExercise;
   onResult: (correct: boolean, answer: string) => void;
   onContinue: () => void;
+  language: string;
 }
 
-export function Translation({ exercise, onResult, onContinue }: Props) {
+export function Translation({ exercise, onResult, onContinue, language }: Props) {
   const [input, setInput] = useState("");
   const { status, checkAnswer } = useExercise();
 
@@ -37,7 +39,7 @@ export function Translation({ exercise, onResult, onContinue }: Props) {
         {exercise.prompt}
       </h2>
       <p className="text-lg text-lingo-text-light mb-6">
-        &ldquo;{exercise.sentence}&rdquo;
+        &ldquo;<HoverableText text={exercise.sentence} language={language} />&rdquo;
       </p>
       <input
         type="text"

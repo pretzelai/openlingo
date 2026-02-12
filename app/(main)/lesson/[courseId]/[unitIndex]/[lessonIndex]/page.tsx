@@ -36,6 +36,7 @@ export default async function LessonPage({ params }: PageProps) {
       lesson={lesson}
       lessonTitle={lesson.title}
       unitTitle={unit.title}
+      targetLanguage={course.targetLanguage}
     />
   );
 }

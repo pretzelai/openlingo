@@ -118,7 +118,7 @@ export function WordBank({ exercise, onResult, onContinue, language }: Props) {
             <span className="mr-2 inline-flex h-5 w-5 items-center justify-center rounded-full border border-current text-xs">
               {i + 1}
             </span>
-            <HoverableText text={word} language={language} />
+            {word}
           </button>
         ))}
       </div>

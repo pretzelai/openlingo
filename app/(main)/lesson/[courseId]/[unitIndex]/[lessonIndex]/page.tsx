@@ -1,4 +1,4 @@
-import { getCourse } from "@/lib/content/registry";
+import { getCourseWithContent } from "@/lib/db/queries/courses";
 import { notFound } from "next/navigation";
 import { LessonView } from "./lesson-view";
 
@@ -8,7 +8,7 @@ interface PageProps {
 
 export async function generateMetadata({ params }: PageProps) {
   const { courseId, unitIndex, lessonIndex } = await params;
-  const course = getCourse(courseId);
+  const course = await getCourseWithContent(courseId);
   if (!course) return { title: "Lesson — LingoClaw" };
 
   const unit = course.units[parseInt(unitIndex)];
@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: PageProps) {
 
 export default async function LessonPage({ params }: PageProps) {
   const { courseId, unitIndex, lessonIndex } = await params;
-  const course = getCourse(courseId);
+  const course = await getCourseWithContent(courseId);
   if (!course) notFound();
 
   const ui = parseInt(unitIndex);

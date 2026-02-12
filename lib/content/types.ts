@@ -73,3 +73,19 @@ export interface WordBankExercise {
   answer: string[];
   randomOrder?: boolean;
 }
+
+export interface CourseListItem {
+  id: string;
+  title: string;
+  sourceLanguage: string;
+  targetLanguage: string;
+  level: string;
+  unitCount: number;
+  lessonCount: number;
+}
+
+export interface EnrolledCourseInfo extends CourseListItem {
+  currentUnitIndex: number;
+  currentLessonIndex: number;
+  completedLessons: number;
+}

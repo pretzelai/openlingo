@@ -8,6 +8,7 @@ import { UnitCard } from "@/components/learning-path/unit-card";
 import { LessonNode } from "@/components/learning-path/lesson-node";
 import { PathConnector } from "@/components/learning-path/path-connector";
 import { Button } from "@/components/ui/button";
+import { getLanguageName } from "@/lib/languages";
 
 interface LearningPathProps {
   course: Course;
@@ -53,6 +54,8 @@ export function LearningPath({
   const [isPending, startTransition] = useTransition();
   const [selectedUnitIndex, setSelectedUnitIndex] = useState<number | null>(null);
 
+  const languageLabel = `${getLanguageName(course.sourceLanguage)} → ${getLanguageName(course.targetLanguage)}`;
+
   if (!enrollment) {
     return (
       <div className="flex flex-col items-center py-12">
@@ -93,6 +96,7 @@ export function LearningPath({
               unitIndex={unitIndex}
               totalLessons={unit.lessons.length}
               completedLessons={completedLessons}
+              languageLabel={languageLabel}
               onClick={() => setSelectedUnitIndex(unitIndex)}
             />
           );
@@ -125,6 +129,7 @@ export function LearningPath({
         unitIndex={selectedUnitIndex}
         totalLessons={unit.lessons.length}
         completedLessons={completedLessons}
+        languageLabel={languageLabel}
       >
         {unit.lessons.map((lesson, lessonIndex) => {
           const completed = isLessonCompleted(completions, selectedUnitIndex, lessonIndex);

@@ -6,8 +6,11 @@ import {
   timestamp,
   jsonb,
   date,
+  real,
   uniqueIndex,
+  primaryKey,
 } from "drizzle-orm/pg-core";
+import { relations } from "drizzle-orm";
 
 // ─── Better Auth tables ───
 
@@ -76,6 +79,7 @@ export const userStats = pgTable("user_stats", {
   longestStreak: integer("longest_streak").notNull().default(0),
   lastPracticeDate: date("last_practice_date"),
   totalLessonsCompleted: integer("total_lessons_completed").notNull().default(0),
+  nativeLanguage: text("native_language"),
 });
 
 export const userCourseEnrollment = pgTable(
@@ -171,3 +175,80 @@ export const dailyActivity = pgTable(
     uniqueIndex("daily_activity_unique").on(table.userId, table.date),
   ]
 );
+
+// ─── Spaced repetition (SRS) ───
+
+export const srsCard = pgTable(
+  "srs_card",
+  {
+    word: text("word").notNull(), // always stored lowercase
+    language: text("language").notNull(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    translation: text("translation").notNull(),
+    easeFactor: real("ease_factor").notNull().default(2.5),
+    interval: integer("interval").notNull().default(0), // days
+    repetitions: integer("repetitions").notNull().default(0),
+    nextReviewAt: timestamp("next_review_at").notNull().defaultNow(),
+    lastReviewedAt: timestamp("last_reviewed_at"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.word, table.language, table.userId] }),
+  ]
+);
+
+// ─── Course content tables ───
+
+export const course = pgTable("course", {
+  id: text("id").primaryKey(),
+  title: text("title").notNull(),
+  sourceLanguage: text("source_language").notNull(),
+  targetLanguage: text("target_language").notNull(),
+  level: text("level").notNull(),
+  published: boolean("published").notNull().default(true),
+  createdBy: text("created_by").references(() => user.id, {
+    onDelete: "set null",
+  }),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const unit = pgTable("unit", {
+  id: text("id").primaryKey(),
+  courseId: text("course_id")
+    .notNull()
+    .references(() => course.id, { onDelete: "cascade" }),
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  icon: text("icon").notNull(),
+  color: text("color").notNull(),
+  order: integer("order").notNull(),
+});
+
+export const lesson = pgTable("lesson", {
+  id: text("id").primaryKey(),
+  unitId: text("unit_id")
+    .notNull()
+    .references(() => unit.id, { onDelete: "cascade" }),
+  title: text("title").notNull(),
+  order: integer("order").notNull(),
+  xpReward: integer("xp_reward").notNull(),
+  exercises: jsonb("exercises").notNull(),
+});
+
+// ─── Relations ───
+
+export const courseRelations = relations(course, ({ many }) => ({
+  units: many(unit),
+}));
+
+export const unitRelations = relations(unit, ({ one, many }) => ({
+  course: one(course, { fields: [unit.courseId], references: [course.id] }),
+  lessons: many(lesson),
+}));
+
+export const lessonRelations = relations(lesson, ({ one }) => ({
+  unit: one(unit, { fields: [lesson.unitId], references: [unit.id] }),
+}));

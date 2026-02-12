@@ -5,6 +5,7 @@ import { StreakFlame } from "@/components/gamification/streak-flame";
 import { HeartsDisplay } from "@/components/gamification/hearts-display";
 import { LevelBadge } from "@/components/gamification/level-badge";
 import { AchievementCard } from "@/components/gamification/achievement-card";
+import { NativeLanguagePicker } from "./native-language-picker";
 
 export const metadata = { title: "Profile — LingoClaw" };
 
@@ -22,6 +23,12 @@ export default async function ProfilePage() {
           </h1>
           <p className="text-sm text-lingo-text-light">{user.email}</p>
         </div>
+      </Card>
+
+      {/* Settings */}
+      <Card>
+        <h3 className="font-bold text-lingo-text mb-3">Settings</h3>
+        <NativeLanguagePicker currentLanguage={stats.nativeLanguage ?? null} />
       </Card>
 
       {/* Stats Grid */}

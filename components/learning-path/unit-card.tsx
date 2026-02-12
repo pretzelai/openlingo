@@ -6,6 +6,7 @@ interface UnitCardProps {
   unitIndex: number;
   totalLessons: number;
   completedLessons: number;
+  languageLabel?: string;
   onClick?: () => void;
   children?: React.ReactNode;
 }
@@ -17,6 +18,7 @@ export function UnitCard({
   color,
   totalLessons,
   completedLessons,
+  languageLabel,
   onClick,
   children,
 }: UnitCardProps) {
@@ -38,6 +40,9 @@ export function UnitCard({
           <div className="min-w-0 flex-1">
             <h3 className="text-lg font-bold text-lingo-text">{title}</h3>
             <p className="text-sm text-lingo-text-light">{description}</p>
+            {languageLabel && (
+              <p className="text-xs text-lingo-text-light mt-0.5">{languageLabel}</p>
+            )}
           </div>
         </div>
         <div className="mt-3 flex items-center gap-3">
@@ -67,6 +72,9 @@ export function UnitCard({
         <div className="flex-1">
           <h3 className="text-lg font-bold text-lingo-text">{title}</h3>
           <p className="text-sm text-lingo-text-light">{description}</p>
+          {languageLabel && (
+            <p className="text-xs text-lingo-text-light mt-0.5">{languageLabel}</p>
+          )}
         </div>
         <div className="text-right">
           <span className="text-sm font-bold" style={{ color }}>

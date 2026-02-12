@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { getCourseWithContent } from "@/lib/db/queries/courses";
 import { getUserProgress } from "@/lib/actions/progress";
 import { LearningPath } from "../learning-path";
+import { HoverableText } from "@/components/word/hoverable-text";
 import { getLanguageName } from "@/lib/languages";
 
 interface PageProps {
@@ -25,7 +26,7 @@ export default async function CourseDetailPage({ params }: PageProps) {
   return (
     <div className="mx-auto max-w-lg">
       <div className="mb-6 text-center">
-        <h1 className="text-2xl font-black text-lingo-text">{course.title}</h1>
+        <h1 className="text-2xl font-black text-lingo-text"><HoverableText text={course.title} language={course.targetLanguage} /></h1>
         <p className="text-sm text-lingo-text-light mt-1">
           {getLanguageName(course.sourceLanguage)} →{" "}
           {getLanguageName(course.targetLanguage)}

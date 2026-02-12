@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import type { MatchingPairsExercise } from "@/lib/content/types";
 import { useExercise } from "@/hooks/use-exercise";
 import { ExerciseShell } from "./exercise-shell";
+import { HoverableText } from "@/components/word/hoverable-text";
 
 interface Props {
   exercise: MatchingPairsExercise;
@@ -21,7 +22,7 @@ function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
-export function MatchingPairs({ exercise, onResult, onContinue }: Props) {
+export function MatchingPairs({ exercise, onResult, onContinue, language }: Props) {
   const { status, checkAnswer } = useExercise();
   const [leftItems] = useState(() => shuffle(exercise.pairs.map((p) => p.left)));
   const [rightItems] = useState(() => shuffle(exercise.pairs.map((p) => p.right)));
@@ -84,6 +85,7 @@ export function MatchingPairs({ exercise, onResult, onContinue }: Props) {
       onCheck={handleCheck}
       onContinue={onContinue}
       canCheck={allMatched}
+      language={language}
     >
       <h2 className="text-xl font-bold text-lingo-text mb-6">
         Tap the matching pairs
@@ -108,7 +110,7 @@ export function MatchingPairs({ exercise, onResult, onContinue }: Props) {
               <span className="mr-2 inline-flex h-5 w-5 items-center justify-center rounded-full border border-current text-xs">
                 {i + 1}
               </span>
-              {item}
+              <HoverableText text={item} language={language} />
             </button>
           ))}
         </div>
@@ -131,7 +133,7 @@ export function MatchingPairs({ exercise, onResult, onContinue }: Props) {
               <span className="mr-2 inline-flex h-5 w-5 items-center justify-center rounded-full border border-current text-xs">
                 {i + 5}
               </span>
-              {item}
+              <HoverableText text={item} language={language} />
             </button>
           ))}
         </div>

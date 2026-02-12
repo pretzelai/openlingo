@@ -71,6 +71,7 @@ export function MultipleChoice({ exercise, onResult, onContinue, language }: Pro
       onContinue={onContinue}
       canCheck={selected !== null}
       correctAnswer={choices[correctIndex]}
+      language={language}
     >
       <h2 className="text-xl font-bold text-lingo-text mb-6">
         <HoverableText text={exercise.prompt} language={language} />
@@ -96,7 +97,7 @@ export function MultipleChoice({ exercise, onResult, onContinue, language }: Pro
             <span className="mr-3 inline-flex h-7 w-7 items-center justify-center rounded-full border-2 border-current text-sm font-bold">
               {i + 1}
             </span>
-            {choice}
+            <HoverableText text={choice} language={language} />
           </button>
         ))}
       </div>

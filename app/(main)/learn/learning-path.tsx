@@ -97,6 +97,7 @@ export function LearningPath({
               totalLessons={unit.lessons.length}
               completedLessons={completedLessons}
               languageLabel={languageLabel}
+              language={course.targetLanguage}
               onClick={() => setSelectedUnitIndex(unitIndex)}
             />
           );
@@ -130,6 +131,7 @@ export function LearningPath({
         totalLessons={unit.lessons.length}
         completedLessons={completedLessons}
         languageLabel={languageLabel}
+        language={course.targetLanguage}
       >
         {unit.lessons.map((lesson, lessonIndex) => {
           const completed = isLessonCompleted(completions, selectedUnitIndex, lessonIndex);
@@ -158,6 +160,7 @@ export function LearningPath({
                 href={`/lesson/${course.id}/${selectedUnitIndex}/${lessonIndex}`}
                 color={unit.color}
                 index={lessonIndex}
+                language={course.targetLanguage}
               />
             </div>
           );

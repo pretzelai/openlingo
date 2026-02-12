@@ -34,9 +34,10 @@ export function Translation({ exercise, onResult, onContinue, language }: Props)
       onContinue={onContinue}
       canCheck={input.trim().length > 0}
       correctAnswer={exercise.answer}
+      language={language}
     >
       <h2 className="text-xl font-bold text-lingo-text mb-2">
-        {exercise.prompt}
+        <HoverableText text={exercise.prompt} language={language} />
       </h2>
       <p className="text-lg text-lingo-text-light mb-6">
         &ldquo;<HoverableText text={exercise.sentence} language={language} />&rdquo;

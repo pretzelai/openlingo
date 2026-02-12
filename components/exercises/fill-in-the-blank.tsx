@@ -32,6 +32,7 @@ export function FillInTheBlank({ exercise, onResult, onContinue, language }: Pro
       onContinue={onContinue}
       canCheck={input.trim().length > 0}
       correctAnswer={exercise.blank}
+      language={language}
     >
       <h2 className="text-xl font-bold text-lingo-text mb-6">
         Fill in the blank

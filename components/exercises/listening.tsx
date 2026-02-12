@@ -162,6 +162,7 @@ function ListeningChoices({
       onContinue={onContinue}
       canCheck={selected !== null}
       correctAnswer={exercise.text}
+      language={language}
     >
       <h2 className="text-xl font-bold text-lingo-text mb-6">
         What do you hear?
@@ -211,6 +212,7 @@ function ListeningWordBank({
   onSpeak,
   onResult,
   onContinue,
+  language,
 }: ModeProps) {
   const answerWords = useMemo(() => exercise.text.split(/\s+/), [exercise.text]);
   const [selectedWords, setSelectedWords] = useState<string[]>([]);
@@ -275,6 +277,7 @@ function ListeningWordBank({
       onContinue={onContinue}
       canCheck={selectedWords.length > 0}
       correctAnswer={exercise.text}
+      language={language}
     >
       <h2 className="text-xl font-bold text-lingo-text mb-6">
         What do you hear?
@@ -315,7 +318,7 @@ function ListeningWordBank({
             <span className="mr-2 inline-flex h-5 w-5 items-center justify-center rounded-full border border-current text-xs">
               {i + 1}
             </span>
-            {word}
+            <HoverableText text={word} language={language} />
           </button>
         ))}
       </div>

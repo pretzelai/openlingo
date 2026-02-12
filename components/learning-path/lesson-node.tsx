@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { HoverableText } from "@/components/word/hoverable-text";
 
 type LessonState = "completed" | "current" | "locked";
 
@@ -10,9 +11,10 @@ interface LessonNodeProps {
   href: string;
   color: string;
   index: number;
+  language?: string;
 }
 
-export function LessonNode({ title, state, href, color, index }: LessonNodeProps) {
+export function LessonNode({ title, state, href, color, index, language }: LessonNodeProps) {
   // Zigzag pattern: offset nodes left/right alternately
   const offset = index % 2 === 0 ? "-translate-x-8" : "translate-x-8";
 
@@ -25,7 +27,7 @@ export function LessonNode({ title, state, href, color, index }: LessonNodeProps
           </svg>
         </div>
         <span className="mt-2 text-xs font-bold text-lingo-gray-dark">
-          {title}
+          {language ? <HoverableText text={title} language={language} /> : title}
         </span>
       </div>
     );
@@ -66,7 +68,7 @@ export function LessonNode({ title, state, href, color, index }: LessonNodeProps
               : "text-lingo-gray-dark"
         }`}
       >
-        {title}
+        {language ? <HoverableText text={title} language={language} /> : title}
       </span>
     </div>
   );

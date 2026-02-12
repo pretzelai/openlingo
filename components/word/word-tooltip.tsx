@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { addWordToSrs } from "@/lib/actions/srs";
+import { addOrFailWord } from "@/lib/actions/srs";
 
 interface WordData {
   found: boolean;
@@ -33,8 +33,7 @@ interface WordTooltipProps {
 export function WordTooltip({ word, language }: WordTooltipProps) {
   const [data, setData] = useState<WordData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [saved, setSaved] = useState(false);
-  const [saving, setSaving] = useState(false);
+  const [srsStatus, setSrsStatus] = useState<"added" | "failed" | null>(null);
 
   // Fetch on mount
   useEffect(() => {
@@ -57,18 +56,15 @@ export function WordTooltip({ word, language }: WordTooltipProps) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  async function handleSave() {
-    if (!data?.found || !data.translation || saving || saved) return;
-    setSaving(true);
-    try {
-      await addWordToSrs(data.word, language, data.translation);
-      setSaved(true);
-    } catch {
-      // silently fail
-    } finally {
-      setSaving(false);
-    }
-  }
+  // Auto-add or mark as failed when data loads
+  useEffect(() => {
+    if (!data?.found || !data.translation) return;
+
+    addOrFailWord(data.word, language, data.translation)
+      .then((status) => setSrsStatus(status))
+      .catch(() => {});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data]);
 
   if (loading) {
     return (
@@ -134,18 +130,18 @@ export function WordTooltip({ word, language }: WordTooltipProps) {
         </div>
       )}
 
-      {/* Save button */}
-      <button
-        onClick={handleSave}
-        disabled={saving || saved}
-        className={`w-full rounded-xl py-2.5 text-sm font-bold transition-all ${
-          saved
-            ? "bg-lingo-green/10 text-lingo-green border-2 border-lingo-green/30"
-            : "bg-lingo-green text-white border-b-4 border-lingo-green-dark hover:bg-lingo-green/90 active:border-b-0 active:mt-0.5"
-        }`}
-      >
-        {saving ? "Saving..." : saved ? "Saved to My Words" : "Save to My Words"}
-      </button>
+      {/* SRS status indicator */}
+      {srsStatus && (
+        <div
+          className={`w-full rounded-xl py-2.5 text-center text-sm font-bold ${
+            srsStatus === "added"
+              ? "bg-lingo-green/10 text-lingo-green border-2 border-lingo-green/30"
+              : "bg-lingo-orange/10 text-lingo-orange border-2 border-lingo-orange/30"
+          }`}
+        >
+          {srsStatus === "added" ? "Added to My Words" : "Marked for review"}
+        </div>
+      )}
     </div>
   );
 }

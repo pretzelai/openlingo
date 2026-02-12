@@ -1,3 +1,5 @@
+import { HoverableText } from "@/components/word/hoverable-text";
+
 interface UnitCardProps {
   title: string;
   description: string;
@@ -7,6 +9,7 @@ interface UnitCardProps {
   totalLessons: number;
   completedLessons: number;
   languageLabel?: string;
+  language?: string;
   onClick?: () => void;
   children?: React.ReactNode;
 }
@@ -19,6 +22,7 @@ export function UnitCard({
   totalLessons,
   completedLessons,
   languageLabel,
+  language,
   onClick,
   children,
 }: UnitCardProps) {
@@ -70,7 +74,7 @@ export function UnitCard({
           {icon}
         </div>
         <div className="flex-1">
-          <h3 className="text-lg font-bold text-lingo-text">{title}</h3>
+          <h3 className="text-lg font-bold text-lingo-text">{language ? <HoverableText text={title} language={language} /> : title}</h3>
           <p className="text-sm text-lingo-text-light">{description}</p>
           {languageLabel && (
             <p className="text-xs text-lingo-text-light mt-0.5">{languageLabel}</p>

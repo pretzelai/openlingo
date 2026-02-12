@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useTransition } from "react";
-import { bulkAddWordsToSrs, addWordToSrs, removeWordFromSrs } from "@/lib/actions/srs";
+import { bulkAddWordsToSrs, addWordToSrs, removeWordFromSrs, removeAllWordsFromSrs } from "@/lib/actions/srs";
 import { useRouter } from "next/navigation";
 
 interface Word {
@@ -445,6 +445,14 @@ function MyWordsTab({
     });
   }
 
+  function handleRemoveAll() {
+    if (!confirm(`Delete all ${srsStats.total} saved words? This cannot be undone.`)) return;
+    startTransition(async () => {
+      await removeAllWordsFromSrs(language);
+      router.refresh();
+    });
+  }
+
   const filters: { key: SrsFilter; label: string; count: number }[] = [
     { key: "all", label: "All", count: srsStats.total },
     { key: "due", label: "Due", count: srsStats.due },
@@ -479,6 +487,17 @@ function MyWordsTab({
           <p className="text-xs font-bold text-lingo-text-light">Learned</p>
         </div>
       </div>
+
+      {/* Delete all */}
+      {srsCards.length > 0 && (
+        <button
+          onClick={handleRemoveAll}
+          disabled={isPending}
+          className="mb-4 w-full rounded-xl border-2 border-lingo-red/30 py-3 text-sm font-bold text-lingo-red hover:bg-lingo-red/10 transition-colors disabled:opacity-50"
+        >
+          {isPending ? "Deleting..." : "Delete All Words"}
+        </button>
+      )}
 
       {/* Filter pills */}
       <div className="mb-4 flex flex-wrap gap-2">

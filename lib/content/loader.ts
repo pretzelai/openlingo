@@ -24,12 +24,23 @@ export function loadCourse(courseDir: string): Course {
   );
   const { data: courseMeta } = matter(courseFile);
 
-  const unitDirs = fs
-    .readdirSync(coursePath)
-    .filter((f) => f.startsWith("unit-") && fs.statSync(path.join(coursePath, f)).isDirectory())
-    .sort();
+  const entries = fs.readdirSync(coursePath);
+  const unitEntries = entries
+    .filter((f) => {
+      if (!f.startsWith("unit-")) return false;
+      const fullPath = path.join(coursePath, f);
+      const isDir = fs.statSync(fullPath).isDirectory();
+      return isDir || f.endsWith(".md");
+    })
+    .sort((a, b) => a.replace(/\.md$/, "").localeCompare(b.replace(/\.md$/, "")));
 
-  const units = unitDirs.map((unitDir) => loadUnit(path.join(coursePath, unitDir)));
+  const units = unitEntries.map((entry) => {
+    const fullPath = path.join(coursePath, entry);
+    if (fs.statSync(fullPath).isDirectory()) {
+      return loadUnit(fullPath);
+    }
+    return loadUnitFromFile(fullPath);
+  });
 
   return {
     id: courseMeta.id,
@@ -53,6 +64,48 @@ function loadUnit(unitPath: string): Unit {
   const lessons = lessonFiles.map((file) =>
     loadLesson(path.join(unitPath, file))
   );
+
+  return {
+    title: unitMeta.title,
+    description: unitMeta.description,
+    order: unitMeta.order,
+    icon: unitMeta.icon,
+    color: unitMeta.color,
+    lessons,
+  };
+}
+
+function loadUnitFromFile(filePath: string): Unit {
+  const raw = fs.readFileSync(filePath, "utf-8");
+  const { data: unitMeta, content } = matter(raw);
+
+  const sections = content
+    .split(/^(?=## )/m)
+    .filter((s) => s.trim().startsWith("## "));
+
+  const lessons: Lesson[] = sections.map((section, index) => {
+    const lines = section.split("\n");
+    const title = lines[0].replace(/^##\s+/, "").trim();
+    const body = lines.slice(1).join("\n").trim();
+
+    let xpReward = 10;
+    let exerciseContent = body;
+
+    const xpMatch = body.match(/^xpReward:\s*(\d+)\s*\n?/);
+    if (xpMatch) {
+      xpReward = parseInt(xpMatch[1], 10);
+      exerciseContent = body.slice(xpMatch[0].length).trim();
+    }
+
+    const exerciseBlocks = exerciseContent
+      .split(/\n---\n/)
+      .map((b) => b.trim())
+      .filter(Boolean);
+
+    const exercises = exerciseBlocks.map(parseExercise);
+
+    return { title, order: index + 1, xpReward, exercises };
+  });
 
   return {
     title: unitMeta.title,

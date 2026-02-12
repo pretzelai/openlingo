@@ -11,6 +11,7 @@ import { FillInTheBlank } from "@/components/exercises/fill-in-the-blank";
 import { MatchingPairs } from "@/components/exercises/matching-pairs";
 import { Listening } from "@/components/exercises/listening";
 import { WordBank } from "@/components/exercises/word-bank";
+import { HoverableText } from "@/components/word/hoverable-text";
 import { LessonCompleteModal } from "@/components/gamification/lesson-complete-modal";
 import { completeLesson } from "@/lib/actions/lesson";
 
@@ -110,8 +111,8 @@ export function LessonView({
         <ProgressBar value={progress} className="flex-1" />
       </div>
 
-      <p className="text-sm text-lingo-text-light mb-1">{unitTitle}</p>
-      <h1 className="text-xl font-bold text-lingo-text mb-6">{lessonTitle}</h1>
+      <p className="text-sm text-lingo-text-light mb-1"><HoverableText text={unitTitle} language={targetLanguage} /></p>
+      <h1 className="text-xl font-bold text-lingo-text mb-6"><HoverableText text={lessonTitle} language={targetLanguage} /></h1>
 
       {/* Exercise */}
       {!isComplete && (

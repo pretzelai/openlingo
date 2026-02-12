@@ -24,6 +24,70 @@ export async function addWordToSrs(
     .onConflictDoNothing();
 }
 
+/**
+ * Add a word to SRS if new, or mark it as failed to remember if it already exists.
+ * Returns "added" if the word was newly added, "failed" if it was reset.
+ */
+export async function addOrFailWord(
+  word: string,
+  language: string,
+  translation: string
+): Promise<"added" | "failed"> {
+  const session = await requireSession();
+  const userId = session.user.id;
+  const normalizedWord = word.toLowerCase();
+
+  const [existing] = await db
+    .select()
+    .from(srsCard)
+    .where(
+      and(
+        eq(srsCard.word, normalizedWord),
+        eq(srsCard.language, language),
+        eq(srsCard.userId, userId)
+      )
+    );
+
+  if (!existing) {
+    await db.insert(srsCard).values({
+      word: normalizedWord,
+      language,
+      userId,
+      translation,
+    });
+    return "added";
+  }
+
+  // Already exists — mark as failed to remember (quality = 0)
+  const result = calculateNextReview(
+    {
+      easeFactor: existing.easeFactor,
+      interval: existing.interval,
+      repetitions: existing.repetitions,
+    },
+    0
+  );
+
+  await db
+    .update(srsCard)
+    .set({
+      easeFactor: result.easeFactor,
+      interval: result.interval,
+      repetitions: result.repetitions,
+      nextReviewAt: result.nextReviewAt,
+      lastReviewedAt: new Date(),
+    })
+    .where(
+      and(
+        eq(srsCard.word, normalizedWord),
+        eq(srsCard.language, language),
+        eq(srsCard.userId, userId)
+      )
+    );
+
+  return "failed";
+}
+
 export async function bulkAddWordsToSrs(
   words: { word: string; translation: string }[],
   language: string
@@ -47,6 +111,19 @@ export async function bulkAddWordsToSrs(
   }
 
   return values.length;
+}
+
+export async function removeAllWordsFromSrs(language: string) {
+  const session = await requireSession();
+
+  await db
+    .delete(srsCard)
+    .where(
+      and(
+        eq(srsCard.language, language),
+        eq(srsCard.userId, session.user.id)
+      )
+    );
 }
 
 export async function removeWordFromSrs(word: string, language: string) {

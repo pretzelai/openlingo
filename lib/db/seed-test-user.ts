@@ -8,6 +8,7 @@ import {
   unit,
 } from "./schema";
 import { eq } from "drizzle-orm";
+import { hashPassword } from "better-auth/crypto";
 import type { UnitLesson } from "../content/types";
 
 const TEST_USER_ID = "test-user-001";
@@ -30,6 +31,7 @@ export async function seedTestUser() {
     .onConflictDoNothing();
 
   // 2. Create email/password account (password: "password123")
+  const passwordHash = await hashPassword("honestly-i-think-i-am-a-potato");
   await db
     .insert(account)
     .values({
@@ -37,9 +39,7 @@ export async function seedTestUser() {
       accountId: TEST_USER_ID,
       providerId: "credential",
       userId: TEST_USER_ID,
-      // bcrypt hash of "password123"
-      password:
-        "$2b$10$K4GxCmH8QMZxHOBGVMwZOe4fMOCjOCE0xUGhMDmBSIsaLR9xIamu",
+      password: passwordHash,
       createdAt: now,
       updatedAt: now,
     })

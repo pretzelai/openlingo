@@ -277,9 +277,20 @@ export function ReviewSession({
         <h1 className="text-xl font-black text-lingo-text">
           Review{isScheduledMode && " (Scheduled)"}
         </h1>
-        <span className="text-sm font-bold text-lingo-text-light">
-          {currentIndex + 1} / {cards.length}
-        </span>
+        <div className="flex items-center gap-3">
+          {!isScheduledMode && (
+            <button
+              onClick={startScheduledReview}
+              disabled={scheduledLoading}
+              className="text-sm font-bold text-lingo-blue hover:text-lingo-blue/80 transition-colors disabled:opacity-50"
+            >
+              {scheduledLoading ? "Loading..." : "Review scheduled"}
+            </button>
+          )}
+          <span className="text-sm font-bold text-lingo-text-light">
+            {currentIndex + 1} / {cards.length}
+          </span>
+        </div>
       </div>
 
       {/* Progress bar */}

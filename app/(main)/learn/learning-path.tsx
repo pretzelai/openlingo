@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import type { Course } from "@/lib/content/types";
 import { enrollInCourse } from "@/lib/actions/progress";
 import { UnitCard } from "@/components/learning-path/unit-card";
@@ -50,8 +50,11 @@ export function LearningPath({
   completions,
 }: LearningPathProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
-  const [selectedUnitId, setSelectedUnitId] = useState<string | null>(null);
+  const [selectedUnitId, setSelectedUnitId] = useState<string | null>(
+    searchParams.get("unit")
+  );
 
   const languageLabel = `${getLanguageName(course.sourceLanguage)} → ${getLanguageName(course.targetLanguage)}`;
 

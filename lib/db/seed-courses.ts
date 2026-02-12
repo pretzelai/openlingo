@@ -1,6 +1,7 @@
 import { db } from "./index";
-import { course, unit, lesson } from "./schema";
+import { course, unit } from "./schema";
 import { getAllCourses } from "../content/registry";
+import type { UnitLesson } from "../content/types";
 
 export async function seedCoursesFromFilesystem() {
   const courses = getAllCourses();
@@ -21,6 +22,13 @@ export async function seedCoursesFromFilesystem() {
       const u = c.units[ui];
       const unitId = `${c.id}-unit-${ui}`;
 
+      // Convert lessons into the JSONB exercises array
+      const exercises: UnitLesson[] = u.lessons.map((l) => ({
+        title: l.title,
+        xpReward: l.xpReward,
+        exercises: l.exercises,
+      }));
+
       await db
         .insert(unit)
         .values({
@@ -30,30 +38,14 @@ export async function seedCoursesFromFilesystem() {
           description: u.description,
           icon: u.icon,
           color: u.color,
-          order: ui,
+          exercises,
         })
         .onConflictDoNothing();
-
-      for (let li = 0; li < u.lessons.length; li++) {
-        const l = u.lessons[li];
-        const lessonId = `${c.id}-unit-${ui}-lesson-${li}`;
-
-        await db
-          .insert(lesson)
-          .values({
-            id: lessonId,
-            unitId,
-            title: l.title,
-            order: li,
-            xpReward: l.xpReward,
-            exercises: l.exercises,
-          })
-          .onConflictDoNothing();
-      }
     }
 
+    const totalLessons = c.units.reduce((sum, u) => sum + u.lessons.length, 0);
     console.log(
-      `Seeded course "${c.id}": ${c.units.length} units, ${c.units.reduce((sum, u) => sum + u.lessons.length, 0)} lessons`
+      `Seeded course "${c.id}": ${c.units.length} units, ${totalLessons} lessons`
     );
   }
 }

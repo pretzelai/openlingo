@@ -8,14 +8,24 @@ export interface Course {
 }
 
 export interface Unit {
+  id: string;
   title: string;
   description: string;
-  order: number;
   icon: string;
   color: string;
-  lessons: Lesson[];
+  lessons: UnitLesson[];
 }
 
+/** A single lesson inside the unit's JSONB exercises array */
+export interface UnitLesson {
+  title: string;
+  xpReward: number;
+  exercises: Exercise[];
+}
+
+/**
+ * @deprecated Use UnitLesson instead. Kept for loader compatibility.
+ */
 export interface Lesson {
   title: string;
   order: number;
@@ -85,7 +95,7 @@ export interface CourseListItem {
 }
 
 export interface EnrolledCourseInfo extends CourseListItem {
-  currentUnitIndex: number;
+  currentUnitId: string | null;
   currentLessonIndex: number;
   completedLessons: number;
 }

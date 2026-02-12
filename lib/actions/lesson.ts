@@ -9,15 +9,16 @@ import {
   dailyActivity,
   userAchievement,
   achievementDefinition,
+  unit,
 } from "@/lib/db/schema";
 import { eq, and, sql } from "drizzle-orm";
 import { requireSession } from "@/lib/auth-server";
 import { getLevelForXp } from "@/lib/game/levels";
 import { computeStreak } from "@/lib/game/streaks";
+import type { UnitLesson } from "@/lib/content/types";
 
 interface CompleteLessonInput {
-  courseId: string;
-  unitIndex: number;
+  unitId: string;
   lessonIndex: number;
   xpReward: number;
   results: {
@@ -42,8 +43,7 @@ export async function completeLesson(input: CompleteLessonInput) {
     .insert(lessonCompletion)
     .values({
       userId,
-      courseId: input.courseId,
-      unitIndex: input.unitIndex,
+      unitId: input.unitId,
       lessonIndex: input.lessonIndex,
       xpEarned,
       heartsLost: input.heartsLost,
@@ -132,18 +132,7 @@ export async function completeLesson(input: CompleteLessonInput) {
   }
 
   // Advance enrollment progress
-  await db
-    .update(userCourseEnrollment)
-    .set({
-      currentUnitIndex: input.unitIndex,
-      currentLessonIndex: input.lessonIndex + 1,
-    })
-    .where(
-      and(
-        eq(userCourseEnrollment.userId, userId),
-        eq(userCourseEnrollment.courseId, input.courseId)
-      )
-    );
+  await advanceEnrollment(userId, input.unitId, input.lessonIndex);
 
   // Check achievements
   await checkAndAwardAchievements(userId, {
@@ -155,6 +144,74 @@ export async function completeLesson(input: CompleteLessonInput) {
   });
 
   return { xpEarned, perfectScore, heartsLost: input.heartsLost };
+}
+
+async function advanceEnrollment(
+  userId: string,
+  unitId: string,
+  completedLessonIndex: number
+) {
+  // Get the unit to find courseId and lesson count
+  const [unitRow] = await db
+    .select()
+    .from(unit)
+    .where(eq(unit.id, unitId));
+
+  if (!unitRow || !unitRow.courseId) return;
+
+  const courseId = unitRow.courseId;
+  const lessons = unitRow.exercises as UnitLesson[];
+
+  // Get enrollment
+  const [enrollment] = await db
+    .select()
+    .from(userCourseEnrollment)
+    .where(
+      and(
+        eq(userCourseEnrollment.userId, userId),
+        eq(userCourseEnrollment.courseId, courseId)
+      )
+    );
+
+  if (!enrollment) return;
+
+  // Only advance if user is on this unit and lesson
+  if (
+    enrollment.currentUnitId !== unitId ||
+    enrollment.currentLessonIndex !== completedLessonIndex
+  ) {
+    return;
+  }
+
+  const nextLessonIndex = completedLessonIndex + 1;
+
+  if (nextLessonIndex < lessons.length) {
+    // Move to next lesson in same unit
+    await db
+      .update(userCourseEnrollment)
+      .set({ currentLessonIndex: nextLessonIndex })
+      .where(eq(userCourseEnrollment.id, enrollment.id));
+  } else {
+    // Completed all lessons in this unit — move to next unit
+    const courseUnits = await db
+      .select({ id: unit.id })
+      .from(unit)
+      .where(eq(unit.courseId, courseId));
+
+    const currentIdx = courseUnits.findIndex((u) => u.id === unitId);
+    const nextUnit = courseUnits[currentIdx + 1];
+
+    if (nextUnit) {
+      await db
+        .update(userCourseEnrollment)
+        .set({
+          currentUnitId: nextUnit.id,
+          currentLessonIndex: 0,
+        })
+        .where(eq(userCourseEnrollment.id, enrollment.id));
+    }
+    // else: course completed — stays at last unit/lesson
+  }
 }
 
 async function checkAndAwardAchievements(

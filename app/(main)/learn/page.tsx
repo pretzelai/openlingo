@@ -1,7 +1,7 @@
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import {
-  listCourses,
+  listCoursesWithLessonCounts,
   getAvailableFilters,
   getUserEnrolledCourses,
 } from "@/lib/db/queries/courses";
@@ -18,7 +18,7 @@ export default async function LearnPage() {
   const nativeLanguage = userId ? await getNativeLanguage(userId) : null;
 
   const [courses, filters, enrolled] = await Promise.all([
-    listCourses(nativeLanguage ? { sourceLanguage: nativeLanguage } : undefined),
+    listCoursesWithLessonCounts(nativeLanguage ? { sourceLanguage: nativeLanguage } : undefined),
     getAvailableFilters(),
     userId ? getUserEnrolledCourses(userId) : Promise.resolve([]),
   ]);

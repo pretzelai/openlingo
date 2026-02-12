@@ -2,7 +2,6 @@ import { db } from "@/lib/db";
 import {
   course,
   unit,
-  lesson,
   userCourseEnrollment,
   lessonCompletion,
 } from "@/lib/db/schema";
@@ -11,7 +10,7 @@ import type {
   Course,
   CourseListItem,
   EnrolledCourseInfo,
-  Exercise,
+  UnitLesson,
 } from "@/lib/content/types";
 
 interface CourseFilters {
@@ -42,11 +41,9 @@ export async function listCourses(
       targetLanguage: course.targetLanguage,
       level: course.level,
       unitCount: countDistinct(unit.id),
-      lessonCount: countDistinct(lesson.id),
     })
     .from(course)
     .leftJoin(unit, eq(unit.courseId, course.id))
-    .leftJoin(lesson, eq(lesson.unitId, unit.id))
     .where(and(...conditions))
     .groupBy(course.id)
     .orderBy(course.title);
@@ -54,7 +51,35 @@ export async function listCourses(
   return rows.map((r) => ({
     ...r,
     unitCount: Number(r.unitCount),
-    lessonCount: Number(r.lessonCount),
+    // Sum lesson counts from each unit's JSONB exercises array
+    lessonCount: 0, // filled below
+  }));
+}
+
+// Separate query for accurate lesson counts
+export async function listCoursesWithLessonCounts(
+  filters?: CourseFilters
+): Promise<CourseListItem[]> {
+  const courses = await listCourses(filters);
+  if (courses.length === 0) return courses;
+
+  const courseIds = courses.map((c) => c.id);
+  const units = await db
+    .select({ id: unit.id, courseId: unit.courseId, exercises: unit.exercises })
+    .from(unit)
+    .where(sql`${unit.courseId} IN ${courseIds}`);
+
+  const lessonCountByCourse = new Map<string, number>();
+  for (const u of units) {
+    if (!u.courseId) continue;
+    const lessons = u.exercises as UnitLesson[];
+    const prev = lessonCountByCourse.get(u.courseId) ?? 0;
+    lessonCountByCourse.set(u.courseId, prev + lessons.length);
+  }
+
+  return courses.map((c) => ({
+    ...c,
+    lessonCount: lessonCountByCourse.get(c.id) ?? 0,
   }));
 }
 
@@ -71,35 +96,7 @@ export async function getCourseWithContent(
   const units = await db
     .select()
     .from(unit)
-    .where(eq(unit.courseId, courseId))
-    .orderBy(unit.order);
-
-  const unitIds = units.map((u) => u.id);
-  if (unitIds.length === 0) {
-    return {
-      id: courseRow.id,
-      title: courseRow.title,
-      sourceLanguage: courseRow.sourceLanguage,
-      targetLanguage: courseRow.targetLanguage,
-      level: courseRow.level,
-      units: [],
-    };
-  }
-
-  const lessons = await db
-    .select()
-    .from(lesson)
-    .where(
-      sql`${lesson.unitId} IN ${unitIds}`
-    )
-    .orderBy(lesson.order);
-
-  const lessonsByUnit = new Map<string, typeof lessons>();
-  for (const l of lessons) {
-    const arr = lessonsByUnit.get(l.unitId) ?? [];
-    arr.push(l);
-    lessonsByUnit.set(l.unitId, arr);
-  }
+    .where(eq(unit.courseId, courseId));
 
   return {
     id: courseRow.id,
@@ -108,17 +105,12 @@ export async function getCourseWithContent(
     targetLanguage: courseRow.targetLanguage,
     level: courseRow.level,
     units: units.map((u) => ({
+      id: u.id,
       title: u.title,
       description: u.description,
-      order: u.order,
       icon: u.icon,
       color: u.color,
-      lessons: (lessonsByUnit.get(u.id) ?? []).map((l) => ({
-        title: l.title,
-        order: l.order,
-        xpReward: l.xpReward,
-        exercises: l.exercises as Exercise[],
-      })),
+      lessons: u.exercises as UnitLesson[],
     })),
   };
 }
@@ -146,7 +138,7 @@ export async function getUserEnrolledCourses(
   const enrollments = await db
     .select({
       courseId: userCourseEnrollment.courseId,
-      currentUnitIndex: userCourseEnrollment.currentUnitIndex,
+      currentUnitId: userCourseEnrollment.currentUnitId,
       currentLessonIndex: userCourseEnrollment.currentLessonIndex,
     })
     .from(userCourseEnrollment)
@@ -164,31 +156,44 @@ export async function getUserEnrolledCourses(
       targetLanguage: course.targetLanguage,
       level: course.level,
       unitCount: countDistinct(unit.id),
-      lessonCount: countDistinct(lesson.id),
     })
     .from(course)
     .leftJoin(unit, eq(unit.courseId, course.id))
-    .leftJoin(lesson, eq(lesson.unitId, unit.id))
     .where(sql`${course.id} IN ${courseIds}`)
     .groupBy(course.id);
 
+  // Count completed lessons per course via unit join
   const completionCounts = await db
     .select({
-      courseId: lessonCompletion.courseId,
+      courseId: unit.courseId,
       count: count(),
     })
     .from(lessonCompletion)
+    .innerJoin(unit, eq(unit.id, lessonCompletion.unitId))
     .where(
       and(
         eq(lessonCompletion.userId, userId),
-        sql`${lessonCompletion.courseId} IN ${courseIds}`
+        sql`${unit.courseId} IN ${courseIds}`
       )
     )
-    .groupBy(lessonCompletion.courseId);
+    .groupBy(unit.courseId);
 
   const completionMap = new Map(
     completionCounts.map((c) => [c.courseId, Number(c.count)])
   );
+
+  // Get lesson counts from JSONB
+  const allUnits = await db
+    .select({ courseId: unit.courseId, exercises: unit.exercises })
+    .from(unit)
+    .where(sql`${unit.courseId} IN ${courseIds}`);
+
+  const lessonCountMap = new Map<string, number>();
+  for (const u of allUnits) {
+    if (!u.courseId) continue;
+    const lessons = u.exercises as UnitLesson[];
+    lessonCountMap.set(u.courseId, (lessonCountMap.get(u.courseId) ?? 0) + lessons.length);
+  }
 
   const enrollmentMap = new Map(
     enrollments.map((e) => [e.courseId, e])
@@ -203,8 +208,8 @@ export async function getUserEnrolledCourses(
       targetLanguage: c.targetLanguage,
       level: c.level,
       unitCount: Number(c.unitCount),
-      lessonCount: Number(c.lessonCount),
-      currentUnitIndex: enrollment.currentUnitIndex,
+      lessonCount: lessonCountMap.get(c.id) ?? 0,
+      currentUnitId: enrollment.currentUnitId,
       currentLessonIndex: enrollment.currentLessonIndex,
       completedLessons: completionMap.get(c.id) ?? 0,
     };

@@ -13,32 +13,31 @@ import { getLanguageName } from "@/lib/languages";
 interface LearningPathProps {
   course: Course;
   enrollment: {
-    currentUnitIndex: number;
+    currentUnitId: string | null;
     currentLessonIndex: number;
   } | null;
   completions: {
-    unitIndex: number;
+    unitId: string;
     lessonIndex: number;
   }[];
 }
 
 function isLessonCompleted(
-  completions: { unitIndex: number; lessonIndex: number }[],
-  unitIndex: number,
+  completions: { unitId: string; lessonIndex: number }[],
+  unitId: string,
   lessonIndex: number
 ) {
   return completions.some(
-    (c) => c.unitIndex === unitIndex && c.lessonIndex === lessonIndex
+    (c) => c.unitId === unitId && c.lessonIndex === lessonIndex
   );
 }
 
 function findFirstIncompleteLesson(
   unit: Course["units"][number],
-  unitIndex: number,
-  completions: { unitIndex: number; lessonIndex: number }[]
+  completions: { unitId: string; lessonIndex: number }[]
 ) {
   for (let li = 0; li < unit.lessons.length; li++) {
-    if (!isLessonCompleted(completions, unitIndex, li)) {
+    if (!isLessonCompleted(completions, unit.id, li)) {
       return li;
     }
   }
@@ -52,7 +51,7 @@ export function LearningPath({
 }: LearningPathProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  const [selectedUnitIndex, setSelectedUnitIndex] = useState<number | null>(null);
+  const [selectedUnitId, setSelectedUnitId] = useState<string | null>(null);
 
   const languageLabel = `${getLanguageName(course.sourceLanguage)} → ${getLanguageName(course.targetLanguage)}`;
 
@@ -78,27 +77,26 @@ export function LearningPath({
   }
 
   // Unit selector view
-  if (selectedUnitIndex === null) {
+  if (selectedUnitId === null) {
     return (
       <div className="grid gap-4">
-        {course.units.map((unit, unitIndex) => {
+        {course.units.map((unit) => {
           const completedLessons = unit.lessons.filter((_, li) =>
-            isLessonCompleted(completions, unitIndex, li)
+            isLessonCompleted(completions, unit.id, li)
           ).length;
 
           return (
             <UnitCard
-              key={unitIndex}
+              key={unit.id}
               title={unit.title}
               description={unit.description}
               icon={unit.icon}
               color={unit.color}
-              unitIndex={unitIndex}
               totalLessons={unit.lessons.length}
               completedLessons={completedLessons}
               languageLabel={languageLabel}
               language={course.targetLanguage}
-              onClick={() => setSelectedUnitIndex(unitIndex)}
+              onClick={() => setSelectedUnitId(unit.id)}
             />
           );
         })}
@@ -107,16 +105,18 @@ export function LearningPath({
   }
 
   // Lesson path view for selected unit
-  const unit = course.units[selectedUnitIndex];
+  const unit = course.units.find((u) => u.id === selectedUnitId);
+  if (!unit) return null;
+
   const completedLessons = unit.lessons.filter((_, li) =>
-    isLessonCompleted(completions, selectedUnitIndex, li)
+    isLessonCompleted(completions, unit.id, li)
   ).length;
-  const currentLessonIndex = findFirstIncompleteLesson(unit, selectedUnitIndex, completions);
+  const currentLessonIndex = findFirstIncompleteLesson(unit, completions);
 
   return (
     <div>
       <button
-        onClick={() => setSelectedUnitIndex(null)}
+        onClick={() => setSelectedUnitId(null)}
         className="mb-4 flex items-center gap-1 text-sm font-bold text-lingo-text-light hover:text-lingo-text transition-colors"
       >
         ← All paths
@@ -127,14 +127,13 @@ export function LearningPath({
         description={unit.description}
         icon={unit.icon}
         color={unit.color}
-        unitIndex={selectedUnitIndex}
         totalLessons={unit.lessons.length}
         completedLessons={completedLessons}
         languageLabel={languageLabel}
         language={course.targetLanguage}
       >
         {unit.lessons.map((lesson, lessonIndex) => {
-          const completed = isLessonCompleted(completions, selectedUnitIndex, lessonIndex);
+          const completed = isLessonCompleted(completions, unit.id, lessonIndex);
           const isCurrent = lessonIndex === currentLessonIndex;
           const isLocked = lessonIndex > currentLessonIndex;
 
@@ -157,7 +156,7 @@ export function LearningPath({
               <LessonNode
                 title={lesson.title}
                 state={state}
-                href={`/lesson/${course.id}/${selectedUnitIndex}/${lessonIndex}`}
+                href={`/lesson/${course.id}/${unit.id}/${lessonIndex}`}
                 color={unit.color}
                 index={lessonIndex}
                 language={course.targetLanguage}

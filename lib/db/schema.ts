@@ -92,7 +92,7 @@ export const userCourseEnrollment = pgTable(
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
     courseId: text("course_id").notNull(),
-    currentUnitIndex: integer("current_unit_index").notNull().default(0),
+    currentUnitId: text("current_unit_id"),
     currentLessonIndex: integer("current_lesson_index").notNull().default(0),
   },
   (table) => [uniqueIndex("enrollment_unique").on(table.userId, table.courseId)]
@@ -105,8 +105,9 @@ export const lessonCompletion = pgTable("lesson_completion", {
   userId: text("user_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
-  courseId: text("course_id").notNull(),
-  unitIndex: integer("unit_index").notNull(),
+  unitId: text("unit_id")
+    .notNull()
+    .references(() => unit.id, { onDelete: "cascade" }),
   lessonIndex: integer("lesson_index").notNull(),
   xpEarned: integer("xp_earned").notNull().default(0),
   heartsLost: integer("hearts_lost").notNull().default(0),
@@ -241,25 +242,16 @@ export const course = pgTable("course", {
 
 export const unit = pgTable("unit", {
   id: text("id").primaryKey(),
-  courseId: text("course_id")
-    .notNull()
-    .references(() => course.id, { onDelete: "cascade" }),
+  courseId: text("course_id").references(() => course.id, {
+    onDelete: "set null",
+  }),
   title: text("title").notNull(),
   description: text("description").notNull(),
   icon: text("icon").notNull(),
   color: text("color").notNull(),
-  order: integer("order").notNull(),
-});
-
-export const lesson = pgTable("lesson", {
-  id: text("id").primaryKey(),
-  unitId: text("unit_id")
-    .notNull()
-    .references(() => unit.id, { onDelete: "cascade" }),
-  title: text("title").notNull(),
-  order: integer("order").notNull(),
-  xpReward: integer("xp_reward").notNull(),
-  exercises: jsonb("exercises").notNull(),
+  exercises: jsonb("exercises").notNull(), // Array of { title, xpReward, exercises[] }
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
 // ─── Relations ───
@@ -268,11 +260,6 @@ export const courseRelations = relations(course, ({ many }) => ({
   units: many(unit),
 }));
 
-export const unitRelations = relations(unit, ({ one, many }) => ({
+export const unitRelations = relations(unit, ({ one }) => ({
   course: one(course, { fields: [unit.courseId], references: [course.id] }),
-  lessons: many(lesson),
-}));
-
-export const lessonRelations = relations(lesson, ({ one }) => ({
-  unit: one(unit, { fields: [lesson.unitId], references: [unit.id] }),
 }));

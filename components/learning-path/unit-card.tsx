@@ -5,7 +5,6 @@ interface UnitCardProps {
   description: string;
   icon: string;
   color: string;
-  unitIndex: number;
   totalLessons: number;
   completedLessons: number;
   languageLabel?: string;

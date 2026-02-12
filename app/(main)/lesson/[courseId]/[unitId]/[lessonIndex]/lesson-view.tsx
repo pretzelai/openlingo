@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import type { Lesson, Exercise } from "@/lib/content/types";
+import type { UnitLesson, Exercise } from "@/lib/content/types";
 import { useLesson } from "@/hooks/use-lesson";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import { MultipleChoice } from "@/components/exercises/multiple-choice";
@@ -17,9 +17,9 @@ import { completeLesson } from "@/lib/actions/lesson";
 
 interface LessonViewProps {
   courseId: string;
-  unitIndex: number;
+  unitId: string;
   lessonIndex: number;
-  lesson: Lesson;
+  lesson: UnitLesson;
   lessonTitle: string;
   unitTitle: string;
   targetLanguage: string;
@@ -27,7 +27,7 @@ interface LessonViewProps {
 
 export function LessonView({
   courseId,
-  unitIndex,
+  unitId,
   lessonIndex,
   lesson,
   lessonTitle,
@@ -68,8 +68,7 @@ export function LessonView({
   if (isComplete && !showComplete) {
     startTransition(async () => {
       const result = await completeLesson({
-        courseId,
-        unitIndex,
+        unitId,
         lessonIndex,
         xpReward: lesson.xpReward,
         results: results.map((r) => ({

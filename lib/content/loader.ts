@@ -4,7 +4,7 @@ import matter from "gray-matter";
 import type {
   Course,
   Unit,
-  Lesson,
+  UnitLesson,
   Exercise,
   MultipleChoiceExercise,
   TranslationExercise,
@@ -34,12 +34,14 @@ export function loadCourse(courseDir: string): Course {
     })
     .sort((a, b) => a.replace(/\.md$/, "").localeCompare(b.replace(/\.md$/, "")));
 
-  const units = unitEntries.map((entry) => {
+  const courseId = courseMeta.id as string;
+  const units = unitEntries.map((entry, index) => {
     const fullPath = path.join(coursePath, entry);
+    const unitId = `${courseId}-unit-${index}`;
     if (fs.statSync(fullPath).isDirectory()) {
-      return loadUnit(fullPath);
+      return loadUnit(fullPath, unitId);
     }
-    return loadUnitFromFile(fullPath);
+    return loadUnitFromFile(fullPath, unitId);
   });
 
   return {
@@ -52,7 +54,7 @@ export function loadCourse(courseDir: string): Course {
   };
 }
 
-function loadUnit(unitPath: string): Unit {
+function loadUnit(unitPath: string, unitId: string): Unit {
   const unitFile = fs.readFileSync(path.join(unitPath, "unit.md"), "utf-8");
   const { data: unitMeta } = matter(unitFile);
 
@@ -61,21 +63,22 @@ function loadUnit(unitPath: string): Unit {
     .filter((f) => f.startsWith("lesson-") && f.endsWith(".md"))
     .sort();
 
-  const lessons = lessonFiles.map((file) =>
-    loadLesson(path.join(unitPath, file))
-  );
+  const lessons: UnitLesson[] = lessonFiles.map((file) => {
+    const l = loadLessonRaw(path.join(unitPath, file));
+    return { title: l.title, xpReward: l.xpReward, exercises: l.exercises };
+  });
 
   return {
+    id: unitId,
     title: unitMeta.title,
     description: unitMeta.description,
-    order: unitMeta.order,
     icon: unitMeta.icon,
     color: unitMeta.color,
     lessons,
   };
 }
 
-function loadUnitFromFile(filePath: string): Unit {
+function loadUnitFromFile(filePath: string, unitId: string): Unit {
   const raw = fs.readFileSync(filePath, "utf-8");
   const { data: unitMeta, content } = matter(raw);
 
@@ -83,7 +86,7 @@ function loadUnitFromFile(filePath: string): Unit {
     .split(/^(?=## )/m)
     .filter((s) => s.trim().startsWith("## "));
 
-  const lessons: Lesson[] = sections.map((section, index) => {
+  const lessons: UnitLesson[] = sections.map((section) => {
     const lines = section.split("\n");
     const title = lines[0].replace(/^##\s+/, "").trim();
     const body = lines.slice(1).join("\n").trim();
@@ -104,20 +107,20 @@ function loadUnitFromFile(filePath: string): Unit {
 
     const exercises = exerciseBlocks.map(parseExercise);
 
-    return { title, order: index + 1, xpReward, exercises };
+    return { title, xpReward, exercises };
   });
 
   return {
+    id: unitId,
     title: unitMeta.title,
     description: unitMeta.description,
-    order: unitMeta.order,
     icon: unitMeta.icon,
     color: unitMeta.color,
     lessons,
   };
 }
 
-function loadLesson(lessonPath: string): Lesson {
+function loadLessonRaw(lessonPath: string): { title: string; xpReward: number; exercises: Exercise[] } {
   const raw = fs.readFileSync(lessonPath, "utf-8");
   const { data: meta, content } = matter(raw);
 
@@ -130,7 +133,6 @@ function loadLesson(lessonPath: string): Lesson {
 
   return {
     title: meta.title,
-    order: meta.order,
     xpReward: meta.xpReward,
     exercises,
   };

@@ -56,6 +56,11 @@ function extractTexts(
         if (!na.includes(`left:${i}`)) items.push({ text: pair.left, language });
       });
       break;
+    case "speaking":
+      if (!na.includes("sentence")) {
+        items.push({ text: exercise.sentence, language });
+      }
+      break;
   }
 
   return items;

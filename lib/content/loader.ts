@@ -12,6 +12,7 @@ import type {
   MatchingPairsExercise,
   ListeningExercise,
   WordBankExercise,
+  SpeakingExercise,
 } from "./types";
 
 const CONTENT_DIR = path.join(process.cwd(), "content");
@@ -161,6 +162,8 @@ function parseExercise(block: string): Exercise {
       return parseListening(lines);
     case "word-bank":
       return parseWordBank(lines);
+    case "speaking":
+      return parseSpeaking(lines);
     default:
       throw new Error(`Unknown exercise type: ${type}`);
   }
@@ -265,6 +268,13 @@ function parseListening(lines: string[]): ListeningExercise {
   const ttsLang = getField(lines, "ttsLang");
   const mode = getOptionalField(lines, "mode") as "choices" | "word-bank" | undefined;
   return { type: "listening", text: rawText.text, ttsLang, ...(mode && { mode }), ...(noAudio.length && { noAudio }) };
+}
+
+function parseSpeaking(lines: string[]): SpeakingExercise {
+  const noAudio: string[] = [];
+  const rawSentence = stripNoAudio(getField(lines, "sentence"));
+  if (rawSentence.flagged) noAudio.push("sentence");
+  return { type: "speaking", sentence: rawSentence.text, ...(noAudio.length && { noAudio }) };
 }
 
 function parseWordBank(lines: string[]): WordBankExercise {

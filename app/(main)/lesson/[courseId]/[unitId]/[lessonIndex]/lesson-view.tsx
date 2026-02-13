@@ -11,6 +11,7 @@ import { FillInTheBlank } from "@/components/exercises/fill-in-the-blank";
 import { MatchingPairs } from "@/components/exercises/matching-pairs";
 import { Listening } from "@/components/exercises/listening";
 import { WordBank } from "@/components/exercises/word-bank";
+import { Speaking } from "@/components/exercises/speaking";
 import { HoverableText } from "@/components/word/hoverable-text";
 import { LessonCompleteModal } from "@/components/gamification/lesson-complete-modal";
 import { completeLesson } from "@/lib/actions/lesson";
@@ -193,6 +194,15 @@ function ExerciseRenderer({
     case "word-bank":
       return (
         <WordBank
+          exercise={exercise}
+          onResult={onResult}
+          onContinue={onContinue}
+          language={language}
+        />
+      );
+    case "speaking":
+      return (
+        <Speaking
           exercise={exercise}
           onResult={onResult}
           onContinue={onContinue}

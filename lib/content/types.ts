@@ -39,7 +39,8 @@ export type Exercise =
   | FillInTheBlankExercise
   | MatchingPairsExercise
   | ListeningExercise
-  | WordBankExercise;
+  | WordBankExercise
+  | SpeakingExercise;
 
 export interface MultipleChoiceExercise {
   type: "multiple-choice";
@@ -87,6 +88,12 @@ export interface WordBankExercise {
   words: string[];
   answer: string[];
   randomOrder?: boolean;
+  noAudio?: string[];
+}
+
+export interface SpeakingExercise {
+  type: "speaking";
+  sentence: string;
   noAudio?: string[];
 }
 

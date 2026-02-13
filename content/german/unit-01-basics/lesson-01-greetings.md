@@ -46,3 +46,8 @@ ttsLang: "de"
 prompt: "Translate: 'Good evening'"
 words: ["Abend", "Tag", "Guten", "Morgen"]
 answer: ["Guten", "Abend"]
+
+---
+
+[speaking]
+sentence: "Guten Morgen"

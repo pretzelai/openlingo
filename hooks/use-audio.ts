@@ -7,8 +7,10 @@ const urlCache = new Map<string, string>();
 
 export function useAudio() {
   const currentAudio = useRef<HTMLAudioElement | null>(null);
+  const nonceRef = useRef(0);
 
   const stop = useCallback(() => {
+    nonceRef.current++;
     if (currentAudio.current) {
       currentAudio.current.pause();
       currentAudio.current = null;
@@ -17,6 +19,7 @@ export function useAudio() {
 
   const play = useCallback(async (text: string, language: string) => {
     stop();
+    const nonce = nonceRef.current;
 
     const key = `${language}:${text.toLowerCase()}`;
     let url = urlCache.get(key);
@@ -29,6 +32,10 @@ export function useAudio() {
       url = data.url;
       urlCache.set(key, url!);
     }
+
+    // Stale — a newer play() or stop() was called while we were fetching
+    if (nonce !== nonceRef.current) return;
+
     const audio = new Audio(url);
     currentAudio.current = audio;
     audio.play();

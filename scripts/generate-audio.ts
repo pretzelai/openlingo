@@ -16,40 +16,45 @@ function extractTexts(
 ): { text: string; language: string }[] {
   const items: { text: string; language: string }[] = [];
 
+  const na = exercise.noAudio ?? [];
+
   switch (exercise.type) {
     case "multiple-choice":
-      items.push({ text: exercise.prompt, language });
-      for (const choice of exercise.choices) {
-        items.push({ text: choice, language });
-      }
+      if (!na.includes("prompt")) items.push({ text: exercise.prompt, language });
+      exercise.choices.forEach((choice, i) => {
+        if (!na.includes(`choice:${i}`)) items.push({ text: choice, language });
+      });
       break;
     case "translation":
-      items.push({ text: exercise.sentence, language });
-      // Also generate for individual words
-      for (const word of exercise.sentence.split(/\s+/)) {
-        const clean = word.replace(/[^\p{L}\p{M}'-]/gu, "");
-        if (clean) items.push({ text: clean, language });
+      if (!na.includes("sentence")) {
+        items.push({ text: exercise.sentence, language });
+        for (const word of exercise.sentence.split(/\s+/)) {
+          const clean = word.replace(/[^\p{L}\p{M}'-]/gu, "");
+          if (clean) items.push({ text: clean, language });
+        }
       }
       break;
     case "fill-in-the-blank":
-      items.push({
-        text: exercise.sentence.replace("___", exercise.blank),
-        language,
-      });
+      if (!na.includes("sentence")) {
+        items.push({
+          text: exercise.sentence.replace("___", exercise.blank),
+          language,
+        });
+      }
       break;
     case "listening":
-      items.push({ text: exercise.text, language });
+      if (!na.includes("text")) items.push({ text: exercise.text, language });
       break;
     case "word-bank":
-      items.push({ text: exercise.prompt, language });
+      if (!na.includes("prompt")) items.push({ text: exercise.prompt, language });
       for (const word of exercise.words) {
-        items.push({ text: word, language });
+        if (!na.includes(`word:${word}`)) items.push({ text: word, language });
       }
       break;
     case "matching-pairs":
-      for (const pair of exercise.pairs) {
-        items.push({ text: pair.left, language });
-      }
+      exercise.pairs.forEach((pair, i) => {
+        if (!na.includes(`left:${i}`)) items.push({ text: pair.left, language });
+      });
       break;
   }
 

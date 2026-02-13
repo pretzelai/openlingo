@@ -166,6 +166,15 @@ function parseExercise(block: string): Exercise {
   }
 }
 
+const NO_AUDIO_RE = /\s*\[no-audio\]\s*$/;
+
+function stripNoAudio(text: string): { text: string; flagged: boolean } {
+  if (NO_AUDIO_RE.test(text)) {
+    return { text: text.replace(NO_AUDIO_RE, "").trim(), flagged: true };
+  }
+  return { text, flagged: false };
+}
+
 function getField(lines: string[], key: string): string {
   const line = lines.find((l) => l.startsWith(`${key}:`));
   if (!line) throw new Error(`Missing field: ${key}`);
@@ -185,7 +194,10 @@ function getOptionalField(lines: string[], key: string): string | undefined {
 }
 
 function parseMultipleChoice(lines: string[]): MultipleChoiceExercise {
-  const prompt = getField(lines, "prompt");
+  const noAudio: string[] = [];
+  const rawPrompt = stripNoAudio(getField(lines, "prompt"));
+  if (rawPrompt.flagged) noAudio.push("prompt");
+
   const choiceLines = lines.filter((l) => l.startsWith('- "'));
   const choices: string[] = [];
   let correctIndex = 0;
@@ -193,18 +205,24 @@ function parseMultipleChoice(lines: string[]): MultipleChoiceExercise {
   choiceLines.forEach((line, i) => {
     const match = line.match(/^- "(.+?)"\s*(\(correct\))?/);
     if (match) {
-      choices.push(match[1]);
+      const c = stripNoAudio(match[1]);
+      choices.push(c.text);
+      if (c.flagged) noAudio.push(`choice:${i}`);
       if (match[2]) correctIndex = i;
     }
   });
 
   const randomOrder = hasFlag(lines, "random_order");
-  return { type: "multiple-choice", prompt, choices, correctIndex, ...(randomOrder && { randomOrder }) };
+  return { type: "multiple-choice", prompt: rawPrompt.text, choices, correctIndex, ...(randomOrder && { randomOrder }), ...(noAudio.length && { noAudio }) };
 }
 
 function parseTranslation(lines: string[]): TranslationExercise {
-  const prompt = getField(lines, "prompt");
-  const sentence = getField(lines, "sentence");
+  const noAudio: string[] = [];
+  const rawPrompt = stripNoAudio(getField(lines, "prompt"));
+  if (rawPrompt.flagged) noAudio.push("prompt");
+  const rawSentence = stripNoAudio(getField(lines, "sentence"));
+  if (rawSentence.flagged) noAudio.push("sentence");
+
   const answer = getField(lines, "answer");
   const acceptAlsoLine = lines.find((l) => l.startsWith("acceptAlso:"));
   const acceptAlso: string[] = [];
@@ -213,43 +231,58 @@ function parseTranslation(lines: string[]): TranslationExercise {
     if (matches) acceptAlso.push(...matches.map((m) => m.replace(/"/g, "")));
   }
 
-  return { type: "translation", prompt, sentence, answer, acceptAlso };
+  return { type: "translation", prompt: rawPrompt.text, sentence: rawSentence.text, answer, acceptAlso, ...(noAudio.length && { noAudio }) };
 }
 
 function parseFillInTheBlank(lines: string[]): FillInTheBlankExercise {
-  const sentence = getField(lines, "sentence");
+  const noAudio: string[] = [];
+  const rawSentence = stripNoAudio(getField(lines, "sentence"));
+  if (rawSentence.flagged) noAudio.push("sentence");
   const blank = getField(lines, "blank");
-  return { type: "fill-in-the-blank", sentence, blank };
+  return { type: "fill-in-the-blank", sentence: rawSentence.text, blank, ...(noAudio.length && { noAudio }) };
 }
 
 function parseMatchingPairs(lines: string[]): MatchingPairsExercise {
+  const noAudio: string[] = [];
   const pairLines = lines.filter((l) => l.startsWith("- "));
-  const pairs = pairLines.map((l) => {
+  const pairs = pairLines.map((l, i) => {
     const match = l.match(/^- "(.+?)"\s*=\s*"(.+?)"/);
     if (!match) throw new Error(`Invalid pair: ${l}`);
-    return { left: match[1], right: match[2] };
+    const left = stripNoAudio(match[1]);
+    const right = stripNoAudio(match[2]);
+    if (left.flagged) noAudio.push(`left:${i}`);
+    if (right.flagged) noAudio.push(`right:${i}`);
+    return { left: left.text, right: right.text };
   });
   const randomOrder = hasFlag(lines, "random_order");
-  return { type: "matching-pairs", pairs, ...(randomOrder && { randomOrder }) };
+  return { type: "matching-pairs", pairs, ...(randomOrder && { randomOrder }), ...(noAudio.length && { noAudio }) };
 }
 
 function parseListening(lines: string[]): ListeningExercise {
-  const text = getField(lines, "text");
+  const noAudio: string[] = [];
+  const rawText = stripNoAudio(getField(lines, "text"));
+  if (rawText.flagged) noAudio.push("text");
   const ttsLang = getField(lines, "ttsLang");
   const mode = getOptionalField(lines, "mode") as "choices" | "word-bank" | undefined;
-  return { type: "listening", text, ttsLang, ...(mode && { mode }) };
+  return { type: "listening", text: rawText.text, ttsLang, ...(mode && { mode }), ...(noAudio.length && { noAudio }) };
 }
 
 function parseWordBank(lines: string[]): WordBankExercise {
-  const prompt = getField(lines, "prompt");
+  const noAudio: string[] = [];
+  const rawPrompt = stripNoAudio(getField(lines, "prompt"));
+  if (rawPrompt.flagged) noAudio.push("prompt");
   const wordsLine = lines.find((l) => l.startsWith("words:"));
   const answerLine = lines.find((l) => l.startsWith("answer:"));
   const words = wordsLine
-    ? (wordsLine.match(/"([^"]+)"/g) || []).map((m) => m.replace(/"/g, ""))
+    ? (wordsLine.match(/"([^"]+)"/g) || []).map((m) => {
+        const w = stripNoAudio(m.replace(/"/g, ""));
+        if (w.flagged) noAudio.push(`word:${w.text}`);
+        return w.text;
+      })
     : [];
   const answer = answerLine
     ? (answerLine.match(/"([^"]+)"/g) || []).map((m) => m.replace(/"/g, ""))
     : [];
   const randomOrder = hasFlag(lines, "random_order");
-  return { type: "word-bank", prompt, words, answer, ...(randomOrder && { randomOrder }) };
+  return { type: "word-bank", prompt: rawPrompt.text, words, answer, ...(randomOrder && { randomOrder }), ...(noAudio.length && { noAudio }) };
 }

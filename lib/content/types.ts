@@ -47,6 +47,7 @@ export interface MultipleChoiceExercise {
   choices: string[];
   correctIndex: number;
   randomOrder?: boolean;
+  noAudio?: string[];
 }
 
 export interface TranslationExercise {
@@ -55,18 +56,21 @@ export interface TranslationExercise {
   sentence: string;
   answer: string;
   acceptAlso: string[];
+  noAudio?: string[];
 }
 
 export interface FillInTheBlankExercise {
   type: "fill-in-the-blank";
   sentence: string;
   blank: string;
+  noAudio?: string[];
 }
 
 export interface MatchingPairsExercise {
   type: "matching-pairs";
   pairs: { left: string; right: string }[];
   randomOrder?: boolean;
+  noAudio?: string[];
 }
 
 export interface ListeningExercise {
@@ -74,6 +78,7 @@ export interface ListeningExercise {
   text: string;
   ttsLang: string;
   mode?: "choices" | "word-bank";
+  noAudio?: string[];
 }
 
 export interface WordBankExercise {
@@ -82,6 +87,7 @@ export interface WordBankExercise {
   words: string[];
   answer: string[];
   randomOrder?: boolean;
+  noAudio?: string[];
 }
 
 export interface CourseListItem {

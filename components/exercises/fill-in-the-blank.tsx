@@ -20,7 +20,8 @@ export function FillInTheBlank({ exercise, onResult, onContinue, language }: Pro
   const { play, stop } = useAudio();
 
   useEffect(() => {
-    play(exercise.sentence.replace("___", exercise.blank), language);
+    if (!exercise.noAudio?.includes("sentence"))
+      play(exercise.sentence.replace("___", exercise.blank), language);
     return stop;
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -45,7 +46,7 @@ export function FillInTheBlank({ exercise, onResult, onContinue, language }: Pro
         Fill in the blank
       </h2>
       <div className="flex flex-wrap items-center gap-2 text-2xl font-bold text-lingo-text mb-6">
-        <HoverableText text={parts[0]} language={language} />
+        <HoverableText text={parts[0]} language={language} noAudio={exercise.noAudio?.includes("sentence")} />
         <input
           type="text"
           value={input}
@@ -57,7 +58,7 @@ export function FillInTheBlank({ exercise, onResult, onContinue, language }: Pro
           className="w-40 border-b-4 border-lingo-blue bg-transparent text-center focus:outline-none"
           autoFocus
         />
-        <HoverableText text={parts[1]} language={language} />
+        <HoverableText text={parts[1]} language={language} noAudio={exercise.noAudio?.includes("sentence")} />
       </div>
     </ExerciseShell>
   );

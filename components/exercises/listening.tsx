@@ -60,8 +60,10 @@ export function Listening({ exercise, onResult, onContinue, language }: Props) {
   const { status, checkAnswer } = useExercise();
   const { play, stop } = useAudio();
 
+  const hasAudio = !exercise.noAudio?.includes("text");
+
   function speak() {
-    play(exercise.text, language);
+    if (hasAudio) play(exercise.text, language);
     setPlayed(true);
   }
 

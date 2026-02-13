@@ -9,6 +9,7 @@ interface HoverableTextProps {
   language: string;
   as?: "p" | "span" | "h2";
   className?: string;
+  noAudio?: boolean;
 }
 
 interface ActiveWord {
@@ -21,6 +22,7 @@ export function HoverableText({
   language,
   as: Tag = "span",
   className,
+  noAudio,
 }: HoverableTextProps) {
   const [active, setActive] = useState<ActiveWord | null>(null);
   const { play } = useAudio();
@@ -30,9 +32,9 @@ export function HoverableText({
       e.stopPropagation();
       const rect = (e.target as HTMLElement).getBoundingClientRect();
       setActive({ word, rect });
-      play(word, language);
+      if (!noAudio) play(word, language);
     },
-    [play, language]
+    [play, language, noAudio]
   );
 
   const segments = text.split(/(\s+)/);

@@ -20,7 +20,7 @@ export function Translation({ exercise, onResult, onContinue, language }: Props)
   const { play, stop } = useAudio();
 
   useEffect(() => {
-    play(exercise.sentence, language);
+    if (!exercise.noAudio?.includes("sentence")) play(exercise.sentence, language);
     return stop;
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -44,10 +44,10 @@ export function Translation({ exercise, onResult, onContinue, language }: Props)
       language={language}
     >
       <h2 className="text-xl font-bold text-lingo-text mb-2">
-        <HoverableText text={exercise.prompt} language={language} />
+        <HoverableText text={exercise.prompt} language={language} noAudio={exercise.noAudio?.includes("prompt")} />
       </h2>
       <p className="text-lg text-lingo-text-light mb-6">
-        &ldquo;<HoverableText text={exercise.sentence} language={language} />&rdquo;
+        &ldquo;<HoverableText text={exercise.sentence} language={language} noAudio={exercise.noAudio?.includes("sentence")} />&rdquo;
       </p>
       <input
         type="text"

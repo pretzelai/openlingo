@@ -218,37 +218,47 @@ function ListeningWordBank({
   language,
 }: ModeProps) {
   const answerWords = useMemo(() => exercise.text.split(/\s+/), [exercise.text]);
-  const [selectedWords, setSelectedWords] = useState<string[]>([]);
-  const [available, setAvailable] = useState<string[]>(() => {
+  const [selected, setSelected] = useState<{ word: string; bankIndex: number }[]>([]);
+  const [bank] = useState<string[]>(() => {
     const words = exercise.text.split(/\s+/);
-    // Shuffle using a seeded shuffle
     const seed = exercise.text.length * 13 + exercise.text.charCodeAt(0);
     return shuffleWithSeed(words, seed);
   });
+  const [taken, setTaken] = useState<Set<number>>(new Set());
 
-  function addWord(word: string, index: number) {
-    setSelectedWords((prev) => [...prev, word]);
-    setAvailable((prev) => prev.filter((_, i) => i !== index));
+  function addWord(word: string, bankIndex: number) {
+    setSelected((prev) => [...prev, { word, bankIndex }]);
+    setTaken((prev) => new Set(prev).add(bankIndex));
   }
 
   function removeLastWord() {
-    if (selectedWords.length === 0) return;
-    const word = selectedWords[selectedWords.length - 1];
-    setSelectedWords((prev) => prev.slice(0, -1));
-    setAvailable((prev) => [...prev, word]);
+    if (selected.length === 0) return;
+    const last = selected[selected.length - 1];
+    setSelected((prev) => prev.slice(0, -1));
+    setTaken((prev) => {
+      const next = new Set(prev);
+      next.delete(last.bankIndex);
+      return next;
+    });
   }
 
-  function removeWord(word: string, index: number) {
-    setAvailable((prev) => [...prev, word]);
-    setSelectedWords((prev) => prev.filter((_, i) => i !== index));
+  function removeWord(index: number) {
+    const item = selected[index];
+    setSelected((prev) => prev.filter((_, i) => i !== index));
+    setTaken((prev) => {
+      const next = new Set(prev);
+      next.delete(item.bankIndex);
+      return next;
+    });
   }
 
   function handleCheck() {
+    const words = selected.map((s) => s.word);
     const correct =
-      selectedWords.length === answerWords.length &&
-      selectedWords.every((w, i) => w === answerWords[i]);
+      words.length === answerWords.length &&
+      words.every((w, i) => w === answerWords[i]);
     checkAnswer(correct);
-    onResult(correct, selectedWords.join(" "));
+    onResult(correct, words.join(" "));
   }
 
   const handleKeyDown = useCallback(
@@ -260,12 +270,12 @@ function ListeningWordBank({
         return;
       }
       const num = parseInt(e.key, 10);
-      if (num >= 1 && num <= available.length) {
-        addWord(available[num - 1], num - 1);
+      if (num >= 1 && num <= bank.length && !taken.has(num - 1)) {
+        addWord(bank[num - 1], num - 1);
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [status, available]
+    [status, bank, taken]
   );
 
   useEffect(() => {
@@ -278,7 +288,7 @@ function ListeningWordBank({
       status={status}
       onCheck={handleCheck}
       onContinue={onContinue}
-      canCheck={selectedWords.length > 0}
+      canCheck={selected.length > 0}
       correctAnswer={exercise.text}
       language={language}
     >
@@ -294,29 +304,33 @@ function ListeningWordBank({
 
       {/* Answer area */}
       <div className="min-h-[60px] rounded-xl border-2 border-lingo-border bg-white p-3 mb-6 flex flex-wrap gap-2">
-        {selectedWords.length === 0 && (
+        {selected.length === 0 && (
           <span className="text-lingo-gray-dark">Tap words to build your answer</span>
         )}
-        {selectedWords.map((word, i) => (
+        {selected.map((item, i) => (
           <button
-            key={`${word}-${i}`}
+            key={`${item.word}-${item.bankIndex}`}
             disabled={status !== "answering"}
-            onClick={() => removeWord(word, i)}
+            onClick={() => removeWord(i)}
             className="rounded-xl border-2 border-lingo-blue bg-blue-50 px-4 py-2 font-bold text-lingo-blue transition-all hover:bg-blue-100"
           >
-            {word}
+            {item.word}
           </button>
         ))}
       </div>
 
       {/* Word bank */}
       <div className="flex flex-wrap gap-2 justify-center">
-        {available.map((word, i) => (
+        {bank.map((word, i) => (
           <button
             key={`${word}-${i}`}
-            disabled={status !== "answering"}
+            disabled={taken.has(i) || status !== "answering"}
             onClick={() => addWord(word, i)}
-            className="rounded-xl border-2 border-lingo-border bg-white px-4 py-2 font-bold text-lingo-text transition-all hover:bg-lingo-gray/30 hover:border-lingo-gray-dark"
+            className={`rounded-xl border-2 px-4 py-2 font-bold transition-all ${
+              taken.has(i)
+                ? "border-transparent bg-transparent text-transparent pointer-events-none"
+                : "border-lingo-border bg-white text-lingo-text hover:bg-lingo-gray/30 hover:border-lingo-gray-dark"
+            }`}
           >
             <span className="mr-2 inline-flex h-5 w-5 items-center justify-center rounded-full border border-current text-xs">
               {i + 1}

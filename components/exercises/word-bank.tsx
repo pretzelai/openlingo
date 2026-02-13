@@ -24,10 +24,12 @@ function shuffleArr<T>(arr: T[]): T[] {
 }
 
 export function WordBank({ exercise, onResult, onContinue, language }: Props) {
-  const [selected, setSelected] = useState<string[]>([]);
-  const [available, setAvailable] = useState<string[]>(() =>
+  // selected stores { word, bankIndex } so we can return words to exact slots
+  const [selected, setSelected] = useState<{ word: string; bankIndex: number }[]>([]);
+  const [bank] = useState<string[]>(() =>
     exercise.randomOrder ? shuffleArr(exercise.words) : [...exercise.words]
   );
+  const [taken, setTaken] = useState<Set<number>>(new Set());
   const { status, checkAnswer } = useExercise();
   const { play, stop } = useAudio();
 
@@ -36,29 +38,39 @@ export function WordBank({ exercise, onResult, onContinue, language }: Props) {
     return stop;
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  function addWord(word: string, index: number) {
-    setSelected((prev) => [...prev, word]);
-    setAvailable((prev) => prev.filter((_, i) => i !== index));
+  function addWord(word: string, bankIndex: number) {
+    setSelected((prev) => [...prev, { word, bankIndex }]);
+    setTaken((prev) => new Set(prev).add(bankIndex));
   }
 
   function removeLastWord() {
     if (selected.length === 0) return;
-    const word = selected[selected.length - 1];
+    const last = selected[selected.length - 1];
     setSelected((prev) => prev.slice(0, -1));
-    setAvailable((prev) => [...prev, word]);
+    setTaken((prev) => {
+      const next = new Set(prev);
+      next.delete(last.bankIndex);
+      return next;
+    });
   }
 
-  function removeWord(word: string, index: number) {
-    setAvailable((prev) => [...prev, word]);
+  function removeWord(index: number) {
+    const item = selected[index];
     setSelected((prev) => prev.filter((_, i) => i !== index));
+    setTaken((prev) => {
+      const next = new Set(prev);
+      next.delete(item.bankIndex);
+      return next;
+    });
   }
 
   function handleCheck() {
+    const words = selected.map((s) => s.word);
     const correct =
-      selected.length === exercise.answer.length &&
-      selected.every((w, i) => w === exercise.answer[i]);
+      words.length === exercise.answer.length &&
+      words.every((w, i) => w === exercise.answer[i]);
     checkAnswer(correct);
-    onResult(correct, selected.join(" "));
+    onResult(correct, words.join(" "));
   }
 
   const handleKeyDown = useCallback(
@@ -70,12 +82,12 @@ export function WordBank({ exercise, onResult, onContinue, language }: Props) {
         return;
       }
       const num = parseInt(e.key, 10);
-      if (num >= 1 && num <= available.length) {
-        addWord(available[num - 1], num - 1);
+      if (num >= 1 && num <= bank.length && !taken.has(num - 1)) {
+        addWord(bank[num - 1], num - 1);
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [status, available]
+    [status, bank, taken]
   );
 
   useEffect(() => {
@@ -101,26 +113,30 @@ export function WordBank({ exercise, onResult, onContinue, language }: Props) {
         {selected.length === 0 && (
           <span className="text-lingo-gray-dark">Tap words to build your answer</span>
         )}
-        {selected.map((word, i) => (
+        {selected.map((item, i) => (
           <button
-            key={`${word}-${i}`}
+            key={`${item.word}-${item.bankIndex}`}
             disabled={status !== "answering"}
-            onClick={() => removeWord(word, i)}
+            onClick={() => removeWord(i)}
             className="rounded-xl border-2 border-lingo-blue bg-blue-50 px-4 py-2 font-bold text-lingo-blue transition-all hover:bg-blue-100"
           >
-            {word}
+            {item.word}
           </button>
         ))}
       </div>
 
       {/* Word bank */}
       <div className="flex flex-wrap gap-2 justify-center">
-        {available.map((word, i) => (
+        {bank.map((word, i) => (
           <button
             key={`${word}-${i}`}
-            disabled={status !== "answering"}
+            disabled={taken.has(i) || status !== "answering"}
             onClick={() => addWord(word, i)}
-            className="rounded-xl border-2 border-lingo-border bg-white px-4 py-2 font-bold text-lingo-text transition-all hover:bg-lingo-gray/30 hover:border-lingo-gray-dark"
+            className={`rounded-xl border-2 px-4 py-2 font-bold transition-all ${
+              taken.has(i)
+                ? "border-transparent bg-transparent text-transparent pointer-events-none"
+                : "border-lingo-border bg-white text-lingo-text hover:bg-lingo-gray/30 hover:border-lingo-gray-dark"
+            }`}
           >
             <span className="mr-2 inline-flex h-5 w-5 items-center justify-center rounded-full border border-current text-xs">
               {i + 1}

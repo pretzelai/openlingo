@@ -254,6 +254,24 @@ export const unit = pgTable("unit", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
+// ─── Audio cache (TTS) ───
+
+export const audioCache = pgTable(
+  "audio_cache",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    text: text("text").notNull(),
+    language: text("language").notNull(),
+    r2Key: text("r2_key").notNull(),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("audio_cache_unique").on(table.text, table.language),
+  ]
+);
+
 // ─── Relations ───
 
 export const courseRelations = relations(course, ({ many }) => ({

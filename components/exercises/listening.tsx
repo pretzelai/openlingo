@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import type { ListeningExercise } from "@/lib/content/types";
 import { useExercise } from "@/hooks/use-exercise";
+import { useAudio } from "@/hooks/use-audio";
 import { ExerciseShell } from "./exercise-shell";
 import { HoverableText } from "@/components/word/hoverable-text";
 
@@ -57,15 +58,17 @@ function SpeakerButton({ onSpeak }: { onSpeak: () => void }) {
 export function Listening({ exercise, onResult, onContinue, language }: Props) {
   const [played, setPlayed] = useState(false);
   const { status, checkAnswer } = useExercise();
+  const { play, stop } = useAudio();
 
   function speak() {
-    if (typeof window === "undefined") return;
-    const utterance = new SpeechSynthesisUtterance(exercise.text);
-    utterance.lang = exercise.ttsLang;
-    utterance.rate = 0.8;
-    speechSynthesis.speak(utterance);
+    play(exercise.text, language);
     setPlayed(true);
   }
+
+  useEffect(() => {
+    speak();
+    return stop;
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (exercise.mode === "word-bank") {
     return (

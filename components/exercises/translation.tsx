@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { TranslationExercise } from "@/lib/content/types";
 import { useExercise } from "@/hooks/use-exercise";
+import { useAudio } from "@/hooks/use-audio";
 import { ExerciseShell } from "./exercise-shell";
 import { HoverableText } from "@/components/word/hoverable-text";
 
@@ -16,6 +17,12 @@ interface Props {
 export function Translation({ exercise, onResult, onContinue, language }: Props) {
   const [input, setInput] = useState("");
   const { status, checkAnswer } = useExercise();
+  const { play, stop } = useAudio();
+
+  useEffect(() => {
+    play(exercise.sentence, language);
+    return stop;
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   function handleCheck() {
     const trimmed = input.trim();

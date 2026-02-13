@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import type { MatchingPairsExercise } from "@/lib/content/types";
 import { useExercise } from "@/hooks/use-exercise";
+import { useAudio } from "@/hooks/use-audio";
 import { ExerciseShell } from "./exercise-shell";
 
 
@@ -24,6 +25,7 @@ function shuffle<T>(arr: T[]): T[] {
 
 export function MatchingPairs({ exercise, onResult, onContinue, language }: Props) {
   const { status, checkAnswer } = useExercise();
+  const { play } = useAudio();
   const [leftItems] = useState(() => shuffle(exercise.pairs.map((p) => p.left)));
   const [rightItems] = useState(() => shuffle(exercise.pairs.map((p) => p.right)));
   const [selectedLeft, setSelectedLeft] = useState<string | null>(null);
@@ -96,7 +98,7 @@ export function MatchingPairs({ exercise, onResult, onContinue, language }: Prop
             <button
               key={item}
               disabled={matched.has(item) || status !== "answering"}
-              onClick={() => setSelectedLeft(item)}
+              onClick={() => { setSelectedLeft(item); play(item, language); }}
               className={`w-full rounded-xl border-2 p-3 text-center font-bold transition-all ${
                 matched.has(item)
                   ? "border-lingo-green bg-green-50 text-lingo-green opacity-60"

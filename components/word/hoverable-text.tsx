@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { WordPopover } from "./word-popover";
+import { useAudio } from "@/hooks/use-audio";
 
 interface HoverableTextProps {
   text: string;
@@ -22,14 +23,16 @@ export function HoverableText({
   className,
 }: HoverableTextProps) {
   const [active, setActive] = useState<ActiveWord | null>(null);
+  const { play } = useAudio();
 
   const handleWordClick = useCallback(
     (e: React.MouseEvent<HTMLSpanElement>, word: string) => {
       e.stopPropagation();
       const rect = (e.target as HTMLElement).getBoundingClientRect();
       setActive({ word, rect });
+      play(word, language);
     },
-    []
+    [play, language]
   );
 
   const segments = text.split(/(\s+)/);

@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import type { WordBankExercise } from "@/lib/content/types";
 import { useExercise } from "@/hooks/use-exercise";
+import { useAudio } from "@/hooks/use-audio";
 import { ExerciseShell } from "./exercise-shell";
 import { HoverableText } from "@/components/word/hoverable-text";
 
@@ -28,6 +29,12 @@ export function WordBank({ exercise, onResult, onContinue, language }: Props) {
     exercise.randomOrder ? shuffleArr(exercise.words) : [...exercise.words]
   );
   const { status, checkAnswer } = useExercise();
+  const { play, stop } = useAudio();
+
+  useEffect(() => {
+    play(exercise.prompt, language);
+    return stop;
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   function addWord(word: string, index: number) {
     setSelected((prev) => [...prev, word]);

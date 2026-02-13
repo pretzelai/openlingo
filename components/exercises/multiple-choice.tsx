@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import type { MultipleChoiceExercise } from "@/lib/content/types";
 import { useExercise } from "@/hooks/use-exercise";
+import { useAudio } from "@/hooks/use-audio";
 import { ExerciseShell } from "./exercise-shell";
 import { HoverableText } from "@/components/word/hoverable-text";
 
@@ -27,6 +28,12 @@ function shuffleWithSeed<T>(arr: T[], seed: number): T[] {
 export function MultipleChoice({ exercise, onResult, onContinue, language }: Props) {
   const [selected, setSelected] = useState<number | null>(null);
   const { status, checkAnswer } = useExercise();
+  const { play, stop } = useAudio();
+
+  useEffect(() => {
+    play(exercise.prompt, language);
+    return stop;
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const { choices, correctIndex } = useMemo(() => {
     if (!exercise.randomOrder) {

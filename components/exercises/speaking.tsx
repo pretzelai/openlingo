@@ -58,6 +58,10 @@ export function Speaking({ exercise, onResult, onContinue, language }: Props) {
   const [error, setError] = useState<string | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
+  const checkAnswerRef = useRef(checkAnswer);
+  checkAnswerRef.current = checkAnswer;
+  const onResultRef = useRef(onResult);
+  onResultRef.current = onResult;
 
   const hasAudio = !exercise.noAudio?.includes("sentence");
 
@@ -101,6 +105,11 @@ export function Speaking({ exercise, onResult, onContinue, language }: Props) {
           const transcribedWords = normalize(transcribedText);
           const results = compareWords(expectedWords, transcribedWords);
           setWordResults(results);
+
+          // Auto-check immediately
+          const correct = results.every(Boolean);
+          checkAnswerRef.current(correct);
+          onResultRef.current(correct, transcribedText);
         } catch {
           setError("Could not transcribe audio. Please try again.");
         } finally {
@@ -122,21 +131,14 @@ export function Speaking({ exercise, onResult, onContinue, language }: Props) {
     }
   }, []);
 
-  function handleCheck() {
-    if (!wordResults) return;
-    const correct = wordResults.every(Boolean);
-    checkAnswer(correct);
-    onResult(correct, transcript ?? "");
-  }
-
   const expectedWords = exercise.sentence.split(/\s+/);
 
   return (
     <ExerciseShell
       status={status}
-      onCheck={handleCheck}
+      onCheck={() => {}}
       onContinue={onContinue}
-      canCheck={wordResults !== null}
+      canCheck={false}
       correctAnswer={exercise.sentence}
       language={language}
     >
@@ -226,20 +228,6 @@ export function Speaking({ exercise, onResult, onContinue, language }: Props) {
         <p className="text-center text-sm text-lingo-red mb-4">{error}</p>
       )}
 
-      {/* Retry button after getting results, before checking */}
-      {transcript && status === "answering" && (
-        <div className="flex justify-center mb-4">
-          <button
-            onClick={() => {
-              setTranscript(null);
-              setWordResults(null);
-            }}
-            className="text-sm text-lingo-blue hover:underline"
-          >
-            Try again
-          </button>
-        </div>
-      )}
     </ExerciseShell>
   );
 }

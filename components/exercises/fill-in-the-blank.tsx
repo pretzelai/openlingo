@@ -6,6 +6,7 @@ import { useExercise } from "@/hooks/use-exercise";
 import { useAudio } from "@/hooks/use-audio";
 import { ExerciseShell } from "./exercise-shell";
 import { HoverableText } from "@/components/word/hoverable-text";
+import { AudioSpinner } from "@/components/audio-spinner";
 
 interface Props {
   exercise: FillInTheBlankExercise;
@@ -17,7 +18,7 @@ interface Props {
 export function FillInTheBlank({ exercise, onResult, onContinue, language }: Props) {
   const [input, setInput] = useState("");
   const { status, checkAnswer } = useExercise();
-  const { play, stop } = useAudio();
+  const { play, stop, loading: audioLoading } = useAudio();
 
   useEffect(() => {
     if (!exercise.noAudio?.includes("sentence"))
@@ -45,6 +46,7 @@ export function FillInTheBlank({ exercise, onResult, onContinue, language }: Pro
       <h2 className="text-xl font-bold text-lingo-text mb-6">
         Fill in the blank
       </h2>
+      <AudioSpinner loading={audioLoading} />
       <div className="flex flex-wrap items-center gap-2 text-2xl font-bold text-lingo-text mb-6">
         <HoverableText text={parts[0]} language={language} noAudio={exercise.noAudio?.includes("sentence")} />
         <input

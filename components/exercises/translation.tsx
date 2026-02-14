@@ -6,6 +6,7 @@ import { useExercise } from "@/hooks/use-exercise";
 import { useAudio } from "@/hooks/use-audio";
 import { ExerciseShell } from "./exercise-shell";
 import { HoverableText } from "@/components/word/hoverable-text";
+import { AudioSpinner } from "@/components/audio-spinner";
 
 interface Props {
   exercise: TranslationExercise;
@@ -17,7 +18,7 @@ interface Props {
 export function Translation({ exercise, onResult, onContinue, language }: Props) {
   const [input, setInput] = useState("");
   const { status, checkAnswer } = useExercise();
-  const { play, stop } = useAudio();
+  const { play, stop, loading: audioLoading } = useAudio();
 
   useEffect(() => {
     if (!exercise.noAudio?.includes("sentence")) play(exercise.sentence, language);
@@ -46,6 +47,7 @@ export function Translation({ exercise, onResult, onContinue, language }: Props)
       <h2 className="text-xl font-bold text-lingo-text mb-2">
         <HoverableText text={exercise.text} language={language} noAudio={exercise.noAudio?.includes("text")} />
       </h2>
+      <AudioSpinner loading={audioLoading} />
       <p className="text-lg text-lingo-text-light mb-6">
         &ldquo;<HoverableText text={exercise.sentence} language={language} noAudio={exercise.noAudio?.includes("sentence")} />&rdquo;
       </p>

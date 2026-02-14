@@ -6,6 +6,7 @@ import { useExercise } from "@/hooks/use-exercise";
 import { useAudio } from "@/hooks/use-audio";
 import { ExerciseShell } from "./exercise-shell";
 import { HoverableText } from "@/components/word/hoverable-text";
+import { AudioSpinner } from "@/components/audio-spinner";
 
 interface Props {
   exercise: SpeakingExercise;
@@ -50,7 +51,7 @@ function compareWords(expected: string[], transcribed: string[]): boolean[] {
 
 export function Speaking({ exercise, onResult, onContinue, language }: Props) {
   const { status, checkAnswer } = useExercise();
-  const { play, stop } = useAudio();
+  const { play, stop, loading: audioLoading } = useAudio();
   const [recording, setRecording] = useState(false);
   const [transcribing, setTranscribing] = useState(false);
   const [transcript, setTranscript] = useState<string | null>(null);
@@ -165,6 +166,8 @@ export function Speaking({ exercise, onResult, onContinue, language }: Props) {
           </p>
         )}
       </div>
+
+      <AudioSpinner loading={audioLoading} />
 
       {/* Play button */}
       {hasAudio && (

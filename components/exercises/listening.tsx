@@ -6,6 +6,7 @@ import { useExercise } from "@/hooks/use-exercise";
 import { useAudio } from "@/hooks/use-audio";
 import { ExerciseShell } from "./exercise-shell";
 import { HoverableText } from "@/components/word/hoverable-text";
+import { AudioSpinner } from "@/components/audio-spinner";
 
 interface Props {
   exercise: ListeningExercise;
@@ -58,7 +59,7 @@ function SpeakerButton({ onSpeak }: { onSpeak: () => void }) {
 export function Listening({ exercise, onResult, onContinue, language }: Props) {
   const [played, setPlayed] = useState(false);
   const { status, checkAnswer } = useExercise();
-  const { play, stop } = useAudio();
+  const { play, stop, loading: audioLoading } = useAudio();
 
   const hasAudio = !exercise.noAudio?.includes("text");
 
@@ -83,6 +84,7 @@ export function Listening({ exercise, onResult, onContinue, language }: Props) {
         onResult={onResult}
         onContinue={onContinue}
         language={language}
+        audioLoading={audioLoading}
       />
     );
   }
@@ -97,6 +99,7 @@ export function Listening({ exercise, onResult, onContinue, language }: Props) {
       onResult={onResult}
       onContinue={onContinue}
       language={language}
+      audioLoading={audioLoading}
     />
   );
 }
@@ -112,6 +115,7 @@ interface ModeProps {
   onResult: (correct: boolean, answer: string) => void;
   onContinue: () => void;
   language: string;
+  audioLoading: boolean;
 }
 
 function ListeningChoices({
@@ -123,6 +127,7 @@ function ListeningChoices({
   onResult,
   onContinue,
   language,
+  audioLoading,
 }: ModeProps) {
   const [selected, setSelected] = useState<number | null>(null);
 
@@ -173,7 +178,8 @@ function ListeningChoices({
         What do you hear?
       </h2>
       <SpeakerButton onSpeak={onSpeak} />
-      {!played && (
+      <AudioSpinner loading={audioLoading} />
+      {!played && !audioLoading && (
         <p className="text-center text-sm text-lingo-text-light mb-4">
           Tap the speaker to hear the phrase
         </p>
@@ -218,6 +224,7 @@ function ListeningWordBank({
   onResult,
   onContinue,
   language,
+  audioLoading,
 }: ModeProps) {
   const answerWords = useMemo(() => exercise.text.split(/\s+/), [exercise.text]);
   const [selected, setSelected] = useState<{ word: string; bankIndex: number }[]>([]);
@@ -298,7 +305,8 @@ function ListeningWordBank({
         What do you hear?
       </h2>
       <SpeakerButton onSpeak={onSpeak} />
-      {!played && (
+      <AudioSpinner loading={audioLoading} />
+      {!played && !audioLoading && (
         <p className="text-center text-sm text-lingo-text-light mb-4">
           Tap the speaker to hear the phrase
         </p>

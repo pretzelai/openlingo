@@ -6,6 +6,7 @@ import { useExercise } from "@/hooks/use-exercise";
 import { useAudio } from "@/hooks/use-audio";
 import { ExerciseShell } from "./exercise-shell";
 import { HoverableText } from "@/components/word/hoverable-text";
+import { AudioSpinner } from "@/components/audio-spinner";
 
 interface Props {
   exercise: MultipleChoiceExercise;
@@ -28,7 +29,7 @@ function shuffleWithSeed<T>(arr: T[], seed: number): T[] {
 export function MultipleChoice({ exercise, onResult, onContinue, language }: Props) {
   const [selected, setSelected] = useState<number | null>(null);
   const { status, checkAnswer } = useExercise();
-  const { play, stop } = useAudio();
+  const { play, stop, loading: audioLoading } = useAudio();
 
   useEffect(() => {
     if (!exercise.noAudio?.includes("text")) play(exercise.text, language);
@@ -83,6 +84,7 @@ export function MultipleChoice({ exercise, onResult, onContinue, language }: Pro
       <h2 className="text-xl font-bold text-lingo-text mb-6">
         <HoverableText text={exercise.text} language={language} noAudio={exercise.noAudio?.includes("text")} />
       </h2>
+      <AudioSpinner loading={audioLoading} />
       <div className="space-y-3">
         {choices.map((choice, i) => (
           <button

@@ -6,6 +6,7 @@ import { useExercise } from "@/hooks/use-exercise";
 import { useAudio } from "@/hooks/use-audio";
 import { ExerciseShell } from "./exercise-shell";
 import { HoverableText } from "@/components/word/hoverable-text";
+import { AudioSpinner } from "@/components/audio-spinner";
 
 interface Props {
   exercise: WordBankExercise;
@@ -31,7 +32,7 @@ export function WordBank({ exercise, onResult, onContinue, language }: Props) {
   );
   const [taken, setTaken] = useState<Set<number>>(new Set());
   const { status, checkAnswer } = useExercise();
-  const { play, stop } = useAudio();
+  const { play, stop, loading: audioLoading } = useAudio();
 
   useEffect(() => {
     if (!exercise.noAudio?.includes("text")) play(exercise.text, language);
@@ -107,6 +108,8 @@ export function WordBank({ exercise, onResult, onContinue, language }: Props) {
       <h2 className="text-xl font-bold text-lingo-text mb-6">
         <HoverableText text={exercise.text} language={language} noAudio={exercise.noAudio?.includes("text")} />
       </h2>
+
+      <AudioSpinner loading={audioLoading} />
 
       {/* Answer area */}
       <div className="min-h-[60px] rounded-xl border-2 border-lingo-border bg-white p-3 mb-6 flex flex-wrap gap-2">

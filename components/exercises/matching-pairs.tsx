@@ -5,6 +5,7 @@ import type { MatchingPairsExercise } from "@/lib/content/types";
 import { useExercise } from "@/hooks/use-exercise";
 import { useAudio } from "@/hooks/use-audio";
 import { ExerciseShell } from "./exercise-shell";
+import { AudioSpinner } from "@/components/audio-spinner";
 
 
 interface Props {
@@ -25,7 +26,7 @@ function shuffle<T>(arr: T[]): T[] {
 
 export function MatchingPairs({ exercise, onResult, onContinue, language }: Props) {
   const { status, checkAnswer } = useExercise();
-  const { play } = useAudio();
+  const { play, loading: audioLoading } = useAudio();
   const [leftItems] = useState(() => shuffle(exercise.pairs.map((p) => p.left)));
   const [rightItems] = useState(() => shuffle(exercise.pairs.map((p) => p.right)));
   const [selectedLeft, setSelectedLeft] = useState<string | null>(null);
@@ -92,6 +93,7 @@ export function MatchingPairs({ exercise, onResult, onContinue, language }: Prop
       <h2 className="text-xl font-bold text-lingo-text mb-6">
         Tap the matching pairs
       </h2>
+      <AudioSpinner loading={audioLoading} />
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           {leftItems.map((item, i) => (

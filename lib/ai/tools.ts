@@ -3,6 +3,8 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { userMemory, srsCard } from "@/lib/db/schema";
 import { and, eq, lte, count, sql } from "drizzle-orm";
+import { calculateNextReview, type Quality } from "@/lib/srs";
+import { exerciseSchema } from "./exercise-schema";
 
 export function createTools(userId: string, language?: string) {
   return {
@@ -99,6 +101,101 @@ export function createTools(userId: string, language?: string) {
           due: due.count,
           learned: learned.count,
         };
+      },
+    }),
+
+    addWordToSrs: tool({
+      description: "Add a new word to the user's SRS deck for spaced repetition",
+      inputSchema: z.object({
+        word: z.string().describe("The word in the target language"),
+        translation: z.string().describe("English translation"),
+      }),
+      execute: async ({ word, translation }) => {
+        const lang = language ?? "de";
+        await db
+          .insert(srsCard)
+          .values({
+            word: word.toLowerCase(),
+            language: lang,
+            userId,
+            translation,
+          })
+          .onConflictDoNothing();
+        return { success: true, word, translation };
+      },
+    }),
+
+    reviewCard: tool({
+      description:
+        "Update an SRS card after practice. Quality: 0=blackout, 1=wrong, 2=wrong but close, 3=correct with difficulty, 4=correct, 5=perfect",
+      inputSchema: z.object({
+        word: z.string().describe("The word to review"),
+        quality: z
+          .number()
+          .int()
+          .min(0)
+          .max(5)
+          .describe("Review quality score 0-5"),
+      }),
+      execute: async ({ word, quality }) => {
+        const lang = language ?? "de";
+        const normalizedWord = word.toLowerCase();
+
+        const [card] = await db
+          .select()
+          .from(srsCard)
+          .where(
+            and(
+              eq(srsCard.word, normalizedWord),
+              eq(srsCard.language, lang),
+              eq(srsCard.userId, userId)
+            )
+          );
+
+        if (!card) return { success: false, error: "Card not found" };
+
+        const result = calculateNextReview(
+          {
+            easeFactor: card.easeFactor,
+            interval: card.interval,
+            repetitions: card.repetitions,
+          },
+          quality as Quality
+        );
+
+        await db
+          .update(srsCard)
+          .set({
+            easeFactor: result.easeFactor,
+            interval: result.interval,
+            repetitions: result.repetitions,
+            nextReviewAt: result.nextReviewAt,
+            lastReviewedAt: new Date(),
+          })
+          .where(
+            and(
+              eq(srsCard.word, normalizedWord),
+              eq(srsCard.language, lang),
+              eq(srsCard.userId, userId)
+            )
+          );
+
+        return {
+          success: true,
+          nextReviewAt: result.nextReviewAt.toISOString(),
+          interval: result.interval,
+        };
+      },
+    }),
+
+    presentExercise: tool({
+      description:
+        "Present an interactive exercise to the user. The exercise renders as an interactive widget in the chat. Present ONE exercise at a time and wait for the user to complete it before presenting another.",
+      inputSchema: z.object({
+        exercise: exerciseSchema,
+      }),
+      execute: async ({ exercise }) => {
+        return { presented: true, exerciseType: exercise.type };
       },
     }),
   };

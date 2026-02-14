@@ -13,15 +13,16 @@ interface Props {
   onResult: (correct: boolean, answer: string) => void;
   onContinue: () => void;
   language: string;
+  autoplayAudio?: boolean;
 }
 
-export function FillInTheBlank({ exercise, onResult, onContinue, language }: Props) {
+export function FillInTheBlank({ exercise, onResult, onContinue, language, autoplayAudio = true }: Props) {
   const [input, setInput] = useState("");
   const { status, checkAnswer } = useExercise();
   const { play, stop, loading: audioLoading } = useAudio();
 
   useEffect(() => {
-    if (!exercise.noAudio?.includes("sentence"))
+    if (autoplayAudio && !exercise.noAudio?.includes("sentence"))
       play(exercise.sentence.replace("___", exercise.blank), language);
     return stop;
   }, []); // eslint-disable-line react-hooks/exhaustive-deps

@@ -19,6 +19,7 @@ interface ChatExerciseProps {
     correct: boolean,
     userAnswer: string
   ) => void;
+  autoplayAudio?: boolean;
 }
 
 export function ChatExercise({
@@ -27,6 +28,7 @@ export function ChatExercise({
   language,
   completed,
   onComplete,
+  autoplayAudio = true,
 }: ChatExerciseProps) {
   const [result, setResult] = useState<{
     correct: boolean;
@@ -77,6 +79,7 @@ export function ChatExercise({
         onResult={handleResult}
         onContinue={handleContinue}
         language={language}
+        autoplayAudio={autoplayAudio}
       />
     </div>
   );
@@ -87,11 +90,13 @@ function ExerciseRenderer({
   onResult,
   onContinue,
   language,
+  autoplayAudio = true,
 }: {
   exercise: Exercise;
   onResult: (correct: boolean, answer: string) => void;
   onContinue: () => void;
   language: string;
+  autoplayAudio?: boolean;
 }) {
   switch (exercise.type) {
     case "multiple-choice":
@@ -101,6 +106,7 @@ function ExerciseRenderer({
           onResult={onResult}
           onContinue={onContinue}
           language={language}
+          autoplayAudio={autoplayAudio}
         />
       );
     case "translation":
@@ -110,6 +116,7 @@ function ExerciseRenderer({
           onResult={onResult}
           onContinue={onContinue}
           language={language}
+          autoplayAudio={autoplayAudio}
         />
       );
     case "fill-in-the-blank":
@@ -119,6 +126,7 @@ function ExerciseRenderer({
           onResult={onResult}
           onContinue={onContinue}
           language={language}
+          autoplayAudio={autoplayAudio}
         />
       );
     case "matching-pairs":
@@ -137,6 +145,7 @@ function ExerciseRenderer({
           onResult={onResult}
           onContinue={onContinue}
           language={language}
+          autoplayAudio={autoplayAudio}
         />
       );
     case "word-bank":
@@ -146,6 +155,7 @@ function ExerciseRenderer({
           onResult={onResult}
           onContinue={onContinue}
           language={language}
+          autoplayAudio={autoplayAudio}
         />
       );
     default:

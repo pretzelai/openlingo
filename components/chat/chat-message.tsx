@@ -15,6 +15,7 @@ interface ChatMessageProps {
     correct: boolean,
     userAnswer: string
   ) => void;
+  autoplayAudio?: boolean;
 }
 
 export function ChatMessage({
@@ -23,6 +24,7 @@ export function ChatMessage({
   isLoading,
   completedExercises,
   onExerciseComplete,
+  autoplayAudio = true,
 }: ChatMessageProps) {
   const isUser = message.role === "user";
 
@@ -112,6 +114,7 @@ export function ChatMessage({
                     language={language}
                     completed={completed}
                     onComplete={onExerciseComplete}
+                    autoplayAudio={autoplayAudio}
                   />
                 );
               }

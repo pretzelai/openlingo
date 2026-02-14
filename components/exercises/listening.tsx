@@ -13,6 +13,7 @@ interface Props {
   onResult: (correct: boolean, answer: string) => void;
   onContinue: () => void;
   language: string;
+  autoplayAudio?: boolean;
 }
 
 function generateDistractors(text: string): string[] {
@@ -56,7 +57,7 @@ function SpeakerButton({ onSpeak }: { onSpeak: () => void }) {
   );
 }
 
-export function Listening({ exercise, onResult, onContinue, language }: Props) {
+export function Listening({ exercise, onResult, onContinue, language, autoplayAudio = true }: Props) {
   const [played, setPlayed] = useState(false);
   const { status, checkAnswer } = useExercise();
   const { play, stop, loading: audioLoading } = useAudio();
@@ -69,7 +70,7 @@ export function Listening({ exercise, onResult, onContinue, language }: Props) {
   }
 
   useEffect(() => {
-    speak();
+    if (autoplayAudio) speak();
     return stop;
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 

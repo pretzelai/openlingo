@@ -13,6 +13,7 @@ interface Props {
   onResult: (correct: boolean, answer: string) => void;
   onContinue: () => void;
   language: string;
+  autoplayAudio?: boolean;
 }
 
 function shuffleWithSeed<T>(arr: T[], seed: number): T[] {
@@ -26,13 +27,13 @@ function shuffleWithSeed<T>(arr: T[], seed: number): T[] {
   return result;
 }
 
-export function MultipleChoice({ exercise, onResult, onContinue, language }: Props) {
+export function MultipleChoice({ exercise, onResult, onContinue, language, autoplayAudio = true }: Props) {
   const [selected, setSelected] = useState<number | null>(null);
   const { status, checkAnswer } = useExercise();
   const { play, stop, loading: audioLoading } = useAudio();
 
   useEffect(() => {
-    if (!exercise.noAudio?.includes("text")) play(exercise.text, language);
+    if (autoplayAudio && !exercise.noAudio?.includes("text")) play(exercise.text, language);
     return stop;
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 

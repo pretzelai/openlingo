@@ -31,6 +31,9 @@ export function ChatView({ language, conversationId, initialMessages }: ChatView
   const [completedExercises, setCompletedExercises] = useState<
     Record<string, { correct: boolean; answer: string }>
   >({});
+  const [initialMessageIds] = useState(
+    () => new Set((initialMessages ?? []).map((m) => m.id))
+  );
   const [convId, setConvId] = useState<string | null>(conversationId ?? null);
   const convIdRef = useRef(convId);
   useEffect(() => {
@@ -162,6 +165,7 @@ export function ChatView({ language, conversationId, initialMessages }: ChatView
                 }
                 completedExercises={completedExercises}
                 onExerciseComplete={handleExerciseComplete}
+                autoplayAudio={!initialMessageIds.has(message.id)}
               />
             ))}
 

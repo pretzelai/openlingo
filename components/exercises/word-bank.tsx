@@ -13,6 +13,7 @@ interface Props {
   onResult: (correct: boolean, answer: string) => void;
   onContinue: () => void;
   language: string;
+  autoplayAudio?: boolean;
 }
 
 function shuffleArr<T>(arr: T[]): T[] {
@@ -24,7 +25,7 @@ function shuffleArr<T>(arr: T[]): T[] {
   return a;
 }
 
-export function WordBank({ exercise, onResult, onContinue, language }: Props) {
+export function WordBank({ exercise, onResult, onContinue, language, autoplayAudio = true }: Props) {
   // selected stores { word, bankIndex } so we can return words to exact slots
   const [selected, setSelected] = useState<{ word: string; bankIndex: number }[]>([]);
   const [bank] = useState<string[]>(() =>
@@ -35,7 +36,7 @@ export function WordBank({ exercise, onResult, onContinue, language }: Props) {
   const { play, stop, loading: audioLoading } = useAudio();
 
   useEffect(() => {
-    if (!exercise.noAudio?.includes("text")) play(exercise.text, language);
+    if (autoplayAudio && !exercise.noAudio?.includes("text")) play(exercise.text, language);
     return stop;
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 

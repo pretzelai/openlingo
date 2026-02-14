@@ -1,14 +1,22 @@
-import { tool } from "ai";
+import { tool, generateObject } from "ai";
 import { z } from "zod";
 import { db } from "@/lib/db";
-import { userMemory, srsCard } from "@/lib/db/schema";
+import {
+  userMemory,
+  srsCard,
+  course,
+  unit,
+  userCourseEnrollment,
+  userStats,
+} from "@/lib/db/schema";
 import { and, eq, lte, count, sql } from "drizzle-orm";
 import { calculateNextReview, type Quality } from "@/lib/srs";
-import { exerciseSchema } from "./exercise-schema";
+import { exerciseSchema, generatedUnitSchema } from "./exercise-schema";
 import {
   lookupWord as wordLookup,
   getWordsByLevel,
 } from "@/lib/words";
+import { getModel } from "./models";
 
 export function createTools(userId: string, language?: string) {
   return {
@@ -369,6 +377,104 @@ export function createTools(userId: string, language?: string) {
       }),
       execute: async ({ exercise }) => {
         return { presented: true, exerciseType: exercise.type };
+      },
+    }),
+
+    createUnit: tool({
+      description:
+        "Generate a full learning unit on any topic. Creates a course with lessons and exercises, auto-enrolls the user, and returns a summary card. Use when the user asks to create a unit, lesson, or course on a specific topic.",
+      inputSchema: z.object({
+        topic: z.string().describe("The topic to create a unit about"),
+        level: z
+          .enum(["A1", "A2", "B1", "B2", "C1", "C2"])
+          .default("B1")
+          .describe("CEFR difficulty level"),
+        lessonCount: z
+          .number()
+          .int()
+          .min(3)
+          .max(6)
+          .default(4)
+          .describe("Number of lessons to generate"),
+      }),
+      execute: async ({ topic, level, lessonCount }) => {
+        const lang = language ?? "de";
+
+        const { object: generatedUnit } = await generateObject({
+          model: getModel("gemini-2.5-flash"),
+          schema: generatedUnitSchema,
+          prompt: `You are a curriculum designer for a ${lang} language learning app.
+
+Create a learning unit about: "${topic}"
+CEFR level: ${level}
+Number of lessons: ${lessonCount}
+
+Requirements:
+- Each lesson should have 3-5 varied exercises (multiple-choice, translation, fill-in-the-blank, matching-pairs, word-bank, listening)
+- Use vocabulary and grammar appropriate for ${level} level
+- Exercises should progress from easier to harder within each lesson
+- For listening exercises, set ttsLang to "${lang}"
+- For multiple-choice: provide 3 choices
+- For translation: include 1-2 alternative answers in acceptAlso
+- For fill-in-the-blank: use ___ as the blank placeholder
+- For matching-pairs: use 3-4 pairs
+- For word-bank: include 1-2 distractor words
+- Make the content practical and engaging
+- XP rewards: 10 for easy lessons, 15-20 for medium, 25-30 for hard`,
+        });
+
+        const courseId = crypto.randomUUID();
+        const unitId = crypto.randomUUID();
+
+        await db.insert(course).values({
+          id: courseId,
+          title: generatedUnit.title,
+          sourceLanguage: "en",
+          targetLanguage: lang,
+          level,
+          published: false,
+          createdBy: userId,
+        });
+
+        await db.insert(unit).values({
+          id: unitId,
+          courseId,
+          title: generatedUnit.title,
+          description: generatedUnit.description,
+          icon: generatedUnit.icon,
+          color: generatedUnit.color,
+          exercises: generatedUnit.lessons,
+          createdBy: userId,
+        });
+
+        await db
+          .insert(userCourseEnrollment)
+          .values({ userId, courseId })
+          .onConflictDoNothing();
+
+        await db
+          .insert(userStats)
+          .values({ userId })
+          .onConflictDoNothing();
+
+        const exerciseCount = generatedUnit.lessons.reduce(
+          (sum, l) => sum + l.exercises.length,
+          0
+        );
+
+        return {
+          success: true,
+          courseId,
+          unitId,
+          title: generatedUnit.title,
+          description: generatedUnit.description,
+          icon: generatedUnit.icon,
+          color: generatedUnit.color,
+          level,
+          lessonCount: generatedUnit.lessons.length,
+          exerciseCount,
+          lessonTitles: generatedUnit.lessons.map((l) => l.title),
+        };
       },
     }),
   };

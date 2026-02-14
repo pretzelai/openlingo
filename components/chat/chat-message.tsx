@@ -2,6 +2,7 @@
 
 import type { UIMessage } from "@ai-sdk/react";
 import { ChatExercise } from "./chat-exercise";
+import { ChatUnitCard } from "./unit-card";
 import { ToolCall } from "./tool-call";
 import ReactMarkdown from "react-markdown";
 
@@ -117,6 +118,27 @@ export function ChatMessage({
                     autoplayAudio={autoplayAudio}
                   />
                 );
+              }
+
+              // Unit creation tool: render unit summary card
+              if (toolName === "createUnit") {
+                const output = toolPart.output as Record<string, unknown> | undefined;
+                if (output?.success) {
+                  return (
+                    <ChatUnitCard
+                      key={toolPart.toolCallId}
+                      courseId={output.courseId as string}
+                      title={output.title as string}
+                      description={output.description as string}
+                      icon={output.icon as string}
+                      color={output.color as string}
+                      level={output.level as string}
+                      lessonCount={output.lessonCount as number}
+                      exerciseCount={output.exerciseCount as number}
+                      lessonTitles={output.lessonTitles as string[]}
+                    />
+                  );
+                }
               }
 
               // Other tools: collapsible tool call display

@@ -77,3 +77,34 @@ export const exerciseSchema = z.discriminatedUnion("type", [
 ]);
 
 export type ChatExercise = z.infer<typeof exerciseSchema>;
+
+export const unitLessonSchema = z.object({
+  title: z.string().describe("Short lesson title, e.g. 'Ordering Drinks'"),
+  xpReward: z
+    .number()
+    .int()
+    .min(5)
+    .max(30)
+    .describe("XP reward for completing this lesson"),
+  exercises: z
+    .array(exerciseSchema)
+    .min(3)
+    .max(8)
+    .describe("Interactive exercises for this lesson"),
+});
+
+export const generatedUnitSchema = z.object({
+  title: z.string().describe("Unit title, e.g. 'Restaurant German'"),
+  description: z
+    .string()
+    .describe("One-sentence description of what the unit covers"),
+  icon: z.string().describe("Single emoji icon for the unit"),
+  color: z
+    .string()
+    .describe("Tailwind color name (e.g. 'blue', 'green', 'purple')"),
+  lessons: z
+    .array(unitLessonSchema)
+    .min(3)
+    .max(6)
+    .describe("Ordered lessons in this unit"),
+});

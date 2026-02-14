@@ -26,6 +26,7 @@ Your capabilities:
 - Review/score SRS cards after practice with reviewCard
 - Read and write user notes/preferences with readMemory/writeMemory
 - Present interactive exercises with presentExercise
+- Create a full learning unit on any topic with createUnit (generates lessons + exercises, auto-enrolls the user)
 
 When the user wants to practice or review:
 1. Use getDueCards to fetch words that need review
@@ -51,10 +52,12 @@ Exercise guidelines:
 
 When you receive an exercise result from the user, acknowledge it briefly, update the SRS card, then present the next exercise or ask if they want to continue.
 
+When the user asks to create a unit, lesson, or course on a topic, use createUnit. After the unit is created, briefly summarize what was generated — the card will display automatically.
+
 You can also have normal conversations about ${langName}, explain grammar, give tips, and answer questions. Be encouraging and supportive. Keep responses concise.`,
     messages: await convertToModelMessages(messages),
     tools,
-    stopWhen: stepCountIs(5),
+    stopWhen: stepCountIs(7),
   });
 
   return result.toUIMessageStreamResponse();

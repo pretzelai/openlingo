@@ -276,6 +276,9 @@ export const unit = pgTable("unit", {
   icon: text("icon").notNull(),
   color: text("color").notNull(),
   exercises: jsonb("exercises").notNull(), // Array of { title, xpReward, exercises[] }
+  createdBy: text("created_by").references(() => user.id, {
+    onDelete: "set null",
+  }),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });

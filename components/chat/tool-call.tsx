@@ -13,6 +13,7 @@ const TOOL_LABELS: Record<string, string> = {
   listCards: "Listing cards",
   readMemory: "Reading memory",
   writeMemory: "Saving to memory",
+  createUnit: "Creating learning unit",
 };
 
 const STATE_LABELS: Record<string, string> = {

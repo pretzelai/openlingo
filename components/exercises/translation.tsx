@@ -44,7 +44,7 @@ export function Translation({ exercise, onResult, onContinue, language }: Props)
       language={language}
     >
       <h2 className="text-xl font-bold text-lingo-text mb-2">
-        <HoverableText text={exercise.prompt} language={language} noAudio={exercise.noAudio?.includes("prompt")} />
+        <HoverableText text={exercise.text} language={language} noAudio={exercise.noAudio?.includes("text")} />
       </h2>
       <p className="text-lg text-lingo-text-light mb-6">
         &ldquo;<HoverableText text={exercise.sentence} language={language} noAudio={exercise.noAudio?.includes("sentence")} />&rdquo;

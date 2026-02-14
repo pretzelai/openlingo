@@ -5,7 +5,7 @@ xpReward: 15
 ---
 
 [multiple-choice]
-prompt: "How do you say 'born' in German?"
+text: "How do you say 'born' in German?"
 choices:
   - "geboren" (correct)
   - "gestorben"
@@ -14,7 +14,7 @@ choices:
 ---
 
 [multiple-choice]
-prompt: "What does 'Er wurde als Baby adoptiert' mean?"
+text: "What does 'Er wurde als Baby adoptiert' mean?"
 choices:
   - "He was adopted as a baby" (correct)
   - "He was born as a baby"
@@ -39,7 +39,7 @@ mode: word-bank
 ---
 
 [multiple-choice]
-prompt: "How do you say 'Steve Jobs was born in 1955' in German?"
+text: "How do you say 'Steve Jobs was born in 1955' in German?"
 choices:
   - "Steve Jobs wurde 1955 geboren" (correct)
   - "Steve Jobs war 1955 alt"
@@ -48,6 +48,6 @@ choices:
 ---
 
 [word-bank]
-prompt: "Translate: 'He was adopted as a baby'"
+text: "Translate: 'He was adopted as a baby'"
 words: ["Er", "wurde", "als", "Baby", "Kind", "adoptiert"]
 answer: ["Er", "wurde", "als", "Baby", "adoptiert"]

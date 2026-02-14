@@ -5,7 +5,7 @@ xpReward: 15
 ---
 
 [multiple-choice]
-prompt: "What did Steve Jobs do after leaving Apple?"
+text: "What did Steve Jobs do after leaving Apple?"
 choices:
   - "Er gründete eine neue Firma" (correct)
   - "Er ging nach Hause"
@@ -36,14 +36,14 @@ blank: "Firma"
 ---
 
 [word-bank]
-prompt: "Translate: 'He also made films with Pixar'"
+text: "Translate: 'He also made films with Pixar'"
 words: ["Er", "machte", "auch", "Filme", "Bücher", "mit", "Pixar"]
 answer: ["Er", "machte", "auch", "Filme", "mit", "Pixar"]
 
 ---
 
 [multiple-choice]
-prompt: "What does 'Er kam 1997 zu Apple zurück' mean?"
+text: "What does 'Er kam 1997 zu Apple zurück' mean?"
 choices:
   - "He came back to Apple in 1997" (correct)
   - "He left Apple in 1997"

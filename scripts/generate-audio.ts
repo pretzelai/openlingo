@@ -20,7 +20,7 @@ function extractTexts(
 
   switch (exercise.type) {
     case "multiple-choice":
-      if (!na.includes("prompt")) items.push({ text: exercise.prompt, language });
+      if (!na.includes("text")) items.push({ text: exercise.text, language });
       exercise.choices.forEach((choice, i) => {
         if (!na.includes(`choice:${i}`)) items.push({ text: choice, language });
       });
@@ -46,7 +46,7 @@ function extractTexts(
       if (!na.includes("text")) items.push({ text: exercise.text, language });
       break;
     case "word-bank":
-      if (!na.includes("prompt")) items.push({ text: exercise.prompt, language });
+      if (!na.includes("text")) items.push({ text: exercise.text, language });
       for (const word of exercise.words) {
         if (!na.includes(`word:${word}`)) items.push({ text: word, language });
       }

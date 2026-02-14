@@ -34,7 +34,7 @@ export function WordBank({ exercise, onResult, onContinue, language }: Props) {
   const { play, stop } = useAudio();
 
   useEffect(() => {
-    if (!exercise.noAudio?.includes("prompt")) play(exercise.prompt, language);
+    if (!exercise.noAudio?.includes("text")) play(exercise.text, language);
     return stop;
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -105,7 +105,7 @@ export function WordBank({ exercise, onResult, onContinue, language }: Props) {
       language={language}
     >
       <h2 className="text-xl font-bold text-lingo-text mb-6">
-        <HoverableText text={exercise.prompt} language={language} noAudio={exercise.noAudio?.includes("prompt")} />
+        <HoverableText text={exercise.text} language={language} noAudio={exercise.noAudio?.includes("text")} />
       </h2>
 
       {/* Answer area */}

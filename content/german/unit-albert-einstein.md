@@ -17,7 +17,7 @@ color: "#4CAF50"
 ---
 
 [multiple-choice]
-prompt: "Which word means 'the physicist'?"
+text: "Which word means 'the physicist'?"
 choices:
   - "der Physiker" (correct)
   - "der Arzt"
@@ -26,7 +26,7 @@ choices:
 ---
 
 [multiple-choice]
-prompt: "What does 'entwickeln' mean?"
+text: "What does 'entwickeln' mean?"
 choices:
   - "to develop" (correct)
   - "to travel"
@@ -35,7 +35,7 @@ choices:
 ---
 
 [word-bank]
-prompt: "Albert Einstein war ein berühmter Physiker."
+text: "Albert Einstein war ein berühmter Physiker."
 words: ["Albert", "Einstein", "war", "ein", "berühmter", "Physiker", "spielen"]
 answer: ["Albert", "Einstein", "war", "ein", "berühmter", "Physiker"]
 
@@ -57,7 +57,7 @@ mode: word-bank
 ---
 
 [multiple-choice]
-prompt: "What is the English equivalent of 'das Patentamt'?"
+text: "What is the English equivalent of 'das Patentamt'?"
 choices:
   - "the patent office" (correct)
   - "the university"
@@ -66,7 +66,7 @@ choices:
 ---
 
 [multiple-choice]
-prompt: "Which German word means 'to research'?"
+text: "Which German word means 'to research'?"
 choices:
   - "forschen" (correct)
   - "kaufen"
@@ -75,7 +75,7 @@ choices:
 ---
 
 [word-bank]
-prompt: "He worked at the patent office and gained new insights."
+text: "He worked at the patent office and gained new insights."
 words: ["Er", "arbeitete", "im", "Patentamt", "und", "gewann", "neue", "Erkenntnisse", "singen"]
 answer: ["Er", "arbeitete", "im", "Patentamt", "und", "gewann", "neue", "Erkenntnisse"]
 
@@ -97,7 +97,7 @@ mode: word-bank
 ---
 
 [multiple-choice]
-prompt: "What does 'veröffentlichen' mean?"
+text: "What does 'veröffentlichen' mean?"
 choices:
   - "to publish" (correct)
   - "to hide"
@@ -106,7 +106,7 @@ choices:
 ---
 
 [multiple-choice]
-prompt: "Which word means 'the equation'?"
+text: "Which word means 'the equation'?"
 choices:
   - "die Gleichung" (correct)
   - "die Frage"
@@ -115,7 +115,7 @@ choices:
 ---
 
 [word-bank]
-prompt: "He wanted to publish his discoveries."
+text: "He wanted to publish his discoveries."
 words: ["Er", "wollte", "seine", "Entdeckungen", "veröffentlichen", "essen"]
 answer: ["Er", "wollte", "seine", "Entdeckungen", "veröffentlichen"]
 
@@ -137,7 +137,7 @@ mode: word-bank
 ---
 
 [multiple-choice]
-prompt: "Which word means 'the Nobel Prize'?"
+text: "Which word means 'the Nobel Prize'?"
 choices:
   - "der Nobelpreis" (correct)
   - "der Goldpreis"
@@ -146,7 +146,7 @@ choices:
 ---
 
 [multiple-choice]
-prompt: "What is the meaning of 'revolutionär'?"
+text: "What is the meaning of 'revolutionär'?"
 choices:
   - "revolutionary" (correct)
   - "traditional"
@@ -155,7 +155,7 @@ choices:
 ---
 
 [word-bank]
-prompt: "His theory was revolutionary and he could prove it."
+text: "His theory was revolutionary and he could prove it."
 words: ["Seine", "Theorie", "war", "revolutionär", "und", "er", "konnte", "sie", "beweisen", "schreiben"]
 answer: ["Seine", "Theorie", "war", "revolutionär", "und", "er", "konnte", "sie", "beweisen"]
 
@@ -177,7 +177,7 @@ mode: word-bank
 ---
 
 [multiple-choice]
-prompt: "What does 'bedeutend' mean?"
+text: "What does 'bedeutend' mean?"
 choices:
   - "significant" (correct)
   - "small"
@@ -186,7 +186,7 @@ choices:
 ---
 
 [multiple-choice]
-prompt: "Which word is the German for 'the scientist'?"
+text: "Which word is the German for 'the scientist'?"
 choices:
   - "der Wissenschaftler" (correct)
   - "der Sportler"
@@ -195,7 +195,7 @@ choices:
 ---
 
 [word-bank]
-prompt: "His ideas shaped the modern world."
+text: "His ideas shaped the modern world."
 words: ["Seine", "Ideen", "prägten", "die", "moderne", "Welt", "sehen"]
 answer: ["Seine", "Ideen", "prägten", "die", "moderne", "Welt"]
 
@@ -217,7 +217,7 @@ mode: word-bank
 ---
 
 [multiple-choice]
-prompt: "What is the English translation of 'das Universum'?"
+text: "What is the English translation of 'das Universum'?"
 choices:
   - "the universe" (correct)
   - "the planet"
@@ -226,7 +226,7 @@ choices:
 ---
 
 [multiple-choice]
-prompt: "Which word means 'the observation'?"
+text: "Which word means 'the observation'?"
 choices:
   - "die Beobachtung" (correct)
   - "die Frage"
@@ -235,7 +235,7 @@ choices:
 ---
 
 [word-bank]
-prompt: "He observed the universe and formed new hypotheses."
+text: "He observed the universe and formed new hypotheses."
 words: ["Er", "beobachtete", "das", "Universum", "und", "bildete", "neue", "Hypothesen", "tanzen"]
 answer: ["Er", "beobachtete", "das", "Universum", "und", "bildete", "neue", "Hypothesen"]
 
@@ -257,7 +257,7 @@ mode: word-bank
 ---
 
 [multiple-choice]
-prompt: "What does 'der Pazifist' mean?"
+text: "What does 'der Pazifist' mean?"
 choices:
   - "the pacifist" (correct)
   - "the scientist"
@@ -266,7 +266,7 @@ choices:
 ---
 
 [multiple-choice]
-prompt: "Which German word translates to 'humanity'?"
+text: "Which German word translates to 'humanity'?"
 choices:
   - "die Menschheit" (correct)
   - "die Gesellschaft"
@@ -275,7 +275,7 @@ choices:
 ---
 
 [word-bank]
-prompt: "He felt a great responsibility for humanity."
+text: "He felt a great responsibility for humanity."
 words: ["Er", "fühlte", "eine", "große", "Verantwortung", "für", "die", "Menschheit", "sehen"]
 answer: ["Er", "fühlte", "eine", "große", "Verantwortung", "für", "die", "Menschheit"]
 
@@ -297,7 +297,7 @@ mode: word-bank
 ---
 
 [multiple-choice]
-prompt: "What is the meaning of 'emigrieren'?"
+text: "What is the meaning of 'emigrieren'?"
 choices:
   - "to emigrate" (correct)
   - "to immigrate"
@@ -306,7 +306,7 @@ choices:
 ---
 
 [multiple-choice]
-prompt: "Which word means 'the citizenship'?"
+text: "Which word means 'the citizenship'?"
 choices:
   - "die Staatsbürgerschaft" (correct)
   - "die Universität"
@@ -315,7 +315,7 @@ choices:
 ---
 
 [word-bank]
-prompt: "He had to emigrate because of the political threat."
+text: "He had to emigrate because of the political threat."
 words: ["Er", "musste", "wegen", "der", "politischen", "Bedrohung", "emigrieren", "sprechen"]
 answer: ["Er", "musste", "wegen", "der", "politischen", "Bedrohung", "emigrieren"]
 
@@ -337,7 +337,7 @@ mode: word-bank
 ---
 
 [multiple-choice]
-prompt: "What does 'das Erbe' mean?"
+text: "What does 'das Erbe' mean?"
 choices:
   - "the legacy" (correct)
   - "the future"
@@ -346,7 +346,7 @@ choices:
 ---
 
 [multiple-choice]
-prompt: "Which German word translates to 'nuclear energy'?"
+text: "Which German word translates to 'nuclear energy'?"
 choices:
   - "die Kernenergie" (correct)
   - "die Solarenergie"
@@ -355,7 +355,7 @@ choices:
 ---
 
 [word-bank]
-prompt: "His research laid the foundation for nuclear energy."
+text: "His research laid the foundation for nuclear energy."
 words: ["Seine", "Forschung", "legte", "die", "Grundlage", "für", "die", "Kernenergie", "schlafen"]
 answer: ["Seine", "Forschung", "legte", "die", "Grundlage", "für", "die", "Kernenergie"]
 
@@ -377,7 +377,7 @@ mode: word-bank
 ---
 
 [multiple-choice]
-prompt: "What is the meaning of 'zeitlos'?"
+text: "What is the meaning of 'zeitlos'?"
 choices:
   - "timeless" (correct)
   - "old-fashioned"
@@ -386,7 +386,7 @@ choices:
 ---
 
 [multiple-choice]
-prompt: "Which word means 'the imagination'?"
+text: "Which word means 'the imagination'?"
 choices:
   - "die Vorstellungskraft" (correct)
   - "die Realität"
@@ -395,7 +395,7 @@ choices:
 ---
 
 [word-bank]
-prompt: "His ideas are timeless and full of imagination."
+text: "His ideas are timeless and full of imagination."
 words: ["Seine", "Ideen", "sind", "zeitlos", "und", "voller", "Vorstellungskraft", "laufen"]
 answer: ["Seine", "Ideen", "sind", "zeitlos", "und", "voller", "Vorstellungskraft"]
 

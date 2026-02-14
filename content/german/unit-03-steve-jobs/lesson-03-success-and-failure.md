@@ -5,7 +5,7 @@ xpReward: 15
 ---
 
 [multiple-choice]
-prompt: "What does 'Er wurde sehr reich' mean?"
+text: "What does 'Er wurde sehr reich' mean?"
 choices:
   - "He became very rich" (correct)
   - "He was very tired"
@@ -14,7 +14,7 @@ choices:
 ---
 
 [multiple-choice]
-prompt: "How do you say 'fired' in German?"
+text: "How do you say 'fired' in German?"
 choices:
   - "gefeuert" (correct)
   - "gefeiert"
@@ -45,6 +45,6 @@ blank: "gefeuert"
 ---
 
 [word-bank]
-prompt: "Translate: 'The success was very big'"
+text: "Translate: 'The success was very big'"
 words: ["Der", "Erfolg", "war", "sehr", "groß", "klein"]
 answer: ["Der", "Erfolg", "war", "sehr", "groß"]

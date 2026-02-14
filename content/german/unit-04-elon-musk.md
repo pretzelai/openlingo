@@ -9,7 +9,7 @@ color: "#1DA1F2"
 ## Herkunft und Kindheit
 
 [multiple-choice]
-prompt: "Was bedeutet 'die Herkunft'?"
+text: "Was bedeutet 'die Herkunft'?"
 choices:
   - "woher man kommt" (correct)
   - "was man isst"
@@ -24,7 +24,7 @@ blank: "Herkunft"
 ---
 
 [multiple-choice]
-prompt: "Was bedeutet 'aufwachsen'?"
+text: "Was bedeutet 'aufwachsen'?"
 choices:
   - "als Kind groß werden" (correct)
   - "schnell laufen"
@@ -41,7 +41,7 @@ choices:
 ---
 
 [word-bank]
-prompt: "Bilde den Satz:"
+text: "Bilde den Satz:"
 words: ["ist", "Elon", "aufgewachsen", "in", "Südafrika", "Amerika"]
 answer: ["Elon", "ist", "in", "Südafrika", "aufgewachsen"]
 
@@ -54,7 +54,7 @@ ttsLang: "de"
 ## Eine schwierige Jugend
 
 [multiple-choice]
-prompt: "Was bedeutet 'ehrgeizig'?"
+text: "Was bedeutet 'ehrgeizig'?"
 choices:
   - "man will viel erreichen" (correct)
   - "man ist sehr müde"
@@ -69,7 +69,7 @@ blank: "einsam"
 ---
 
 [multiple-choice]
-prompt: "Was bedeutet 'die Jugend'?"
+text: "Was bedeutet 'die Jugend'?"
 choices:
   - "die Zeit als junger Mensch" (correct)
   - "ein großes Haus"
@@ -98,7 +98,7 @@ ttsLang: "de"
 ## Bücher und Computer
 
 [multiple-choice]
-prompt: "Was bedeutet 'neugierig'?"
+text: "Was bedeutet 'neugierig'?"
 choices:
   - "man will alles wissen" (correct)
   - "man ist traurig"
@@ -113,7 +113,7 @@ blank: "neugierig"
 ---
 
 [multiple-choice]
-prompt: "Was bedeutet 'beibringen'?"
+text: "Was bedeutet 'beibringen'?"
 choices:
   - "jemandem zeigen, wie etwas geht" (correct)
   - "etwas kaufen"
@@ -136,14 +136,14 @@ blank: "beigebracht"
 ---
 
 [word-bank]
-prompt: "Bilde den Satz:"
+text: "Bilde den Satz:"
 words: ["hat", "Er", "Programmieren", "das", "sich", "beigebracht", "selbst"]
 answer: ["Er", "hat", "sich", "selbst", "das", "Programmieren", "beigebracht"]
 
 ## Die große Entscheidung
 
 [multiple-choice]
-prompt: "Was bedeutet 'die Entscheidung'?"
+text: "Was bedeutet 'die Entscheidung'?"
 choices:
   - "wenn man etwas wählt" (correct)
   - "ein großes Haus"
@@ -158,7 +158,7 @@ blank: "Entscheidung"
 ---
 
 [multiple-choice]
-prompt: "Was bedeutet 'auswandern'?"
+text: "Was bedeutet 'auswandern'?"
 choices:
   - "in ein anderes Land gehen und dort leben" (correct)
   - "im Park spazieren gehen"
@@ -187,7 +187,7 @@ ttsLang: "de"
 ## Das erste Unternehmen
 
 [multiple-choice]
-prompt: "Was bedeutet 'gründen'?"
+text: "Was bedeutet 'gründen'?"
 choices:
   - "etwas Neues starten" (correct)
   - "etwas kaputt machen"
@@ -202,7 +202,7 @@ blank: "Unternehmen"
 ---
 
 [multiple-choice]
-prompt: "Was bedeutet 'verkaufen'?"
+text: "Was bedeutet 'verkaufen'?"
 choices:
   - "etwas für Geld geben" (correct)
   - "etwas geschenkt bekommen"
@@ -225,14 +225,14 @@ blank: "verkauft"
 ---
 
 [word-bank]
-prompt: "Bilde den Satz:"
+text: "Bilde den Satz:"
 words: ["hat", "Elon", "Unternehmen", "gegründet", "ein", "neues"]
 answer: ["Elon", "hat", "ein", "neues", "Unternehmen", "gegründet"]
 
 ## Der Traum vom Weltraum
 
 [multiple-choice]
-prompt: "Was bedeutet 'der Weltraum'?"
+text: "Was bedeutet 'der Weltraum'?"
 choices:
   - "wo die Sterne sind" (correct)
   - "ein großer Raum im Haus"
@@ -247,7 +247,7 @@ blank: "Raumfahrt"
 ---
 
 [multiple-choice]
-prompt: "Was bedeutet 'die Rakete'?"
+text: "Was bedeutet 'die Rakete'?"
 choices:
   - "sie fliegt in den Weltraum" (correct)
   - "ein großes Auto"
@@ -276,7 +276,7 @@ ttsLang: "de"
 ## Scheitern und Weitermachen
 
 [multiple-choice]
-prompt: "Was bedeutet 'scheitern'?"
+text: "Was bedeutet 'scheitern'?"
 choices:
   - "keinen Erfolg haben" (correct)
   - "schnell laufen"
@@ -291,7 +291,7 @@ blank: "gescheitert"
 ---
 
 [multiple-choice]
-prompt: "Was bedeutet 'aufgeben'?"
+text: "Was bedeutet 'aufgeben'?"
 choices:
   - "nicht mehr versuchen" (correct)
   - "am Morgen aufstehen"
@@ -314,14 +314,14 @@ blank: "aufgeben"
 ---
 
 [word-bank]
-prompt: "Bilde den Satz:"
+text: "Bilde den Satz:"
 words: ["hat", "Elon", "Probleme", "die", "überwunden", "gefunden"]
 answer: ["Elon", "hat", "die", "Probleme", "überwunden"]
 
 ## Tesla und Elektroautos
 
 [multiple-choice]
-prompt: "Was bedeutet 'entwickeln'?"
+text: "Was bedeutet 'entwickeln'?"
 choices:
   - "etwas Neues machen und bauen" (correct)
   - "etwas essen"
@@ -336,7 +336,7 @@ blank: "entwickelt"
 ---
 
 [multiple-choice]
-prompt: "Was bedeutet 'die Umwelt'?"
+text: "Was bedeutet 'die Umwelt'?"
 choices:
   - "die Natur um uns" (correct)
   - "ein großes Auto"
@@ -365,7 +365,7 @@ ttsLang: "de"
 ## Erfolg und Reichtum
 
 [multiple-choice]
-prompt: "Was bedeutet 'der Erfolg'?"
+text: "Was bedeutet 'der Erfolg'?"
 choices:
   - "wenn etwas gut funktioniert" (correct)
   - "ein großes Haus"
@@ -380,7 +380,7 @@ blank: "Vermögen"
 ---
 
 [multiple-choice]
-prompt: "Was bedeutet 'berühmt'?"
+text: "Was bedeutet 'berühmt'?"
 choices:
   - "viele Leute kennen dich" (correct)
   - "man ist sehr groß"
@@ -403,14 +403,14 @@ blank: "berühmt"
 ---
 
 [word-bank]
-prompt: "Bilde den Satz:"
+text: "Bilde den Satz:"
 words: ["ist", "Elon", "berühmt", "sehr", "heute", "gestern"]
 answer: ["Elon", "ist", "heute", "sehr", "berühmt"]
 
 ## Visionen für die Zukunft
 
 [multiple-choice]
-prompt: "Was bedeutet 'die Zukunft'?"
+text: "Was bedeutet 'die Zukunft'?"
 choices:
   - "die Zeit, die noch kommt" (correct)
   - "die Zeit von gestern"
@@ -425,7 +425,7 @@ blank: "Zukunft"
 ---
 
 [multiple-choice]
-prompt: "Was bedeutet 'besiedeln'?"
+text: "Was bedeutet 'besiedeln'?"
 choices:
   - "an einen neuen Ort gehen und dort leben" (correct)
   - "ein Buch lesen"

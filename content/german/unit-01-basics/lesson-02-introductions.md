@@ -5,7 +5,7 @@ xpReward: 10
 ---
 
 [multiple-choice]
-prompt: "How do you say 'My name is...' in German?"
+text: "How do you say 'My name is...' in German?"
 choices:
   - "Ich heiße..." (correct)
   - "Du heißt..."
@@ -14,7 +14,7 @@ choices:
 ---
 
 [translation]
-prompt: "Translate to German:"
+text: "Translate to German:"
 sentence: "I am called Anna"
 answer: "Ich heiße Anna"
 acceptAlso: ["ich heiße anna", "Ich heiße anna"]
@@ -28,7 +28,7 @@ blank: "heiße"
 ---
 
 [word-bank]
-prompt: "Translate: 'What is your name?'"
+text: "Translate: 'What is your name?'"
 words: ["heißt", "Name", "Wie", "du", "ist"]
 answer: ["Wie", "heißt", "du"]
 

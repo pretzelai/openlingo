@@ -5,7 +5,7 @@ xpReward: 15
 ---
 
 [multiple-choice]
-prompt: "How do you ask 'Where is...?' in German?"
+text: "How do you ask 'Where is...?' in German?"
 choices:
   - "Was ist...?"
   - "Wo ist...?" (correct)
@@ -14,7 +14,7 @@ choices:
 ---
 
 [translation]
-prompt: "Translate to German:"
+text: "Translate to German:"
 sentence: "Where is the train station?"
 answer: "Wo ist der Bahnhof?"
 acceptAlso: ["wo ist der bahnhof", "Wo ist der Bahnhof"]
@@ -37,7 +37,7 @@ pairs:
 ---
 
 [word-bank]
-prompt: "Translate: 'Where is the hotel?'"
+text: "Translate: 'Where is the hotel?'"
 words: ["Wo", "ist", "das", "Hotel", "der"]
 answer: ["Wo", "ist", "das", "Hotel"]
 

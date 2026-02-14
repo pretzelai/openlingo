@@ -5,7 +5,7 @@ xpReward: 10
 ---
 
 [multiple-choice]
-prompt: "How do you say 'Hello' in German?"
+text: "How do you say 'Hello' in German?"
 choices:
   - "Hallo" (correct)
   - "Tschüss"
@@ -14,7 +14,7 @@ choices:
 ---
 
 [translation]
-prompt: "Translate to German:"
+text: "Translate to German:"
 sentence: "Good morning"
 answer: "Guten Morgen"
 acceptAlso: ["guten morgen"]
@@ -43,7 +43,7 @@ ttsLang: "de"
 ---
 
 [word-bank]
-prompt: "Translate: 'Good evening'"
+text: "Translate: 'Good evening'"
 words: ["Abend", "Tag", "Guten", "Morgen"]
 answer: ["Guten", "Abend"]
 

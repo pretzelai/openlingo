@@ -5,7 +5,7 @@ xpReward: 20
 ---
 
 [multiple-choice]
-prompt: "What does 'Er starb im Jahr 2011' mean?"
+text: "What does 'Er starb im Jahr 2011' mean?"
 choices:
   - "He started in 2011"
   - "He died in the year 2011" (correct)
@@ -42,6 +42,6 @@ blank: "töricht"
 ---
 
 [word-bank]
-prompt: "Translate: 'His ideas live on'"
+text: "Translate: 'His ideas live on'"
 words: ["Seine", "Ideen", "Träume", "leben", "sterben", "weiter"]
 answer: ["Seine", "Ideen", "leben", "weiter"]

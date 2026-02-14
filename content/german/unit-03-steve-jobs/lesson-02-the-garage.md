@@ -5,7 +5,7 @@ xpReward: 15
 ---
 
 [multiple-choice]
-prompt: "What does 'die Garage' mean in English?"
+text: "What does 'die Garage' mean in English?"
 choices:
   - "the garage" (correct)
   - "the garden"
@@ -14,7 +14,7 @@ choices:
 ---
 
 [multiple-choice]
-prompt: "Where did Steve Jobs and Wozniak build the first Apple computer?"
+text: "Where did Steve Jobs and Wozniak build the first Apple computer?"
 choices:
   - "In einem Büro"
   - "In einer Garage" (correct)
@@ -39,7 +39,7 @@ mode: word-bank
 ---
 
 [multiple-choice]
-prompt: "What does 'Apple wurde 1976 gegründet' mean?"
+text: "What does 'Apple wurde 1976 gegründet' mean?"
 choices:
   - "Apple was founded in 1976" (correct)
   - "Apple was sold in 1976"
@@ -48,6 +48,6 @@ choices:
 ---
 
 [word-bank]
-prompt: "Translate: 'Steve and his friend founded Apple'"
+text: "Translate: 'Steve and his friend founded Apple'"
 words: ["Steve", "und", "sein", "Freund", "gründeten", "kauften", "Apple"]
 answer: ["Steve", "und", "sein", "Freund", "gründeten", "Apple"]

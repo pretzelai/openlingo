@@ -5,7 +5,7 @@ xpReward: 10
 ---
 
 [multiple-choice]
-prompt: "How do you say 'Thank you' in German?"
+text: "How do you say 'Thank you' in German?"
 choices:
   - "Bitte"
   - "Danke" (correct)
@@ -14,7 +14,7 @@ choices:
 ---
 
 [translation]
-prompt: "Translate to German:"
+text: "Translate to German:"
 sentence: "Please"
 answer: "Bitte"
 acceptAlso: ["bitte"]
@@ -37,7 +37,7 @@ pairs:
 ---
 
 [word-bank]
-prompt: "Translate: 'Excuse me, please'"
+text: "Translate: 'Excuse me, please'"
 words: ["Bitte", "Danke", "Entschuldigung", "schön"]
 answer: ["Entschuldigung", "Bitte"]
 

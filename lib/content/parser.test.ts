@@ -49,13 +49,13 @@ sentence: "Adiós"
 
 describe("parseExercise", () => {
   test("throws on unknown exercise type", () => {
-    expect(() => parseExercise("[unknown-type]\nprompt: test")).toThrow(
+    expect(() => parseExercise("[unknown-type]\ntext: test")).toThrow(
       "Unknown exercise type: unknown-type"
     );
   });
 
   test("throws when no type tag found", () => {
-    expect(() => parseExercise("prompt: test")).toThrow(
+    expect(() => parseExercise("text: test")).toThrow(
       "No exercise type found"
     );
   });
@@ -64,7 +64,7 @@ describe("parseExercise", () => {
 describe("multiple-choice", () => {
   test("parses basic multiple choice", () => {
     const block = `[multiple-choice]
-prompt: "What does 'gato' mean?"
+text: "What does 'gato' mean?"
 choices:
   - "Dog"
   - "Cat" (correct)
@@ -72,7 +72,7 @@ choices:
     const ex = parseExercise(block);
     expect(ex).toEqual({
       type: "multiple-choice",
-      prompt: "What does 'gato' mean?",
+      text: "What does 'gato' mean?",
       choices: ["Dog", "Cat", "Bird"],
       correctIndex: 1,
     });
@@ -80,7 +80,7 @@ choices:
 
   test("parses random_order flag", () => {
     const block = `[multiple-choice]
-prompt: "Pick one"
+text: "Pick one"
 random_order: true
 choices:
   - "A" (correct)
@@ -92,16 +92,16 @@ choices:
     }
   });
 
-  test("parses [no-audio] on prompt", () => {
+  test("parses [no-audio] on text", () => {
     const block = `[multiple-choice]
-prompt: "Pick one" [no-audio]
+text: "Pick one" [no-audio]
 choices:
   - "A" (correct)
   - "B"`;
     const ex = parseExercise(block);
     if (ex.type === "multiple-choice") {
-      expect(ex.noAudio).toEqual(["prompt"]);
-      expect(ex.prompt).toBe("Pick one");
+      expect(ex.noAudio).toEqual(["text"]);
+      expect(ex.text).toBe("Pick one");
     }
   });
 });
@@ -109,13 +109,13 @@ choices:
 describe("translation", () => {
   test("parses basic translation", () => {
     const block = `[translation]
-prompt: "Translate to English"
+text: "Translate to English"
 sentence: "El gato es negro"
 answer: "The cat is black"`;
     const ex = parseExercise(block);
     expect(ex).toEqual({
       type: "translation",
-      prompt: "Translate to English",
+      text: "Translate to English",
       sentence: "El gato es negro",
       answer: "The cat is black",
       acceptAlso: [],
@@ -124,7 +124,7 @@ answer: "The cat is black"`;
 
   test("parses acceptAlso", () => {
     const block = `[translation]
-prompt: "Translate"
+text: "Translate"
 sentence: "El gato"
 answer: "The cat"
 acceptAlso: "A cat" "Cats"`;
@@ -136,7 +136,7 @@ acceptAlso: "A cat" "Cats"`;
 
   test("throws on missing required field", () => {
     const block = `[translation]
-prompt: "Translate"
+text: "Translate"
 sentence: "El gato"`;
     expect(() => parseExercise(block)).toThrow("Missing field: answer");
   });
@@ -221,13 +221,13 @@ mode: word-bank`;
 describe("word-bank", () => {
   test("parses basic word bank", () => {
     const block = `[word-bank]
-prompt: "Arrange the translation"
+text: "Arrange the translation"
 words: "the" "cat" "is" "black"
 answer: "the" "cat" "is" "black"`;
     const ex = parseExercise(block);
     expect(ex).toEqual({
       type: "word-bank",
-      prompt: "Arrange the translation",
+      text: "Arrange the translation",
       words: ["the", "cat", "is", "black"],
       answer: ["the", "cat", "is", "black"],
     });
@@ -235,7 +235,7 @@ answer: "the" "cat" "is" "black"`;
 
   test("parses random_order", () => {
     const block = `[word-bank]
-prompt: "Order"
+text: "Order"
 words: "a" "b"
 answer: "a" "b"
 random_order: true`;

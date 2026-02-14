@@ -5,7 +5,7 @@ xpReward: 10
 ---
 
 [translation]
-prompt: "Translate to German:"
+text: "Translate to German:"
 sentence: "I would have gone if I had known [no-audio]"
 answer: "Ich wäre gegangen, wenn ich es gewusst hätte"
 acceptAlso: ["Ich wäre gegangen wenn ich es gewusst hätte"]

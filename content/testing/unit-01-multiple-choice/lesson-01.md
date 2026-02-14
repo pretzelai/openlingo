@@ -5,7 +5,7 @@ xpReward: 10
 ---
 
 [multiple-choice]
-prompt: "Was bedeutet 'Nevertheless' auf Deutsch?"
+text: "Was bedeutet 'Nevertheless' auf Deutsch?"
 choices:
   - "Trotzdem" (correct)
   - "Deshalb"

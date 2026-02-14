@@ -5,7 +5,7 @@ xpReward: 15
 ---
 
 [multiple-choice]
-prompt: "When was the iPhone introduced?"
+text: "When was the iPhone introduced?"
 choices:
   - "Im Jahr 2005"
   - "Im Jahr 2007" (correct)
@@ -42,6 +42,6 @@ blank: "Revolution"
 ---
 
 [word-bank]
-prompt: "Translate: 'Everyone wanted the new phone'"
+text: "Translate: 'Everyone wanted the new phone'"
 words: ["Jeder", "wollte", "das", "neue", "alte", "Telefon"]
 answer: ["Jeder", "wollte", "das", "neue", "Telefon"]

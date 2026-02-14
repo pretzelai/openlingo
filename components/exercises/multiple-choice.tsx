@@ -31,7 +31,7 @@ export function MultipleChoice({ exercise, onResult, onContinue, language }: Pro
   const { play, stop } = useAudio();
 
   useEffect(() => {
-    if (!exercise.noAudio?.includes("prompt")) play(exercise.prompt, language);
+    if (!exercise.noAudio?.includes("text")) play(exercise.text, language);
     return stop;
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -40,7 +40,7 @@ export function MultipleChoice({ exercise, onResult, onContinue, language }: Pro
       return { choices: exercise.choices, correctIndex: exercise.correctIndex };
     }
     const indices = exercise.choices.map((_, i) => i);
-    const seed = exercise.prompt.length * 7 + exercise.prompt.charCodeAt(0);
+    const seed = exercise.text.length * 7 + exercise.text.charCodeAt(0);
     const shuffled = shuffleWithSeed(indices, seed);
     return {
       choices: shuffled.map((i) => exercise.choices[i]),
@@ -81,7 +81,7 @@ export function MultipleChoice({ exercise, onResult, onContinue, language }: Pro
       language={language}
     >
       <h2 className="text-xl font-bold text-lingo-text mb-6">
-        <HoverableText text={exercise.prompt} language={language} noAudio={exercise.noAudio?.includes("prompt")} />
+        <HoverableText text={exercise.text} language={language} noAudio={exercise.noAudio?.includes("text")} />
       </h2>
       <div className="space-y-3">
         {choices.map((choice, i) => (

@@ -5,7 +5,7 @@ xpReward: 15
 ---
 
 [multiple-choice]
-prompt: "What is 'three' in German?"
+text: "What is 'three' in German?"
 choices:
   - "zwei"
   - "drei" (correct)
@@ -14,7 +14,7 @@ choices:
 ---
 
 [translation]
-prompt: "Translate to German:"
+text: "Translate to German:"
 sentence: "Five"
 answer: "Fünf"
 acceptAlso: ["fünf"]
@@ -37,7 +37,7 @@ pairs:
 ---
 
 [word-bank]
-prompt: "Put the numbers in order: one, two, three"
+text: "Put the numbers in order: one, two, three"
 words: ["drei", "eins", "vier", "zwei"]
 answer: ["eins", "zwei", "drei"]
 

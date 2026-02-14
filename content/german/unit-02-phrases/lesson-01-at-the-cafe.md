@@ -5,7 +5,7 @@ xpReward: 15
 ---
 
 [multiple-choice]
-prompt: "How do you order a coffee in German?"
+text: "How do you order a coffee in German?"
 choices:
   - "Einen Kaffee, bitte" (correct)
   - "Kaffee ist gut"
@@ -14,7 +14,7 @@ choices:
 ---
 
 [translation]
-prompt: "Translate to German:"
+text: "Translate to German:"
 sentence: "I would like a tea"
 answer: "Ich möchte einen Tee"
 acceptAlso: ["ich möchte einen tee", "Ich hätte gern einen Tee"]
@@ -37,7 +37,7 @@ pairs:
 ---
 
 [word-bank]
-prompt: "Translate: 'A water, please'"
+text: "Translate: 'A water, please'"
 words: ["Wasser", "Ein", "bitte", "Kaffee", "Tee"]
 answer: ["Ein", "Wasser", "bitte"]
 

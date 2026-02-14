@@ -11,7 +11,7 @@ Lines starting with `//` (with optional leading whitespace) are stripped before 
 ```
 // This is a comment — it will be ignored
 [multiple-choice]
-prompt: "What color is the sky?"
+text: "What color is the sky?"
 // Maybe add more choices later
 choices:
   - "Blue" (correct)
@@ -23,7 +23,7 @@ choices:
 Append `[no-audio]` to any text value to suppress TTS for that field:
 
 ```
-prompt: "Translate this" [no-audio]
+text: "Translate this" [no-audio]
 ```
 
 The parser records which fields have this flag in the `noAudio` array.
@@ -34,17 +34,17 @@ The parser records which fields have this flag in the `noAudio` array.
 
 ### multiple-choice
 
-Present a prompt with several choices. Exactly one is marked `(correct)`.
+Present a text with several choices. Exactly one is marked `(correct)`.
 
 | Field | Required | Description |
 |-------|----------|-------------|
-| prompt | yes | The question text |
+| text | yes | The question text |
 | choices (list) | yes | `- "text"` items, one with `(correct)` |
 | random_order | no | `true` to shuffle choices at runtime |
 
 ```
 [multiple-choice]
-prompt: "What does 'gato' mean?"
+text: "What does 'gato' mean?"
 choices:
   - "Dog"
   - "Cat" (correct)
@@ -57,14 +57,14 @@ User translates a sentence. Supports alternate accepted answers.
 
 | Field | Required | Description |
 |-------|----------|-------------|
-| prompt | yes | Instruction shown to user |
+| text | yes | Instruction shown to user |
 | sentence | yes | The sentence to translate |
 | answer | yes | The expected answer |
 | acceptAlso | no | Additional accepted answers: `"alt1" "alt2"` |
 
 ```
 [translation]
-prompt: "Translate to English"
+text: "Translate to English"
 sentence: "El gato es negro"
 answer: "The cat is black"
 acceptAlso: "The cat's black"
@@ -123,14 +123,14 @@ User assembles a sentence from a set of word tiles.
 
 | Field | Required | Description |
 |-------|----------|-------------|
-| prompt | yes | Instruction shown to user |
+| text | yes | Instruction shown to user |
 | words | yes | Available tiles: `"word1" "word2" ...` |
 | answer | yes | Correct order: `"word1" "word2" ...` |
 | random_order | no | `true` to shuffle tiles |
 
 ```
 [word-bank]
-prompt: "Arrange the translation"
+text: "Arrange the translation"
 words: "cat" "the" "is" "black" "big"
 answer: "the" "cat" "is" "black"
 ```

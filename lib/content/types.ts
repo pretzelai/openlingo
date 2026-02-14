@@ -44,7 +44,7 @@ export type Exercise =
 
 export interface MultipleChoiceExercise {
   type: "multiple-choice";
-  prompt: string;
+  text: string;
   choices: string[];
   correctIndex: number;
   randomOrder?: boolean;
@@ -53,7 +53,7 @@ export interface MultipleChoiceExercise {
 
 export interface TranslationExercise {
   type: "translation";
-  prompt: string;
+  text: string;
   sentence: string;
   answer: string;
   acceptAlso: string[];
@@ -84,7 +84,7 @@ export interface ListeningExercise {
 
 export interface WordBankExercise {
   type: "word-bank";
-  prompt: string;
+  text: string;
   words: string[];
   answer: string[];
   randomOrder?: boolean;

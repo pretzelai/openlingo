@@ -1,7 +1,8 @@
 # Exercise Syntax Reference
 
 Exercises are written in markdown files. Each exercise block starts with a type tag
-`[type-name]` and fields are written as `key: value`. Blocks are separated by `---`.
+`[type-name]` and fields are written as `key: value`. The parser splits on type tags
+automatically — no `---` separators needed (though they're accepted and ignored).
 
 ## Comments
 

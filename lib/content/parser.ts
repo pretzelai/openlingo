@@ -11,20 +11,34 @@ import type {
 
 /**
  * Parse raw markdown content (after frontmatter) into Exercise[].
- * Strips // comments, splits on ---, and parses each block.
+ * Strips // comments, splits on [type-tag] boundaries, and parses each block.
+ * `---` separators between exercises are optional and ignored.
  */
 export function parseExercisesFromMarkdown(content: string): Exercise[] {
-  const stripped = content
+  const lines = content
     .split("\n")
-    .filter((line) => !/^\s*\/\//.test(line))
-    .join("\n");
+    .filter((line) => !/^\s*\/\//.test(line));
 
-  const blocks = stripped
-    .split(/\n---\n/)
-    .map((b) => b.trim())
-    .filter(Boolean);
+  const blocks: string[] = [];
+  let current: string[] = [];
 
-  return blocks.map(parseExercise);
+  for (const line of lines) {
+    if (/^\[.+?\]\s*$/.test(line.trim())) {
+      if (current.length > 0) {
+        blocks.push(current.join("\n").trim());
+      }
+      current = [line];
+    } else if (/^\s*---\s*$/.test(line)) {
+      // skip separator lines
+    } else {
+      current.push(line);
+    }
+  }
+  if (current.length > 0) {
+    blocks.push(current.join("\n").trim());
+  }
+
+  return blocks.filter(Boolean).map(parseExercise);
 }
 
 export function parseExercise(block: string): Exercise {

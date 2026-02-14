@@ -7,7 +7,7 @@ describe("parseExercisesFromMarkdown", () => {
 // this is a comment
 [speaking]
 sentence: "Hola"
----
+
 // another comment
   // indented comment
 [speaking]
@@ -19,19 +19,31 @@ sentence: "Adiós"
     expect(exercises[1].type).toBe("speaking");
   });
 
-  test("splits on --- separators", () => {
+  test("splits exercises by type tags without separators", () => {
+    const md = `
+[speaking]
+sentence: "Hola"
+
+[speaking]
+sentence: "Adiós"
+
+[speaking]
+sentence: "Gracias"
+`;
+    const exercises = parseExercisesFromMarkdown(md);
+    expect(exercises).toHaveLength(3);
+  });
+
+  test("still works with --- separators (backward compat)", () => {
     const md = `
 [speaking]
 sentence: "Hola"
 ---
 [speaking]
 sentence: "Adiós"
----
-[speaking]
-sentence: "Gracias"
 `;
     const exercises = parseExercisesFromMarkdown(md);
-    expect(exercises).toHaveLength(3);
+    expect(exercises).toHaveLength(2);
   });
 });
 

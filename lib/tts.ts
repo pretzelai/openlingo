@@ -4,25 +4,9 @@ import { db } from "@/lib/db";
 import { audioCache } from "@/lib/db/schema";
 import { and, eq } from "drizzle-orm";
 import { uploadAudio, getPublicUrl } from "@/lib/r2";
+import { getDefaultTemplate, interpolateTemplate, langCodeToName } from "@/lib/prompts";
 
 const openai = new OpenAI();
-
-const TTS_INSTRUCTIONS: Record<string, string> = {
-  de: "Speak in German with clear, native pronunciation. Calm, measured pace for learners.",
-  es: "Speak in Spanish with clear, native pronunciation. Calm, measured pace for learners.",
-  fr: "Speak in French with clear, native pronunciation. Calm, measured pace for learners.",
-  it: "Speak in Italian with clear, native pronunciation. Calm, measured pace for learners.",
-  pt: "Speak in Portuguese with clear, native pronunciation. Calm, measured pace for learners.",
-  ru: "Speak in Russian with clear, native pronunciation. Calm, measured pace for learners.",
-  ar: "Speak in Arabic with clear, native pronunciation. Calm, measured pace for learners.",
-  hi: "Speak in Hindi with clear, native pronunciation. Calm, measured pace for learners.",
-  ko: "Speak in Korean with clear, native pronunciation. Calm, measured pace for learners.",
-  zh: "Speak in Mandarin Chinese with clear, native pronunciation. Calm, measured pace for learners.",
-  ja: "Speak in Japanese with clear, native pronunciation. Calm, measured pace for learners.",
-  en: "Speak in English with clear pronunciation. Calm, measured pace for learners.",
-  tr: "Speak in Turkish with clear, native pronunciation. Calm, measured pace for learners.",
-  pl: "Speak in Polish with clear, native pronunciation. Calm, measured pace for learners.",
-};
 
 export async function generateSpeech(
   text: string,
@@ -44,9 +28,9 @@ export async function generateSpeech(
   }
 
   // Generate with OpenAI TTS
-  const instructions =
-    TTS_INSTRUCTIONS[language] ||
-    `Speak in the target language with clear pronunciation. Calm, measured pace for learners.`;
+  const language_name = langCodeToName[language] || "the target language";
+  const ttsTemplate = getDefaultTemplate("tts-instructions");
+  const instructions = interpolateTemplate(ttsTemplate, { language_name });
 
   const response = await openai.audio.speech.create({
     model: "gpt-4o-mini-tts",

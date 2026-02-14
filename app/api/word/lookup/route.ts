@@ -7,6 +7,7 @@ import { getModel } from "@/lib/ai";
 import { db } from "@/lib/db";
 import { wordCache } from "@/lib/db/schema";
 import { and, eq } from "drizzle-orm";
+import { getDefaultTemplate, interpolateTemplate, langCodeToName } from "@/lib/prompts";
 
 interface WordEntry {
   word: string;
@@ -33,21 +34,6 @@ const langCodeToFile: Record<string, string> = {
   zh: "mandarin",
   ja: "hiragana",
   en: "english",
-};
-
-const langCodeToName: Record<string, string> = {
-  de: "German",
-  fr: "French",
-  es: "Spanish",
-  it: "Italian",
-  pt: "Portuguese",
-  ru: "Russian",
-  ar: "Arabic",
-  hi: "Hindi",
-  ko: "Korean",
-  zh: "Mandarin Chinese",
-  ja: "Japanese",
-  en: "English",
 };
 
 // Module-level cache: language -> Map<lowercaseWord, WordEntry>
@@ -125,14 +111,13 @@ async function aiLookup(word: string, language: string) {
   }
 
   try {
+    const promptTemplate = getDefaultTemplate("word-analysis");
+    const prompt = interpolateTemplate(promptTemplate, { langName, word });
+
     const { object: analysis } = await generateObject({
       model: getModel("gemini-2.5-flash-lite"),
       schema: wordAnalysisSchema,
-      prompt: `Analyze the ${langName} word "${word}".
-
-If this is an inflected/conjugated form, identify the base/dictionary form.
-
-Return the base form, English translation, part of speech, grammatical gender (or null), CEFR level, an example sentence in ${langName}, and its English translation.`,
+      prompt,
     });
 
     // Cache in DB (fire and forget)

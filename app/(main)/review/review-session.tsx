@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import Link from "next/link";
 import { reviewCard, getScheduledCards } from "@/lib/actions/srs";
+import { interpolateTemplate } from "@/lib/prompts";
 import type { Quality } from "@/lib/srs";
 
 type SrsCard = {
@@ -31,37 +33,28 @@ const QUALITY_BUTTONS: { label: string; quality: Quality; color: string }[] = [
   { label: "Easy", quality: 5, color: "bg-lingo-green hover:bg-lingo-green/90" },
 ];
 
-const PLACEHOLDER_KEYS = [
-  "word",
-  "language",
-  "translation",
-  "ease_factor",
-  "interval",
-  "repetitions",
-  "next_review_at",
-  "last_reviewed_at",
-  "created_at",
-] as const;
-
-function interpolatePrompt(template: string, card: SrsCard): string {
-  return template
-    .replace(/\{word\}/g, card.word)
-    .replace(/\{language\}/g, card.language)
-    .replace(/\{translation\}/g, card.translation)
-    .replace(/\{ease_factor\}/g, String(card.easeFactor))
-    .replace(/\{interval\}/g, String(card.interval))
-    .replace(/\{repetitions\}/g, String(card.repetitions))
-    .replace(/\{next_review_at\}/g, card.nextReviewAt?.toISOString() ?? "")
-    .replace(/\{last_reviewed_at\}/g, card.lastReviewedAt?.toISOString() ?? "never")
-    .replace(/\{created_at\}/g, card.createdAt?.toISOString() ?? "");
+function cardToVars(card: SrsCard): Record<string, string> {
+  return {
+    word: card.word,
+    language: card.language,
+    translation: card.translation,
+    ease_factor: String(card.easeFactor),
+    interval: String(card.interval),
+    repetitions: String(card.repetitions),
+    next_review_at: card.nextReviewAt?.toISOString() ?? "",
+    last_reviewed_at: card.lastReviewedAt?.toISOString() ?? "never",
+    created_at: card.createdAt?.toISOString() ?? "",
+  };
 }
 
 export function ReviewSession({
   dueCards,
   stats,
+  aiPromptTemplate,
 }: {
   dueCards: SrsCard[];
   stats: Stats;
+  aiPromptTemplate: string;
 }) {
   const [cards, setCards] = useState<SrsCard[]>(dueCards);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -70,25 +63,16 @@ export function ReviewSession({
   const [scheduledLoading, setScheduledLoading] = useState(false);
   const [isScheduledMode, setIsScheduledMode] = useState(false);
 
-  // AI prompt state
+  // AI state
   const [aiEnabled, setAiEnabled] = useState(false);
-  const [aiPromptTemplate, setAiPromptTemplate] = useState("");
   const [aiResponse, setAiResponse] = useState<string | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
 
-  // Load AI settings from localStorage
+  // Load AI enabled preference from localStorage
   useEffect(() => {
-    const saved = localStorage.getItem("review-ai-prompt");
-    if (saved) setAiPromptTemplate(saved);
     const enabled = localStorage.getItem("review-ai-enabled");
     if (enabled === "true") setAiEnabled(true);
   }, []);
-
-  // Save AI settings to localStorage
-  useEffect(() => {
-    localStorage.setItem("review-ai-prompt", aiPromptTemplate);
-  }, [aiPromptTemplate]);
 
   useEffect(() => {
     localStorage.setItem("review-ai-enabled", String(aiEnabled));
@@ -119,7 +103,7 @@ export function ReviewSession({
       setAiLoading(true);
       setAiResponse(null);
       try {
-        const interpolated = interpolatePrompt(aiPromptTemplate, c);
+        const interpolated = interpolateTemplate(aiPromptTemplate, cardToVars(c));
         const res = await fetch("/api/review/ai-prompt", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -145,56 +129,30 @@ export function ReviewSession({
     }
   }, [currentIndex, completed, card, fetchAiPrompt]);
 
-  const isReviewing = cards.length > 0 && !completed;
-
-  const aiSettingsPanel = (
-    <div className="mb-4">
-      <button
-        onClick={() => setShowSettings(!showSettings)}
-        className="text-sm font-bold text-lingo-text-light hover:text-lingo-text transition-colors"
+  const aiToggle = (
+    <div className="mb-4 flex items-center gap-3">
+      <label className="flex items-center gap-2">
+        <input
+          type="checkbox"
+          checked={aiEnabled}
+          onChange={(e) => setAiEnabled(e.target.checked)}
+          className="rounded"
+        />
+        <span className="text-sm font-bold text-lingo-text">AI hints</span>
+      </label>
+      <Link
+        href="/prompts"
+        className="text-xs font-bold text-lingo-blue hover:text-lingo-blue/80 transition-colors"
       >
-        {showSettings ? "▾ AI Prompt Settings" : "▸ AI Prompt Settings"}
-      </button>
-
-      {showSettings && (
-        <div className="mt-2 p-4 bg-lingo-gray/30 rounded-xl border-2 border-lingo-border">
-          <label className="flex items-center gap-2 mb-3">
-            <input
-              type="checkbox"
-              checked={aiEnabled}
-              onChange={(e) => setAiEnabled(e.target.checked)}
-              className="rounded"
-            />
-            <span className="text-sm font-bold text-lingo-text">
-              Enable AI prompt
-            </span>
-          </label>
-          <textarea
-            value={aiPromptTemplate}
-            onChange={(e) => setAiPromptTemplate(e.target.value)}
-            placeholder="e.g. Give me a sentence using {word} in {language}"
-            className="w-full h-24 p-3 text-sm rounded-xl border-2 border-lingo-border bg-white resize-none focus:outline-none focus:border-lingo-blue"
-          />
-          <p className="mt-2 text-xs text-lingo-text-light">
-            Placeholders:{" "}
-            {PLACEHOLDER_KEYS.map((k) => (
-              <code
-                key={k}
-                className="mx-0.5 px-1 py-0.5 bg-lingo-gray rounded text-xs"
-              >
-                {`{${k}}`}
-              </code>
-            ))}
-          </p>
-        </div>
-      )}
+        Edit prompt
+      </Link>
     </div>
   );
 
   if (cards.length === 0) {
     return (
       <div className="py-6">
-        {aiSettingsPanel}
+        {aiToggle}
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <div className="text-6xl mb-4">🎉</div>
           <h2 className="text-2xl font-black text-lingo-text mb-2">
@@ -226,7 +184,7 @@ export function ReviewSession({
   if (completed) {
     return (
       <div className="py-6">
-        {aiSettingsPanel}
+        {aiToggle}
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <div className="text-6xl mb-4">✅</div>
           <h2 className="text-2xl font-black text-lingo-text mb-2">
@@ -301,8 +259,8 @@ export function ReviewSession({
         />
       </div>
 
-      {/* AI Settings toggle */}
-      {aiSettingsPanel}
+      {/* AI toggle */}
+      {aiToggle}
 
       {/* AI Response / Loading */}
       {aiEnabled && aiPromptTemplate.trim() && (

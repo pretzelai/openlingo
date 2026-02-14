@@ -15,6 +15,7 @@ import fs from "fs";
 import path from "path";
 import { generateText } from "ai";
 import { getModel } from "../lib/ai/models";
+import { getDefaultTemplate, interpolateTemplate } from "../lib/prompts";
 
 // ---------------------------------------------------------------------------
 // CLI args
@@ -46,69 +47,11 @@ function parseArgs() {
 // Prompt
 // ---------------------------------------------------------------------------
 function buildPrompt(topic: string, lessons: number): string {
-  return `You are a curriculum designer for a Duolingo-style German learning app. The learners are English speakers learning B1 level German.
-
-Generate a complete unit that teaches German vocabulary and grammar through the topic: "${topic}"
-
-The unit must have exactly ${lessons} lessons (sections). Each lesson teaches 4-6 new German words/phrases related to the topic.
-
-Do not ask questions that requiere knowledge about the topic like when was someone born or when did something happen. The questions should be about the vocabulary and grammar of the lesson.
-
-Output a single markdown file in EXACTLY this format (no deviations):
-
-The first matching pairs exercise should introduce the 4-6 new German words/phrases of B1 level. The rest of the words in the lesson should be A1/A2 level.
-
----
-title: "<Unit Title in German>"
-description: "<1-line English description of what this unit teaches>"
-order: 99
-icon: "<single emoji>"
-color: "<hex color>"
----
-
-## <Lesson 1 Title in German>
-
-[matching-pairs]
-- "<German word 1>" = "<English meaning 1>"
-- "<German word 2>" = "<English meaning 2>"
-- "<German word 3>" = "<English meaning 3>"
-- "<German word 4>" = "<English meaning 4>"
-
----
-
-[multiple-choice]
-prompt: "<question about a German word/phrase>"
-choices:
-  - "<correct answer>" (correct)
-  - "<wrong answer>"
-  - "<wrong answer>"
-
----
-
-[multiple-choice]
-prompt: "<question about another German word/phrase>"
-choices:
-  - "<correct answer>" (correct)
-  - "<wrong answer>"
-  - "<wrong answer>"
-
----
-
-[word-bank]
-prompt: "<Sentence in English>"
-words: ["<word1>", "<word2>", "<word3>", "<word4>", "<word5>", "<distractor>"]
-answer: ["<word1>", "<word2>", "<word3>", "<word4>", "<word5>"]
-
----
-
-[listening]
-text: "<A German sentence using vocabulary from this lesson>"
-ttsLang: "de"
-mode: word-bank
-
-## <Lesson 2 Title in German>
-
-... (same pattern)`;
+  const template = getDefaultTemplate("unit-generation");
+  return interpolateTemplate(template, {
+    topic,
+    lessons: String(lessons),
+  });
 }
 
 // ---------------------------------------------------------------------------

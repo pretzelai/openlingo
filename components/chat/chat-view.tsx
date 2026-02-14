@@ -1,6 +1,7 @@
 "use client";
 
 import { useChat } from "@ai-sdk/react";
+import type { UIMessage } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import {
   useRef,
@@ -9,14 +10,19 @@ import {
   useCallback,
   useMemo,
 } from "react";
+import { useRouter } from "next/navigation";
 import { ChatMessage } from "./chat-message";
 import { ThinkingMessage } from "./thinking-message";
+import { createConversation, saveMessages } from "@/lib/actions/chat";
 
 interface ChatViewProps {
   language: string;
+  conversationId?: string;
+  initialMessages?: UIMessage[];
 }
 
-export function ChatView({ language }: ChatViewProps) {
+export function ChatView({ language, conversationId, initialMessages }: ChatViewProps) {
+  const router = useRouter();
   const containerRef = useRef<HTMLDivElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -25,13 +31,39 @@ export function ChatView({ language }: ChatViewProps) {
   const [completedExercises, setCompletedExercises] = useState<
     Record<string, { correct: boolean; answer: string }>
   >({});
+  const [convId, setConvId] = useState<string | null>(conversationId ?? null);
+  const convIdRef = useRef(convId);
+  useEffect(() => {
+    convIdRef.current = convId;
+  }, [convId]);
 
   const transport = useMemo(
     () => new DefaultChatTransport({ body: { language } }),
     [language]
   );
 
-  const { messages, sendMessage, status } = useChat({ transport });
+  const { messages, sendMessage, status } = useChat({
+    transport,
+    id: convId ?? undefined,
+    messages: initialMessages,
+    onFinish: async ({ messages: allMessages, isError, isAbort }) => {
+      if (isError || isAbort) return;
+
+      if (convIdRef.current) {
+        await saveMessages(convIdRef.current, allMessages);
+      } else {
+        const firstUserMsg = allMessages.find((m) => m.role === "user");
+        const title = firstUserMsg
+          ? (firstUserMsg.parts.find((p) => p.type === "text")?.text ?? "New chat").slice(0, 50)
+          : "New chat";
+        const newId = await createConversation(language, title, allMessages);
+        setConvId(newId);
+        convIdRef.current = newId;
+        window.history.replaceState(null, "", `/chat/${newId}`);
+        router.refresh();
+      }
+    },
+  });
 
   const isLoading = status === "streaming" || status === "submitted";
 
@@ -108,7 +140,7 @@ export function ChatView({ language }: ChatViewProps) {
   }
 
   return (
-    <div className="mx-auto flex h-[calc(100vh-8rem)] max-w-3xl flex-col md:h-[calc(100vh-6rem)]">
+    <div className="mx-auto flex h-full max-w-3xl flex-col">
       {/* Messages area */}
       <div className="relative flex-1">
         <div

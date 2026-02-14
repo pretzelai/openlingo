@@ -298,6 +298,22 @@ export const audioCache = pgTable(
   ]
 );
 
+// ─── Chat conversations ───
+
+export const chatConversation = pgTable("chat_conversation", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  title: text("title").notNull(),
+  language: text("language").notNull(),
+  messages: jsonb("messages").notNull().$type<unknown[]>(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
 // ─── Relations ───
 
 export const courseRelations = relations(course, ({ many }) => ({

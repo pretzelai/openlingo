@@ -1,0 +1,24 @@
+import { notFound } from "next/navigation";
+import { getConversation } from "@/lib/actions/chat";
+import { ChatView } from "@/components/chat/chat-view";
+import type { UIMessage } from "@ai-sdk/react";
+
+export const metadata = { title: "Chat — LingoClaw" };
+
+export default async function ChatConversationPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+  const conv = await getConversation(id);
+  if (!conv) notFound();
+
+  return (
+    <ChatView
+      language={conv.language}
+      conversationId={conv.id}
+      initialMessages={conv.messages as UIMessage[]}
+    />
+  );
+}

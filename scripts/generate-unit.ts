@@ -13,6 +13,8 @@
 
 import fs from "fs";
 import path from "path";
+import { generateText } from "ai";
+import { getModel } from "../lib/ai/models";
 
 // ---------------------------------------------------------------------------
 // CLI args
@@ -110,86 +112,13 @@ mode: word-bank
 }
 
 // ---------------------------------------------------------------------------
-// AI providers
+// Provider → model mapping
 // ---------------------------------------------------------------------------
 
-async function generateWithGoogle(prompt: string): Promise<string> {
-  const apiKey = process.env.GOOGLE_AI_API_KEY;
-  if (!apiKey) throw new Error("GOOGLE_AI_API_KEY not set in .env.local");
-
-  const { GoogleGenAI } = await import("@google/genai");
-  const client = new GoogleGenAI({ apiKey });
-
-  console.log("Calling Gemini...");
-  const response = await client.models.generateContent({
-    model: "gemini-2.5-flash",
-    contents: prompt,
-  });
-
-  return response.text || "";
-}
-
-async function generateWithOpenAI(prompt: string): Promise<string> {
-  const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) throw new Error("OPENAI_API_KEY not set in .env.local");
-
-  console.log("Calling OpenAI...");
-  const response = await fetch("https://api.openai.com/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model: "gpt-4o",
-      messages: [{ role: "user", content: prompt }],
-      temperature: 0.7,
-      max_tokens: 16000,
-    }),
-  });
-
-  if (!response.ok) {
-    const err = await response.text();
-    throw new Error(`OpenAI API error (${response.status}): ${err}`);
-  }
-
-  const data = await response.json();
-  return data.choices[0].message.content || "";
-}
-
-async function generateWithAnthropic(prompt: string): Promise<string> {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) throw new Error("ANTHROPIC_API_KEY not set in .env.local");
-
-  console.log("Calling Anthropic...");
-  const response = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-api-key": apiKey,
-      "anthropic-version": "2023-06-01",
-    },
-    body: JSON.stringify({
-      model: "claude-sonnet-4-5-20250929",
-      max_tokens: 16000,
-      messages: [{ role: "user", content: prompt }],
-    }),
-  });
-
-  if (!response.ok) {
-    const err = await response.text();
-    throw new Error(`Anthropic API error (${response.status}): ${err}`);
-  }
-
-  const data = await response.json();
-  const block = data.content?.find((b: { type: string }) => b.type === "text");
-  return block?.text || "";
-}
-
-const providers: Record<string, (prompt: string) => Promise<string>> = {
-  google: generateWithGoogle,
-  openai: generateWithOpenAI,
-  anthropic: generateWithAnthropic,
+const providerModels: Record<string, string> = {
+  google: "gemini-2.5-flash",
+  openai: "gpt-4o",
+  anthropic: "claude-sonnet-4-5-20250929",
 };
 
 // ---------------------------------------------------------------------------
@@ -199,8 +128,8 @@ const providers: Record<string, (prompt: string) => Promise<string>> = {
 async function main() {
   const { provider, topic, lessons } = parseArgs();
 
-  const generate = providers[provider];
-  if (!generate) {
+  const modelName = providerModels[provider];
+  if (!modelName) {
     console.error(
       `Unknown provider: ${provider}. Use: google, openai, anthropic`,
     );
@@ -212,7 +141,11 @@ async function main() {
   console.log(
     `Generating unit for "${topic}" using ${provider} (${lessons} lessons)...`,
   );
-  const markdown = await generate(prompt);
+
+  const { text: markdown } = await generateText({
+    model: getModel(modelName),
+    prompt,
+  });
 
   // Clean up: remove code fences if the model wrapped it
   const cleaned = markdown

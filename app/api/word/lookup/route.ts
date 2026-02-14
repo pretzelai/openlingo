@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import fs from "fs/promises";
 import path from "path";
-import { GoogleGenAI } from "@google/genai";
+import { generateObject } from "ai";
+import { z } from "zod";
+import { getModel } from "@/lib/ai";
 import { db } from "@/lib/db";
 import { wordCache } from "@/lib/db/schema";
 import { and, eq } from "drizzle-orm";
@@ -73,14 +75,26 @@ async function loadLanguage(langCode: string): Promise<Map<string, WordEntry>> {
   }
 }
 
-// Lazy-init Gemini client
-let geminiClient: GoogleGenAI | null = null;
-function getGemini() {
-  if (!geminiClient && process.env.GOOGLE_AI_API_KEY) {
-    geminiClient = new GoogleGenAI({ apiKey: process.env.GOOGLE_AI_API_KEY });
-  }
-  return geminiClient;
-}
+const wordAnalysisSchema = z.object({
+  baseForm: z.string().describe("The dictionary/base form of the word"),
+  translation: z.string().describe("English translation"),
+  pos: z
+    .string()
+    .describe(
+      "Part of speech (noun/verb/adjective/adverb/preposition/conjunction/article/pronoun)"
+    ),
+  gender: z
+    .string()
+    .nullable()
+    .describe("Grammatical gender if applicable (masculine/feminine/neuter)"),
+  cefrLevel: z.string().describe("CEFR level (A1/A2/B1/B2/C1/C2)"),
+  exampleNative: z
+    .string()
+    .describe("A simple example sentence using this word"),
+  exampleEnglish: z
+    .string()
+    .describe("English translation of the example sentence"),
+});
 
 async function aiLookup(word: string, language: string) {
   const normalizedWord = word.toLowerCase().trim();
@@ -110,39 +124,16 @@ async function aiLookup(word: string, language: string) {
     };
   }
 
-  // Call Gemini
-  const gemini = getGemini();
-  if (!gemini) return null;
-
-  const prompt = `Analyze the ${langName} word "${word}".
+  try {
+    const { object: analysis } = await generateObject({
+      model: getModel("gemini-2.5-flash-lite"),
+      schema: wordAnalysisSchema,
+      prompt: `Analyze the ${langName} word "${word}".
 
 If this is an inflected/conjugated form, identify the base/dictionary form.
 
-Return ONLY a valid JSON object with these exact keys:
-{
-  "baseForm": "the dictionary/base form of the word (e.g. 'gehen' for 'ging', or same as input if already base form)",
-  "translation": "English translation",
-  "pos": "part of speech (noun/verb/adjective/adverb/preposition/conjunction/article/pronoun)",
-  "gender": "grammatical gender if applicable (masculine/feminine/neuter) or null",
-  "cefrLevel": "CEFR level (A1/A2/B1/B2/C1/C2)",
-  "exampleNative": "a simple example sentence in ${langName} using this word",
-  "exampleEnglish": "English translation of the example sentence"
-}`;
-
-  try {
-    const response = await gemini.models.generateContent({
-      model: "gemini-2.5-flash-lite",
-      contents: prompt,
-      config: {
-        responseMimeType: "application/json",
-        thinkingConfig: { thinkingBudget: 0 },
-      },
+Return the base form, English translation, part of speech, grammatical gender (or null), CEFR level, an example sentence in ${langName}, and its English translation.`,
     });
-
-    const content = response.text;
-    if (!content) return null;
-
-    const analysis = JSON.parse(content);
 
     // Cache in DB (fire and forget)
     db.insert(wordCache)

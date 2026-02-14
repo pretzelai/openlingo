@@ -1,13 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { GoogleGenAI } from "@google/genai";
-
-let geminiClient: GoogleGenAI | null = null;
-function getGemini() {
-  if (!geminiClient && process.env.GOOGLE_AI_API_KEY) {
-    geminiClient = new GoogleGenAI({ apiKey: process.env.GOOGLE_AI_API_KEY });
-  }
-  return geminiClient;
-}
+import { generateText } from "ai";
+import { getModel } from "@/lib/ai";
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
@@ -20,25 +13,13 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const gemini = getGemini();
-  if (!gemini) {
-    return NextResponse.json(
-      { error: "AI not configured" },
-      { status: 503 }
-    );
-  }
-
   try {
-    const response = await gemini.models.generateContent({
-      model: "gemini-2.5-flash-lite",
-      contents: prompt,
-      config: {
-        thinkingConfig: { thinkingBudget: 0 },
-      },
+    const { text } = await generateText({
+      model: getModel("gemini-2.5-flash-lite"),
+      prompt,
     });
 
-    const result = response.text || "";
-    return NextResponse.json({ result });
+    return NextResponse.json({ result: text });
   } catch (err) {
     console.error("AI prompt failed:", err);
     return NextResponse.json(

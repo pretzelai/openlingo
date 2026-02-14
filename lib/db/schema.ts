@@ -224,6 +224,27 @@ export const wordCache = pgTable(
   ]
 );
 
+// ─── User memory (AI context) ───
+
+export const userMemory = pgTable(
+  "user_memory",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    key: text("key").notNull(),
+    value: text("value").notNull(),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("user_memory_unique").on(table.userId, table.key),
+  ]
+);
+
 // ─── Course content tables ───
 
 export const course = pgTable("course", {

@@ -5,6 +5,10 @@ import { userMemory, srsCard } from "@/lib/db/schema";
 import { and, eq, lte, count, sql } from "drizzle-orm";
 import { calculateNextReview, type Quality } from "@/lib/srs";
 import { exerciseSchema } from "./exercise-schema";
+import {
+  lookupWord as wordLookup,
+  getWordsByLevel,
+} from "@/lib/words";
 
 export function createTools(userId: string, language?: string) {
   return {
@@ -105,23 +109,192 @@ export function createTools(userId: string, language?: string) {
     }),
 
     addWordToSrs: tool({
-      description: "Add a new word to the user's SRS deck for spaced repetition",
+      description:
+        "Add a new word to the user's SRS deck with auto-enrichment from dictionary/AI",
       inputSchema: z.object({
         word: z.string().describe("The word in the target language"),
-        translation: z.string().describe("English translation"),
+        translation: z
+          .string()
+          .optional()
+          .describe("English translation (auto-filled if omitted)"),
       }),
       execute: async ({ word, translation }) => {
         const lang = language ?? "de";
+        const normalized = word.toLowerCase();
+
+        // Look up enrichment data
+        const lookup = await wordLookup(word, lang);
+
+        const finalTranslation =
+          translation || lookup.translation || word;
+
         await db
           .insert(srsCard)
           .values({
-            word: word.toLowerCase(),
+            word: normalized,
             language: lang,
             userId,
-            translation,
+            translation: finalTranslation,
+            cefrLevel: lookup.cefrLevel ?? null,
+            pos: lookup.pos ?? null,
+            gender: lookup.gender ?? null,
+            exampleNative: lookup.exampleNative ?? null,
+            exampleEnglish: lookup.exampleEnglish ?? null,
+            nextReviewAt: new Date(),
           })
-          .onConflictDoNothing();
-        return { success: true, word, translation };
+          .onConflictDoUpdate({
+            target: [srsCard.word, srsCard.language, srsCard.userId],
+            set: {
+              // Backfill enrichment but don't overwrite SRS scheduling fields
+              cefrLevel: sql`COALESCE(${srsCard.cefrLevel}, excluded.cefr_level)`,
+              pos: sql`COALESCE(${srsCard.pos}, excluded.pos)`,
+              gender: sql`COALESCE(${srsCard.gender}, excluded.gender)`,
+              exampleNative: sql`COALESCE(${srsCard.exampleNative}, excluded.example_native)`,
+              exampleEnglish: sql`COALESCE(${srsCard.exampleEnglish}, excluded.example_english)`,
+            },
+          });
+
+        return {
+          success: true,
+          word: normalized,
+          translation: finalTranslation,
+          cefrLevel: lookup.cefrLevel ?? null,
+          pos: lookup.pos ?? null,
+          source: lookup.source ?? null,
+        };
+      },
+    }),
+
+    addWordsByLevel: tool({
+      description:
+        "Batch-add words at a specific CEFR level (A1-C2) from the dictionary to the user's SRS deck",
+      inputSchema: z.object({
+        level: z
+          .enum(["A1", "A2", "B1", "B2", "C1", "C2"])
+          .describe("CEFR level"),
+        limit: z
+          .number()
+          .optional()
+          .default(50)
+          .describe("Max words to add (default 50, max 500)"),
+      }),
+      execute: async ({ level, limit }) => {
+        const lang = language ?? "de";
+        const cap = Math.min(limit, 500);
+
+        const words = await getWordsByLevel(lang, level);
+        const batch = words.slice(0, cap);
+
+        if (batch.length === 0) {
+          return { added: 0, totalAvailable: 0, level };
+        }
+
+        const now = new Date();
+        const rows = batch.map((w) => ({
+          word: w.word.toLowerCase(),
+          language: lang,
+          userId,
+          translation: w.english_translation,
+          cefrLevel: w.cefr_level,
+          pos: w.pos,
+          gender: w.gender || null,
+          exampleNative: w.example_sentence_native,
+          exampleEnglish: w.example_sentence_english,
+          nextReviewAt: now,
+        }));
+
+        await db.insert(srsCard).values(rows).onConflictDoNothing();
+
+        return {
+          added: batch.length,
+          totalAvailable: words.length,
+          level,
+        };
+      },
+    }),
+
+    lookupWord: tool({
+      description:
+        "Look up a word in the dictionary or via AI without adding it to SRS. Returns translation, part of speech, gender, CEFR level, and examples.",
+      inputSchema: z.object({
+        word: z.string().describe("The word to look up"),
+      }),
+      execute: async ({ word }) => {
+        const lang = language ?? "de";
+        return wordLookup(word, lang);
+      },
+    }),
+
+    removeWord: tool({
+      description: "Remove a word from the user's SRS deck",
+      inputSchema: z.object({
+        word: z.string().describe("The word to remove"),
+      }),
+      execute: async ({ word }) => {
+        const lang = language ?? "de";
+        const deleted = await db
+          .delete(srsCard)
+          .where(
+            and(
+              eq(srsCard.word, word.toLowerCase()),
+              eq(srsCard.language, lang),
+              eq(srsCard.userId, userId)
+            )
+          )
+          .returning({ word: srsCard.word });
+
+        if (deleted.length === 0) {
+          return { success: false, error: "Card not found" };
+        }
+        return { success: true, word: deleted[0].word };
+      },
+    }),
+
+    listCards: tool({
+      description: "List words in the user's SRS deck",
+      inputSchema: z.object({
+        level: z
+          .enum(["A1", "A2", "B1", "B2", "C1", "C2"])
+          .optional()
+          .describe("Filter by CEFR level"),
+        limit: z
+          .number()
+          .optional()
+          .default(50)
+          .describe("Max cards to return"),
+        offset: z
+          .number()
+          .optional()
+          .default(0)
+          .describe("Offset for pagination"),
+      }),
+      execute: async ({ level, limit, offset }) => {
+        const conditions = [eq(srsCard.userId, userId)];
+        if (language) {
+          conditions.push(eq(srsCard.language, language));
+        }
+        if (level) {
+          conditions.push(eq(srsCard.cefrLevel, level));
+        }
+
+        const cards = await db
+          .select({
+            word: srsCard.word,
+            translation: srsCard.translation,
+            cefrLevel: srsCard.cefrLevel,
+            pos: srsCard.pos,
+            gender: srsCard.gender,
+            interval: srsCard.interval,
+            repetitions: srsCard.repetitions,
+            nextReviewAt: srsCard.nextReviewAt,
+          })
+          .from(srsCard)
+          .where(and(...conditions))
+          .orderBy(srsCard.word)
+          .limit(limit)
+          .offset(offset);
+
+        return { cards, count: cards.length };
       },
     }),
 

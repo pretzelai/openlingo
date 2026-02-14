@@ -1,11 +1,13 @@
 "use client";
 
 import { useChat } from "@ai-sdk/react";
+import { DefaultChatTransport } from "ai";
 import {
   useRef,
   useEffect,
   useState,
   useCallback,
+  useMemo,
 } from "react";
 import { ChatMessage } from "./chat-message";
 import { ThinkingMessage } from "./thinking-message";
@@ -24,7 +26,12 @@ export function ChatView({ language }: ChatViewProps) {
     Record<string, { correct: boolean; answer: string }>
   >({});
 
-  const { messages, sendMessage, status } = useChat();
+  const transport = useMemo(
+    () => new DefaultChatTransport({ body: { language } }),
+    [language]
+  );
+
+  const { messages, sendMessage, status } = useChat({ transport });
 
   const isLoading = status === "streaming" || status === "submitted";
 
@@ -110,7 +117,7 @@ export function ChatView({ language }: ChatViewProps) {
         >
           <div className="mx-auto flex min-w-0 max-w-3xl flex-col gap-4 px-2 py-4 md:gap-6 md:px-4">
             {messages.length === 0 && (
-              <Greeting onSend={(text) => sendMessage({ text })} />
+              <Greeting language={language} onSend={(text) => sendMessage({ text })} />
             )}
 
             {messages.map((message, index) => (
@@ -217,17 +224,50 @@ export function ChatView({ language }: ChatViewProps) {
   );
 }
 
-function Greeting({ onSend }: { onSend: (text: string) => void }) {
+const LANG_FLAGS: Record<string, string> = {
+  de: "\u{1F1E9}\u{1F1EA}",
+  fr: "\u{1F1EB}\u{1F1F7}",
+  es: "\u{1F1EA}\u{1F1F8}",
+  it: "\u{1F1EE}\u{1F1F9}",
+  pt: "\u{1F1F5}\u{1F1F9}",
+  ru: "\u{1F1F7}\u{1F1FA}",
+  ar: "\u{1F1F8}\u{1F1E6}",
+  hi: "\u{1F1EE}\u{1F1F3}",
+  ko: "\u{1F1F0}\u{1F1F7}",
+  zh: "\u{1F1E8}\u{1F1F3}",
+  ja: "\u{1F1EF}\u{1F1F5}",
+  en: "\u{1F1EC}\u{1F1E7}",
+};
+
+const LANG_NAMES: Record<string, string> = {
+  de: "German",
+  fr: "French",
+  es: "Spanish",
+  it: "Italian",
+  pt: "Portuguese",
+  ru: "Russian",
+  ar: "Arabic",
+  hi: "Hindi",
+  ko: "Korean",
+  zh: "Mandarin",
+  ja: "Japanese",
+  en: "English",
+};
+
+function Greeting({ language, onSend }: { language: string; onSend: (text: string) => void }) {
+  const flag = LANG_FLAGS[language] ?? "\u{1F30D}";
+  const name = LANG_NAMES[language] ?? language;
+
   return (
     <div className="flex flex-col items-center justify-center py-16 text-center px-4">
       <div className="flex h-12 w-12 items-center justify-center rounded-full bg-lingo-green/10 ring-1 ring-lingo-green/20 mb-4">
-        <span className="text-2xl">🇩🇪</span>
+        <span className="text-2xl">{flag}</span>
       </div>
       <h2 className="text-lg font-bold text-lingo-text mb-2">
-        German Tutor
+        {name} Tutor
       </h2>
       <p className="text-sm text-lingo-text-light max-w-sm leading-relaxed">
-        Practice vocabulary, review due words, or ask questions about German.
+        Practice vocabulary, review due words, or ask questions about {name}.
       </p>
       <div className="mt-6 flex flex-wrap justify-center gap-2">
         {["Let's practice!", "How many words are due?", "Teach me something new"].map(

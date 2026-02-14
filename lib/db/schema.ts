@@ -188,6 +188,11 @@ export const srsCard = pgTable(
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
     translation: text("translation").notNull(),
+    cefrLevel: text("cefr_level"),
+    pos: text("pos"),
+    gender: text("gender"),
+    exampleNative: text("example_native"),
+    exampleEnglish: text("example_english"),
     easeFactor: real("ease_factor").notNull().default(2.5),
     interval: integer("interval").notNull().default(0), // days
     repetitions: integer("repetitions").notNull().default(0),

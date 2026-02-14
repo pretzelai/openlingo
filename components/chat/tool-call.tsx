@@ -7,6 +7,10 @@ const TOOL_LABELS: Record<string, string> = {
   getSrsStats: "Checking learning stats",
   reviewCard: "Updating SRS card",
   addWordToSrs: "Adding word to deck",
+  addWordsByLevel: "Adding words by level",
+  lookupWord: "Looking up word",
+  removeWord: "Removing word",
+  listCards: "Listing cards",
   readMemory: "Reading memory",
   writeMemory: "Saving to memory",
 };

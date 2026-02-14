@@ -135,6 +135,21 @@ words: "cat" "the" "is" "black" "big"
 answer: "the" "cat" "is" "black"
 ```
 
+### free-text
+
+User writes a free-form text response. After submitting, an AI prompt is called with their response and the result (Markdown-formatted) is shown back. This exercise is always marked correct (participation-based).
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| text | yes | Instruction shown to user |
+| afterSubmitPrompt | yes | AI prompt template — use `{userResponse}` as placeholder |
+
+```
+[free-text]
+text: "Write a short paragraph introducing yourself in German"
+afterSubmitPrompt: "The user is learning German. They wrote: {userResponse}. Please provide feedback on grammar and vocabulary. Be encouraging."
+```
+
 ### speaking
 
 User speaks a sentence aloud for pronunciation practice.

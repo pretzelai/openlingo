@@ -61,6 +61,9 @@ function extractTexts(
         items.push({ text: exercise.sentence, language });
       }
       break;
+    case "free-text":
+      // No TTS needed for free-text exercises
+      break;
   }
 
   return items;

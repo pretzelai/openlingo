@@ -7,6 +7,7 @@ import type {
   ListeningExercise,
   WordBankExercise,
   SpeakingExercise,
+  FreeTextExercise,
 } from "./types";
 
 /**
@@ -66,6 +67,8 @@ export function parseExercise(block: string): Exercise {
       return parseWordBank(lines);
     case "speaking":
       return parseSpeaking(lines);
+    case "free-text":
+      return parseFreeText(lines);
     default:
       throw new Error(`Unknown exercise type: ${type}`);
   }
@@ -177,6 +180,14 @@ function parseSpeaking(lines: string[]): SpeakingExercise {
   const rawSentence = stripNoAudio(getField(lines, "sentence"));
   if (rawSentence.flagged) noAudio.push("sentence");
   return { type: "speaking", sentence: rawSentence.text, ...(noAudio.length && { noAudio }) };
+}
+
+function parseFreeText(lines: string[]): FreeTextExercise {
+  const noAudio: string[] = [];
+  const rawText = stripNoAudio(getField(lines, "text"));
+  if (rawText.flagged) noAudio.push("text");
+  const afterSubmitPrompt = getField(lines, "afterSubmitPrompt");
+  return { type: "free-text", text: rawText.text, afterSubmitPrompt, ...(noAudio.length && { noAudio }) };
 }
 
 function parseWordBank(lines: string[]): WordBankExercise {

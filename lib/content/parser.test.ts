@@ -246,6 +246,37 @@ random_order: true`;
   });
 });
 
+describe("free-text", () => {
+  test("parses basic free-text", () => {
+    const block = `[free-text]
+text: "Write a short paragraph introducing yourself in German"
+afterSubmitPrompt: "The user wrote: {userResponse}. Please provide feedback."`;
+    const ex = parseExercise(block);
+    expect(ex).toEqual({
+      type: "free-text",
+      text: "Write a short paragraph introducing yourself in German",
+      afterSubmitPrompt: "The user wrote: {userResponse}. Please provide feedback.",
+    });
+  });
+
+  test("parses [no-audio] on text", () => {
+    const block = `[free-text]
+text: "Write something" [no-audio]
+afterSubmitPrompt: "Evaluate: {userResponse}"`;
+    const ex = parseExercise(block);
+    if (ex.type === "free-text") {
+      expect(ex.noAudio).toEqual(["text"]);
+      expect(ex.text).toBe("Write something");
+    }
+  });
+
+  test("throws on missing afterSubmitPrompt", () => {
+    const block = `[free-text]
+text: "Write something"`;
+    expect(() => parseExercise(block)).toThrow("Missing field: afterSubmitPrompt");
+  });
+});
+
 describe("speaking", () => {
   test("parses basic speaking", () => {
     const block = `[speaking]

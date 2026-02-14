@@ -40,7 +40,8 @@ export type Exercise =
   | MatchingPairsExercise
   | ListeningExercise
   | WordBankExercise
-  | SpeakingExercise;
+  | SpeakingExercise
+  | FreeTextExercise;
 
 export interface MultipleChoiceExercise {
   type: "multiple-choice";
@@ -94,6 +95,13 @@ export interface WordBankExercise {
 export interface SpeakingExercise {
   type: "speaking";
   sentence: string;
+  noAudio?: string[];
+}
+
+export interface FreeTextExercise {
+  type: "free-text";
+  text: string;
+  afterSubmitPrompt: string;
   noAudio?: string[];
 }
 

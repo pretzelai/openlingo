@@ -71,6 +71,32 @@ export async function resetPrompt(id: string) {
     );
 }
 
+export async function getMemory(): Promise<string> {
+  const session = await requireSession();
+
+  const [row] = await db
+    .select()
+    .from(userMemory)
+    .where(
+      and(eq(userMemory.userId, session.user.id), eq(userMemory.key, "memory"))
+    )
+    .limit(1);
+
+  return row?.value ?? "";
+}
+
+export async function saveMemory(value: string) {
+  const session = await requireSession();
+
+  await db
+    .insert(userMemory)
+    .values({ userId: session.user.id, key: "memory", value })
+    .onConflictDoUpdate({
+      target: [userMemory.userId, userMemory.key],
+      set: { value, updatedAt: new Date() },
+    });
+}
+
 /** Non-action helper: get user's prompt template with fallback to default */
 export async function getUserPromptTemplate(
   userId: string,

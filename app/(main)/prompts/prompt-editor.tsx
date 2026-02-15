@@ -13,7 +13,9 @@ export function PromptEditor({ prompt }: { prompt: PromptWithOverride }) {
   const [saving, startSave] = useTransition();
   const [resetting, startReset] = useTransition();
 
-  const isTall = prompt.id === "unit-generation";
+  const lineCount = value.split("\n").length;
+  const heightClass =
+    lineCount > 20 ? "h-96" : lineCount > 8 ? "h-64" : "h-28";
 
   function handleSave() {
     startSave(async () => {
@@ -49,9 +51,7 @@ export function PromptEditor({ prompt }: { prompt: PromptWithOverride }) {
       <textarea
         value={value}
         onChange={(e) => setValue(e.target.value)}
-        className={`w-full p-3 text-sm font-mono rounded-xl border-2 border-lingo-border bg-lingo-gray/20 resize-none focus:outline-none focus:border-lingo-blue ${
-          isTall ? "h-64" : "h-28"
-        }`}
+        className={`w-full p-3 text-sm font-mono rounded-xl border-2 border-lingo-border bg-lingo-gray/20 resize-none focus:outline-none focus:border-lingo-blue ${heightClass}`}
       />
 
       <div className="mt-2 flex flex-wrap gap-1.5">

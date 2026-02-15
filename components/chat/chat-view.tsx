@@ -34,11 +34,8 @@ export function ChatView({ language, conversationId, initialMessages }: ChatView
   const [initialMessageIds] = useState(
     () => new Set((initialMessages ?? []).map((m) => m.id))
   );
-  const [convId, setConvId] = useState<string | null>(conversationId ?? null);
-  const convIdRef = useRef(convId);
-  useEffect(() => {
-    convIdRef.current = convId;
-  }, [convId]);
+  const [chatId] = useState(() => conversationId ?? crypto.randomUUID());
+  const convIdRef = useRef<string | null>(conversationId ?? null);
 
   const transport = useMemo(
     () => new DefaultChatTransport({ body: { language } }),
@@ -47,7 +44,7 @@ export function ChatView({ language, conversationId, initialMessages }: ChatView
 
   const { messages, sendMessage, status } = useChat({
     transport,
-    id: convId ?? undefined,
+    id: chatId,
     messages: initialMessages,
     onFinish: async ({ messages: allMessages, isError, isAbort }) => {
       if (isError || isAbort) return;
@@ -60,7 +57,6 @@ export function ChatView({ language, conversationId, initialMessages }: ChatView
           ? (firstUserMsg.parts.find((p) => p.type === "text")?.text ?? "New chat").slice(0, 50)
           : "New chat";
         const newId = await createConversation(language, title, allMessages);
-        setConvId(newId);
         convIdRef.current = newId;
         window.history.replaceState(null, "", `/chat/${newId}`);
         router.refresh();

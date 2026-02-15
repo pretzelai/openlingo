@@ -1,8 +1,11 @@
 import { sql } from "drizzle-orm";
 import { db } from "../lib/db";
 
-// Better Auth tables to preserve (don't drop these)
-const AUTH_TABLES = ["user", "session", "account", "verification"];
+// Tables to preserve (don't drop these)
+const PRESERVED_TABLES = [
+  "user", "session", "account", "verification", // Better Auth
+  "audio_cache", // TTS cache (expensive to regenerate)
+];
 
 // Get all tables in public schema
 const rows = await db.execute<{ tablename: string }>(sql`
@@ -10,7 +13,7 @@ const rows = await db.execute<{ tablename: string }>(sql`
 `);
 
 const allTables = [...rows].map((r) => r.tablename);
-const tablesToDrop = allTables.filter((t) => !AUTH_TABLES.includes(t));
+const tablesToDrop = allTables.filter((t) => !PRESERVED_TABLES.includes(t));
 
 if (tablesToDrop.length > 0) {
   const quoted = tablesToDrop.map((t) => `"${t}"`).join(", ");
@@ -20,5 +23,5 @@ if (tablesToDrop.length > 0) {
   console.log("No app tables to drop.");
 }
 
-console.log(`Preserved auth tables: ${AUTH_TABLES.join(", ")}`);
+console.log(`Preserved tables: ${PRESERVED_TABLES.join(", ")}`);
 process.exit(0);

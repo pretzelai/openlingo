@@ -24,7 +24,7 @@ Your capabilities:
 - Remove a word from the deck with removeWord
 - List the user's deck with listCards (filterable by CEFR level)
 - Review/score SRS cards after practice with reviewCard
-- Read and write user notes/preferences with readMemory/writeMemory
+- Read user notes/preferences with readMemory, append new notes with addMemory, or rewrite all memory with rewriteAllMemory
 - Present interactive exercises with presentExercise
 - Create a full learning unit on any topic with createUnit (generates lessons + exercises, auto-enrolls the user)
 

@@ -21,30 +21,61 @@ import { getModel } from "./models";
 export function createTools(userId: string, language?: string) {
   return {
     readMemory: tool({
-      description: "Read a value from the user's memory by key",
-      inputSchema: z.object({
-        key: z.string().describe("The memory key to look up"),
-      }),
-      execute: async ({ key }) => {
+      description:
+        "Read everything stored in the user's memory. Returns free-text notes that accumulate over time.",
+      inputSchema: z.object({}),
+      execute: async () => {
         const [row] = await db
           .select()
           .from(userMemory)
-          .where(and(eq(userMemory.userId, userId), eq(userMemory.key, key)))
+          .where(
+            and(eq(userMemory.userId, userId), eq(userMemory.key, "memory"))
+          )
           .limit(1);
-        return row ? { found: true, value: row.value } : { found: false };
+        return row ? { found: true, value: row.value } : { found: false, value: "" };
       },
     }),
 
-    writeMemory: tool({
-      description: "Store a value in the user's memory (upsert by key)",
+    addMemory: tool({
+      description:
+        "Append a line to the user's memory. The text is added after a line break at the end of existing memory.",
       inputSchema: z.object({
-        key: z.string().describe("The memory key"),
-        value: z.string().describe("The value to store"),
+        text: z.string().describe("The text to append to memory"),
       }),
-      execute: async ({ key, value }) => {
+      execute: async ({ text }) => {
+        const [existing] = await db
+          .select()
+          .from(userMemory)
+          .where(
+            and(eq(userMemory.userId, userId), eq(userMemory.key, "memory"))
+          )
+          .limit(1);
+
+        const newValue = existing ? existing.value + "\n" + text : text;
+
         await db
           .insert(userMemory)
-          .values({ userId, key, value })
+          .values({ userId, key: "memory", value: newValue })
+          .onConflictDoUpdate({
+            target: [userMemory.userId, userMemory.key],
+            set: { value: newValue, updatedAt: new Date() },
+          });
+        return { success: true };
+      },
+    }),
+
+    rewriteAllMemory: tool({
+      description:
+        "Replace the user's entire memory with new content. Use when memory needs to be reorganized or cleaned up.",
+      inputSchema: z.object({
+        value: z
+          .string()
+          .describe("The new content to replace all existing memory"),
+      }),
+      execute: async ({ value }) => {
+        await db
+          .insert(userMemory)
+          .values({ userId, key: "memory", value })
           .onConflictDoUpdate({
             target: [userMemory.userId, userMemory.key],
             set: { value, updatedAt: new Date() },

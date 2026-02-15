@@ -12,7 +12,8 @@ const TOOL_LABELS: Record<string, string> = {
   removeWord: "Removing word",
   listCards: "Listing cards",
   readMemory: "Reading memory",
-  writeMemory: "Saving to memory",
+  addMemory: "Saving to memory",
+  rewriteAllMemory: "Rewriting memory",
   createUnit: "Creating learning unit",
 };
 

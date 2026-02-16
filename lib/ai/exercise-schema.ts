@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+const noAudio = z.array(z.string()).optional().describe("Words to skip TTS for");
+
 export const multipleChoiceSchema = z.object({
   type: z.literal("multiple-choice"),
   text: z.string().describe("The question or prompt"),
@@ -13,6 +15,8 @@ export const multipleChoiceSchema = z.object({
     .int()
     .min(0)
     .describe("Zero-based index of the correct choice"),
+  randomOrder: z.boolean().optional().describe("Shuffle choices at runtime"),
+  noAudio,
 });
 
 export const translationSchema = z.object({
@@ -24,6 +28,7 @@ export const translationSchema = z.object({
     .array(z.string())
     .default([])
     .describe("Alternative accepted translations"),
+  noAudio,
 });
 
 export const fillInTheBlankSchema = z.object({
@@ -32,6 +37,7 @@ export const fillInTheBlankSchema = z.object({
     .string()
     .describe("Sentence with ___ marking the blank, e.g. 'Der ___ ist groß'"),
   blank: z.string().describe("The correct word for the blank"),
+  noAudio,
 });
 
 export const matchingPairsSchema = z.object({
@@ -46,6 +52,8 @@ export const matchingPairsSchema = z.object({
     .min(2)
     .max(6)
     .describe("Pairs to match"),
+  randomOrder: z.boolean().optional().describe("Shuffle pairs at runtime"),
+  noAudio,
 });
 
 export const wordBankSchema = z.object({
@@ -55,6 +63,8 @@ export const wordBankSchema = z.object({
     .array(z.string())
     .describe("Available word tiles (include 1-2 distractors)"),
   answer: z.array(z.string()).describe("The correct word sequence"),
+  randomOrder: z.boolean().optional().describe("Shuffle tiles at runtime"),
+  noAudio,
 });
 
 export const listeningSchema = z.object({
@@ -65,6 +75,22 @@ export const listeningSchema = z.object({
     .enum(["choices", "word-bank"])
     .optional()
     .describe("'choices' for multiple-choice, 'word-bank' for reconstruction"),
+  noAudio,
+});
+
+export const speakingSchema = z.object({
+  type: z.literal("speaking"),
+  sentence: z.string().describe("The sentence the user should say aloud"),
+  noAudio,
+});
+
+export const freeTextSchema = z.object({
+  type: z.literal("free-text"),
+  text: z.string().describe("Instruction shown to user"),
+  afterSubmitPrompt: z
+    .string()
+    .describe("AI prompt template — use {userResponse} as placeholder"),
+  noAudio,
 });
 
 export const exerciseSchema = z.discriminatedUnion("type", [
@@ -74,6 +100,8 @@ export const exerciseSchema = z.discriminatedUnion("type", [
   matchingPairsSchema,
   wordBankSchema,
   listeningSchema,
+  speakingSchema,
+  freeTextSchema,
 ]);
 
 export type ChatExercise = z.infer<typeof exerciseSchema>;

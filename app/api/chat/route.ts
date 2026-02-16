@@ -4,6 +4,7 @@ import { requireSession } from "@/lib/auth-server";
 import { langCodeToName, interpolateTemplate } from "@/lib/prompts";
 import { getUserPromptTemplate } from "@/lib/actions/prompts";
 import { getTargetLanguage } from "@/lib/actions/preferences";
+import { EXERCISE_SYNTAX } from "@/lib/content/exercise-syntax";
 import { db } from "@/lib/db";
 import { userMemory } from "@/lib/db/schema";
 import { and, eq } from "drizzle-orm";
@@ -37,6 +38,7 @@ export async function POST(req: Request) {
     langName,
     language,
     memory,
+    exerciseSyntax: EXERCISE_SYNTAX,
   });
 
   const result = streamText({

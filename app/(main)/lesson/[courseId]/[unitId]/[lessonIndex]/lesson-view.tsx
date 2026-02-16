@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import type { UnitLesson, Exercise } from "@/lib/content/types";
+import { exerciseSchema } from "@/lib/ai/exercise-schema";
 import { useLesson } from "@/hooks/use-lesson";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import { MultipleChoice } from "@/components/exercises/multiple-choice";
@@ -67,24 +68,26 @@ export function LessonView({
   }
 
   // When lesson completes, submit results
-  if (isComplete && !showComplete) {
-    startTransition(async () => {
-      const result = await completeLesson({
-        unitId,
-        lessonIndex,
-        xpReward: lesson.xpReward,
-        results: results.map((r) => ({
-          exerciseIndex: r.exerciseIndex,
-          exerciseType: r.exerciseType,
-          correct: r.correct,
-          userAnswer: r.userAnswer,
-        })),
-        heartsLost,
+  useEffect(() => {
+    if (isComplete && !showComplete) {
+      startTransition(async () => {
+        const result = await completeLesson({
+          unitId,
+          lessonIndex,
+          xpReward: lesson.xpReward,
+          results: results.map((r) => ({
+            exerciseIndex: r.exerciseIndex,
+            exerciseType: r.exerciseType,
+            correct: r.correct,
+            userAnswer: r.userAnswer,
+          })),
+          heartsLost,
+        });
+        setLessonResult(result);
+        setShowComplete(true);
       });
-      setLessonResult(result);
-      setShowComplete(true);
-    });
-  }
+    }
+  }, [isComplete]);
 
   if (showComplete && lessonResult) {
     return (
@@ -146,11 +149,18 @@ function ExerciseRenderer({
   onContinue: () => void;
   language: string;
 }) {
-  switch (exercise.type) {
+  const parsed = exerciseSchema.safeParse(exercise);
+  if (!parsed.success) {
+    console.warn("Skipping invalid exercise:", parsed.error.flatten(), exercise);
+    return <SkipInvalid onResult={onResult} onContinue={onContinue} />;
+  }
+
+  const ex = parsed.data;
+  switch (ex.type) {
     case "multiple-choice":
       return (
         <MultipleChoice
-          exercise={exercise}
+          exercise={ex}
           onResult={onResult}
           onContinue={onContinue}
           language={language}
@@ -159,7 +169,7 @@ function ExerciseRenderer({
     case "translation":
       return (
         <Translation
-          exercise={exercise}
+          exercise={ex}
           onResult={onResult}
           onContinue={onContinue}
           language={language}
@@ -168,7 +178,7 @@ function ExerciseRenderer({
     case "fill-in-the-blank":
       return (
         <FillInTheBlank
-          exercise={exercise}
+          exercise={ex}
           onResult={onResult}
           onContinue={onContinue}
           language={language}
@@ -177,7 +187,7 @@ function ExerciseRenderer({
     case "matching-pairs":
       return (
         <MatchingPairs
-          exercise={exercise}
+          exercise={ex}
           onResult={onResult}
           onContinue={onContinue}
           language={language}
@@ -186,7 +196,7 @@ function ExerciseRenderer({
     case "listening":
       return (
         <Listening
-          exercise={exercise}
+          exercise={ex}
           onResult={onResult}
           onContinue={onContinue}
           language={language}
@@ -195,7 +205,7 @@ function ExerciseRenderer({
     case "word-bank":
       return (
         <WordBank
-          exercise={exercise}
+          exercise={ex}
           onResult={onResult}
           onContinue={onContinue}
           language={language}
@@ -204,7 +214,7 @@ function ExerciseRenderer({
     case "speaking":
       return (
         <Speaking
-          exercise={exercise}
+          exercise={ex}
           onResult={onResult}
           onContinue={onContinue}
           language={language}
@@ -213,11 +223,26 @@ function ExerciseRenderer({
     case "free-text":
       return (
         <FreeText
-          exercise={exercise}
+          exercise={ex}
           onResult={onResult}
           onContinue={onContinue}
           language={language}
         />
       );
   }
+}
+
+/** Auto-skips an invalid exercise so it doesn't block lesson progress. */
+function SkipInvalid({
+  onResult,
+  onContinue,
+}: {
+  onResult: (correct: boolean, answer: string) => void;
+  onContinue: () => void;
+}) {
+  useEffect(() => {
+    onResult(true, "[skipped]");
+    onContinue();
+  }, [onResult, onContinue]);
+  return null;
 }

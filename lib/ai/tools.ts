@@ -1,4 +1,4 @@
-import { tool, generateText } from "ai";
+import { tool } from "ai";
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
@@ -18,11 +18,9 @@ import {
   lookupWord as wordLookup,
   getWordsByLevel,
 } from "@/lib/words";
-import { langCodeToName, getDefaultTemplate, interpolateTemplate } from "@/lib/prompts";
+import { langCodeToName } from "@/lib/prompts";
 import { supportedLanguages } from "@/lib/languages";
-import { getUserModel } from "./index";
 import { parseUnitFromMarkdown } from "@/lib/content/loader";
-import { EXERCISE_SYNTAX } from "@/lib/content/exercise-syntax";
 
 export function createTools(userId: string, language?: string) {
   return {
@@ -538,41 +536,20 @@ export function createTools(userId: string, language?: string) {
 
     createUnit: tool({
       description:
-        "Generate a full learning unit on any topic. Creates a course with lessons and exercises, auto-enrolls the user, and returns a summary card. Use when the user asks to create a unit, lesson, or course on a specific topic.",
+        "Create a learning unit from exercise markdown. You (the AI) should generate the full markdown content including YAML frontmatter and ## Lesson sections following the exercise syntax from the system prompt, then pass it here. This tool parses, validates, and inserts into the DB.",
       inputSchema: z.object({
-        topic: z.string().describe("The topic to create a unit about"),
+        markdown: z
+          .string()
+          .describe(
+            "Complete unit markdown with YAML frontmatter (title, description, icon, color) and ## Lesson sections containing exercises"
+          ),
         level: z
           .enum(["A1", "A2", "B1", "B2", "C1", "C2"])
           .default("B1")
           .describe("CEFR difficulty level"),
-        lessonCount: z
-          .number()
-          .int()
-          .min(3)
-          .max(6)
-          .default(4)
-          .describe("Number of lessons to generate"),
       }),
-      execute: async ({ topic, level, lessonCount }) => {
+      execute: async ({ markdown, level }) => {
         const lang = language ?? "de";
-        const langName = langCodeToName[lang] ?? lang;
-
-        // Build prompt from template
-        const template = getDefaultTemplate("unit-generation");
-        const prompt = interpolateTemplate(template, {
-          topic,
-          lessons: String(lessonCount),
-          langName,
-          level,
-          langCode: lang,
-          exerciseReference: EXERCISE_SYNTAX,
-        });
-
-        // Generate markdown via LLM
-        const { text: markdown } = await generateText({
-          model: await getUserModel(userId),
-          prompt,
-        });
 
         // Strip code fences if present
         const cleaned = markdown
@@ -588,7 +565,7 @@ export function createTools(userId: string, language?: string) {
         } catch (err) {
           return {
             success: false,
-            error: `Failed to parse generated markdown: ${err instanceof Error ? err.message : String(err)}`,
+            error: `Failed to parse markdown: ${err instanceof Error ? err.message : String(err)}`,
           };
         }
 

@@ -1,5 +1,6 @@
 import { tool, generateObject } from "ai";
 import { z } from "zod";
+import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import {
   userMemory,
@@ -541,6 +542,8 @@ Requirements:
             target: userPreferences.userId,
             set: { targetLanguage: langCode, updatedAt: new Date() },
           });
+
+        revalidatePath("/");
 
         const name = langCodeToName[langCode] || langCode;
         return {

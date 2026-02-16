@@ -2,9 +2,6 @@ import { createProviderRegistry } from "ai";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { createOpenAI } from "@ai-sdk/openai";
 import { createAnthropic } from "@ai-sdk/anthropic";
-import { db } from "@/lib/db";
-import { userPreferences } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
 
 const google = createGoogleGenerativeAI({
   apiKey: process.env.GOOGLE_AI_API_KEY,
@@ -26,7 +23,6 @@ const MODEL_ALIASES: Record<string, string> = {
   "gemini-2.5-pro": "google:gemini-2.5-pro",
   "gpt-4o": "openai:gpt-4o",
   "gpt-4o-mini": "openai:gpt-4o-mini",
-  "claude-haiku-4-5-20251001": "anthropic:claude-haiku-4-5-20251001",
   "claude-sonnet-4-5-20250929": "anthropic:claude-sonnet-4-5-20250929",
   "claude-opus-4-6": "anthropic:claude-opus-4-6",
 };
@@ -42,8 +38,6 @@ export const AVAILABLE_MODELS: { id: string; label: string }[] = [
   { id: "claude-opus-4-6", label: "Claude Opus 4.6" },
 ];
 
-const DEFAULT_MODEL = "gemini-2.5-flash";
-
 export function getModel(name: string) {
   const resolved = MODEL_ALIASES[name] ?? name;
   return registry.languageModel(
@@ -51,12 +45,3 @@ export function getModel(name: string) {
   );
 }
 
-export async function getUserModel(userId: string) {
-  const [row] = await db
-    .select({ preferredModel: userPreferences.preferredModel })
-    .from(userPreferences)
-    .where(eq(userPreferences.userId, userId))
-    .limit(1);
-
-  return getModel(row?.preferredModel ?? DEFAULT_MODEL);
-}

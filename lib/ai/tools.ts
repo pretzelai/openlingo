@@ -20,7 +20,7 @@ import {
 } from "@/lib/words";
 import { langCodeToName, getDefaultTemplate, interpolateTemplate } from "@/lib/prompts";
 import { supportedLanguages } from "@/lib/languages";
-import { getUserModel } from "./models";
+import { getUserModel } from "./index";
 import { parseUnitFromMarkdown } from "@/lib/content/loader";
 import { EXERCISE_SYNTAX } from "@/lib/content/exercise-syntax";
 

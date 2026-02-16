@@ -20,7 +20,7 @@ import {
 } from "@/lib/words";
 import { langCodeToName, getDefaultTemplate, interpolateTemplate } from "@/lib/prompts";
 import { supportedLanguages } from "@/lib/languages";
-import { getModel } from "./models";
+import { getUserModel } from "./models";
 import { parseUnitFromMarkdown } from "@/lib/content/loader";
 import { EXERCISE_SYNTAX } from "@/lib/content/exercise-syntax";
 
@@ -190,7 +190,7 @@ export function createTools(userId: string, language?: string) {
         const normalized = word.toLowerCase();
 
         // Look up enrichment data
-        const lookup = await wordLookup(word, lang);
+        const lookup = await wordLookup(word, lang, userId);
 
         const finalTranslation =
           translation || lookup.translation || word;
@@ -289,7 +289,7 @@ export function createTools(userId: string, language?: string) {
       }),
       execute: async ({ word }) => {
         const lang = language ?? "de";
-        return wordLookup(word, lang);
+        return wordLookup(word, lang, userId);
       },
     }),
 
@@ -570,7 +570,7 @@ export function createTools(userId: string, language?: string) {
 
         // Generate markdown via LLM
         const { text: markdown } = await generateText({
-          model: getModel("gemini-2.5-flash"),
+          model: await getUserModel(userId),
           prompt,
         });
 

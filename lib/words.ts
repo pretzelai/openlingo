@@ -1,6 +1,6 @@
 import { generateObject } from "ai";
 import { z } from "zod";
-import { getModel } from "@/lib/ai";
+import { getModel, getUserModel } from "@/lib/ai";
 import { db } from "@/lib/db";
 import { dictionaryWord, wordCache } from "@/lib/db/schema";
 import { and, eq } from "drizzle-orm";
@@ -79,7 +79,7 @@ const wordAnalysisSchema = z.object({
     .describe("English translation of the example sentence"),
 });
 
-export async function aiLookup(word: string, language: string) {
+export async function aiLookup(word: string, language: string, userId?: string) {
   const normalizedWord = word.toLowerCase().trim();
   const langName = langCodeToName[language] || language;
 
@@ -111,8 +111,9 @@ export async function aiLookup(word: string, language: string) {
     const promptTemplate = getDefaultTemplate("word-analysis");
     const prompt = interpolateTemplate(promptTemplate, { langName, word });
 
+    const model = userId ? await getUserModel(userId) : getModel("gemini-2.5-flash-lite");
     const { object: analysis } = await generateObject({
-      model: getModel("gemini-2.5-flash-lite"),
+      model,
       schema: wordAnalysisSchema,
       prompt,
     });
@@ -166,7 +167,8 @@ export type WordLookupResult = {
 
 export async function lookupWord(
   word: string,
-  language: string
+  language: string,
+  userId?: string
 ): Promise<WordLookupResult> {
   // 1. Try dictionary (single row query, no full load)
   const [entry] = await db
@@ -195,7 +197,7 @@ export async function lookupWord(
   }
 
   // 2. Try AI fallback
-  const aiResult = await aiLookup(word, language);
+  const aiResult = await aiLookup(word, language, userId);
   if (aiResult) {
     return aiResult;
   }

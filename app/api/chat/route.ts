@@ -1,5 +1,5 @@
 import { streamText, convertToModelMessages, stepCountIs } from "ai";
-import { getModel, createTools } from "@/lib/ai";
+import { getUserModel, createTools } from "@/lib/ai";
 import { requireSession } from "@/lib/auth-server";
 import { langCodeToName, interpolateTemplate } from "@/lib/prompts";
 import { getUserPromptTemplate } from "@/lib/actions/prompts";
@@ -40,7 +40,7 @@ export async function POST(req: Request) {
   });
 
   const result = streamText({
-    model: getModel("gemini-2.5-flash"),
+    model: await getUserModel(session.user.id),
     system: systemPrompt,
     messages: await convertToModelMessages(messages),
     tools,

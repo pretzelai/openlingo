@@ -87,6 +87,7 @@ export const userPreferences = pgTable("user_preferences", {
     .primaryKey()
     .references(() => user.id, { onDelete: "cascade" }),
   targetLanguage: text("target_language").notNull().default("de"),
+  preferredModel: text("preferred_model"),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 

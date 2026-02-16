@@ -16,6 +16,7 @@ export default async function ChatConversationPage({
 
   return (
     <ChatView
+      key={conv.id}
       language={conv.language}
       conversationId={conv.id}
       initialMessages={conv.messages as UIMessage[]}

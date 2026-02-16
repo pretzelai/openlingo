@@ -8,5 +8,5 @@ export default async function ChatPage() {
   const session = await requireSession();
   const language = await getTargetLanguage(session.user.id);
 
-  return <ChatView language={language} />;
+  return <ChatView key="new" language={language} />;
 }

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import type { FillInTheBlankExercise } from "@/lib/content/types";
 import { useExercise } from "@/hooks/use-exercise";
 import { useAudio } from "@/hooks/use-audio";
+import { checkSimilarity } from "@/lib/similarity";
 import { ExerciseShell } from "./exercise-shell";
 import { HoverableText } from "@/components/word/hoverable-text";
 import { AudioSpinner } from "@/components/audio-spinner";
@@ -18,6 +19,7 @@ interface Props {
 
 export function FillInTheBlank({ exercise, onResult, onContinue, language, autoplayAudio = true }: Props) {
   const [input, setInput] = useState("");
+  const [correctedMarkdown, setCorrectedMarkdown] = useState<string>();
   const { status, checkAnswer } = useExercise();
   const { play, stop, loading: audioLoading } = useAudio();
 
@@ -28,9 +30,10 @@ export function FillInTheBlank({ exercise, onResult, onContinue, language, autop
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   function handleCheck() {
-    const correct = input.trim().toLowerCase() === exercise.blank.toLowerCase();
-    checkAnswer(correct);
-    onResult(correct, input.trim());
+    const result = checkSimilarity(input.trim(), exercise.blank);
+    if (!result.isCorrect) setCorrectedMarkdown(result.correctedMarkdown);
+    checkAnswer(result.isCorrect);
+    onResult(result.isCorrect, input.trim());
   }
 
   const parts = exercise.sentence.split("___");
@@ -42,6 +45,7 @@ export function FillInTheBlank({ exercise, onResult, onContinue, language, autop
       onContinue={onContinue}
       canCheck={input.trim().length > 0}
       correctAnswer={exercise.blank}
+      correctedMarkdown={correctedMarkdown}
       language={language}
     >
       <h2 className="text-xl font-bold text-lingo-text mb-6">

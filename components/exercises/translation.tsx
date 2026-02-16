@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import type { TranslationExercise } from "@/lib/content/types";
 import { useExercise } from "@/hooks/use-exercise";
 import { useAudio } from "@/hooks/use-audio";
+import { checkBestMatch } from "@/lib/similarity";
 import { ExerciseShell } from "./exercise-shell";
 import { HoverableText } from "@/components/word/hoverable-text";
 import { AudioSpinner } from "@/components/audio-spinner";
@@ -18,6 +19,7 @@ interface Props {
 
 export function Translation({ exercise, onResult, onContinue, language, autoplayAudio = true }: Props) {
   const [input, setInput] = useState("");
+  const [correctedMarkdown, setCorrectedMarkdown] = useState<string>();
   const { status, checkAnswer } = useExercise();
   const { play, stop, loading: audioLoading } = useAudio();
 
@@ -28,12 +30,10 @@ export function Translation({ exercise, onResult, onContinue, language, autoplay
 
   function handleCheck() {
     const trimmed = input.trim();
-    const allAccepted = [exercise.answer, ...exercise.acceptAlso].map((a) =>
-      a.toLowerCase()
-    );
-    const correct = allAccepted.includes(trimmed.toLowerCase());
-    checkAnswer(correct);
-    onResult(correct, trimmed);
+    const result = checkBestMatch(trimmed, [exercise.answer, ...exercise.acceptAlso]);
+    if (!result.isCorrect) setCorrectedMarkdown(result.correctedMarkdown);
+    checkAnswer(result.isCorrect);
+    onResult(result.isCorrect, trimmed);
   }
 
   return (
@@ -43,6 +43,7 @@ export function Translation({ exercise, onResult, onContinue, language, autoplay
       onContinue={onContinue}
       canCheck={input.trim().length > 0}
       correctAnswer={exercise.answer}
+      correctedMarkdown={correctedMarkdown}
       language={language}
     >
       <h2 className="text-xl font-bold text-lingo-text mb-2">

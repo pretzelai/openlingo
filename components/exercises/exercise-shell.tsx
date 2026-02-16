@@ -4,6 +4,7 @@ import { useEffect, useCallback, useRef } from "react";
 import type { ExerciseStatus } from "@/hooks/use-exercise";
 import { Button } from "@/components/ui/button";
 import { HoverableText } from "@/components/word/hoverable-text";
+import Markdown from "react-markdown";
 
 interface ExerciseShellProps {
   children: React.ReactNode;
@@ -12,6 +13,8 @@ interface ExerciseShellProps {
   onContinue: () => void;
   canCheck: boolean;
   correctAnswer?: string;
+  /** Correct answer with **bold** markers on differing chars */
+  correctedMarkdown?: string;
   language?: string;
 }
 
@@ -22,6 +25,7 @@ export function ExerciseShell({
   onContinue,
   canCheck,
   correctAnswer,
+  correctedMarkdown,
   language,
 }: ExerciseShellProps) {
   const justCheckedRef = useRef(false);
@@ -96,7 +100,12 @@ export function ExerciseShell({
             </div>
             {correctAnswer && (
               <p className="mt-1 text-sm text-lingo-text">
-                Correct answer: <strong>{language ? <HoverableText text={correctAnswer} language={language} /> : correctAnswer}</strong>
+                Correct answer:{" "}
+                {correctedMarkdown ? (
+                  <Markdown>{correctedMarkdown}</Markdown>
+                ) : (
+                  <strong>{language ? <HoverableText text={correctAnswer} language={language} /> : correctAnswer}</strong>
+                )}
               </p>
             )}
           </div>

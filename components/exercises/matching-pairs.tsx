@@ -26,13 +26,17 @@ function shuffle<T>(arr: T[]): T[] {
 
 export function MatchingPairs({ exercise, onResult, onContinue, language }: Props) {
   const { status, checkAnswer } = useExercise();
-  const { play, loading: audioLoading } = useAudio();
+  const { play, prefetch, loading: audioLoading } = useAudio();
   const [leftItems] = useState(() => shuffle(exercise.pairs.map((p) => p.left)));
   const [rightItems] = useState(() => shuffle(exercise.pairs.map((p) => p.right)));
   const [selectedLeft, setSelectedLeft] = useState<string | null>(null);
   const [selectedRight, setSelectedRight] = useState<string | null>(null);
   const [matched, setMatched] = useState<Set<string>>(new Set());
   const [wrong, setWrong] = useState<{ left: string; right: string } | null>(null);
+
+  useEffect(() => {
+    prefetch(leftItems, language);
+  }, [prefetch, leftItems, language]);
 
   useEffect(() => {
     if (selectedLeft && selectedRight) {

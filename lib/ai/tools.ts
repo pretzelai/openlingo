@@ -13,7 +13,7 @@ import {
 } from "@/lib/db/schema";
 import { and, eq, lte, count, sql, asc, isNotNull, inArray } from "drizzle-orm";
 import { calculateNextReview, type Quality, type CardStatus } from "@/lib/srs";
-import { exerciseSchema } from "./exercise-schema";
+import { parseExercise } from "@/lib/content/parser";
 import {
   lookupWord as wordLookup,
   getWordsByLevel,
@@ -525,12 +525,17 @@ export function createTools(userId: string, language?: string) {
 
     presentExercise: tool({
       description:
-        "Present an interactive exercise to the user. The exercise renders as an interactive widget in the chat. Present ONE exercise at a time and wait for the user to complete it before presenting another.",
+        "Present an interactive exercise to the user. Pass the exercise as a markdown block (starting with the [type] tag) using the exercise syntax from the system prompt. The tool parses and renders it as an interactive widget. Present ONE exercise at a time and wait for the user to complete it before presenting another.",
       inputSchema: z.object({
-        exercise: exerciseSchema,
+        markdown: z.string().describe("Exercise markdown block starting with [type-tag], e.g. '[multiple-choice]\\ntext: \"What does gato mean?\"\\n- \"Cat\" (correct)\\n- \"Dog\"'"),
       }),
-      execute: async ({ exercise }) => {
-        return { presented: true, exerciseType: exercise.type };
+      execute: async ({ markdown }) => {
+        try {
+          const exercise = parseExercise(markdown);
+          return { success: true, exercise };
+        } catch (e) {
+          return { success: false, error: (e as Error).message };
+        }
       },
     }),
 

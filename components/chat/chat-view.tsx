@@ -8,6 +8,8 @@ import { useRouter } from "next/navigation";
 import { ChatMessage } from "./chat-message";
 import { ThinkingMessage } from "./thinking-message";
 import { createConversation, saveMessages } from "@/lib/actions/chat";
+import { recordChatExerciseResult } from "@/lib/actions/srs";
+import type { Exercise } from "@/lib/content/types";
 
 interface ChatViewProps {
   language: string;
@@ -119,11 +121,15 @@ export function ChatView({
     toolCallId: string,
     correct: boolean,
     userAnswer: string,
+    exercise: Exercise,
   ) {
     setCompletedExercises((prev) => ({
       ...prev,
       [toolCallId]: { correct, answer: userAnswer },
     }));
+
+    // Record SRS practice (fire-and-forget)
+    recordChatExerciseResult(exercise, correct, language).catch(() => {});
 
     sendMessage({
       text: correct

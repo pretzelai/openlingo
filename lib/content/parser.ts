@@ -101,12 +101,25 @@ export function getOptionalField(lines: string[], key: string): string | undefin
   return line.slice(key.length + 1).trim().replace(/^"(.*)"$/, "$1");
 }
 
+function parseSrsWords(lines: string[]): { word: string; translation: string }[] | undefined {
+  const startIdx = lines.findIndex((l) => l.startsWith("srsWords:"));
+  if (startIdx === -1) return undefined;
+  const words: { word: string; translation: string }[] = [];
+  for (let i = startIdx + 1; i < lines.length; i++) {
+    const match = lines[i].match(/^- "(.+?)"\s*=\s*"(.+?)"/);
+    if (!match) break;
+    words.push({ word: match[1], translation: match[2] });
+  }
+  return words.length > 0 ? words : undefined;
+}
+
 function parseMultipleChoice(lines: string[]): MultipleChoiceExercise {
   const noAudio: string[] = [];
   const rawText = stripNoAudio(getField(lines, "text"));
   if (rawText.flagged) noAudio.push("text");
 
-  const choiceLines = lines.filter((l) => l.startsWith('- "'));
+  const mcSrsIdx = lines.findIndex((l) => l.startsWith("srsWords:"));
+  const choiceLines = lines.filter((l, i) => l.startsWith('- "') && (mcSrsIdx === -1 || i < mcSrsIdx));
   const choices: string[] = [];
   let correctIndex = 0;
 
@@ -121,7 +134,8 @@ function parseMultipleChoice(lines: string[]): MultipleChoiceExercise {
   });
 
   const randomOrder = hasFlag(lines, "random_order");
-  return { type: "multiple-choice", text: rawText.text, choices, correctIndex, ...(randomOrder && { randomOrder }), ...(noAudio.length && { noAudio }) };
+  const srsWords = parseSrsWords(lines);
+  return { type: "multiple-choice", text: rawText.text, choices, correctIndex, ...(randomOrder && { randomOrder }), ...(noAudio.length && { noAudio }), ...(srsWords && { srsWords }) };
 }
 
 function parseTranslation(lines: string[]): TranslationExercise {
@@ -139,7 +153,8 @@ function parseTranslation(lines: string[]): TranslationExercise {
     if (matches) acceptAlso.push(...matches.map((m) => m.replace(/"/g, "")));
   }
 
-  return { type: "translation", text: rawText.text, sentence: rawSentence.text, answer, acceptAlso, ...(noAudio.length && { noAudio }) };
+  const srsWords = parseSrsWords(lines);
+  return { type: "translation", text: rawText.text, sentence: rawSentence.text, answer, acceptAlso, ...(noAudio.length && { noAudio }), ...(srsWords && { srsWords }) };
 }
 
 function parseFillInTheBlank(lines: string[]): FillInTheBlankExercise {
@@ -147,12 +162,14 @@ function parseFillInTheBlank(lines: string[]): FillInTheBlankExercise {
   const rawSentence = stripNoAudio(getField(lines, "sentence"));
   if (rawSentence.flagged) noAudio.push("sentence");
   const blank = getField(lines, "blank");
-  return { type: "fill-in-the-blank", sentence: rawSentence.text, blank, ...(noAudio.length && { noAudio }) };
+  const srsWords = parseSrsWords(lines);
+  return { type: "fill-in-the-blank", sentence: rawSentence.text, blank, ...(noAudio.length && { noAudio }), ...(srsWords && { srsWords }) };
 }
 
 function parseMatchingPairs(lines: string[]): MatchingPairsExercise {
   const noAudio: string[] = [];
-  const pairLines = lines.filter((l) => l.startsWith("- "));
+  const srsIdx = lines.findIndex((l) => l.startsWith("srsWords:"));
+  const pairLines = lines.filter((l, i) => l.startsWith("- ") && (srsIdx === -1 || i < srsIdx));
   const pairs = pairLines.map((l, i) => {
     const match = l.match(/^- "(.+?)"\s*=\s*"(.+?)"/);
     if (!match) throw new Error(`Invalid pair: ${l}`);
@@ -163,7 +180,8 @@ function parseMatchingPairs(lines: string[]): MatchingPairsExercise {
     return { left: left.text, right: right.text };
   });
   const randomOrder = hasFlag(lines, "random_order");
-  return { type: "matching-pairs", pairs, ...(randomOrder && { randomOrder }), ...(noAudio.length && { noAudio }) };
+  const srsWords = parseSrsWords(lines);
+  return { type: "matching-pairs", pairs, ...(randomOrder && { randomOrder }), ...(noAudio.length && { noAudio }), ...(srsWords && { srsWords }) };
 }
 
 function parseListening(lines: string[]): ListeningExercise {
@@ -172,14 +190,16 @@ function parseListening(lines: string[]): ListeningExercise {
   if (rawText.flagged) noAudio.push("text");
   const ttsLang = getField(lines, "ttsLang");
   const mode = getOptionalField(lines, "mode") as "choices" | "word-bank" | undefined;
-  return { type: "listening", text: rawText.text, ttsLang, ...(mode && { mode }), ...(noAudio.length && { noAudio }) };
+  const srsWords = parseSrsWords(lines);
+  return { type: "listening", text: rawText.text, ttsLang, ...(mode && { mode }), ...(noAudio.length && { noAudio }), ...(srsWords && { srsWords }) };
 }
 
 function parseSpeaking(lines: string[]): SpeakingExercise {
   const noAudio: string[] = [];
   const rawSentence = stripNoAudio(getField(lines, "sentence"));
   if (rawSentence.flagged) noAudio.push("sentence");
-  return { type: "speaking", sentence: rawSentence.text, ...(noAudio.length && { noAudio }) };
+  const srsWords = parseSrsWords(lines);
+  return { type: "speaking", sentence: rawSentence.text, ...(noAudio.length && { noAudio }), ...(srsWords && { srsWords }) };
 }
 
 function parseFreeText(lines: string[]): FreeTextExercise {
@@ -187,7 +207,8 @@ function parseFreeText(lines: string[]): FreeTextExercise {
   const rawText = stripNoAudio(getField(lines, "text"));
   if (rawText.flagged) noAudio.push("text");
   const afterSubmitPrompt = getField(lines, "afterSubmitPrompt");
-  return { type: "free-text", text: rawText.text, afterSubmitPrompt, ...(noAudio.length && { noAudio }) };
+  const srsWords = parseSrsWords(lines);
+  return { type: "free-text", text: rawText.text, afterSubmitPrompt, ...(noAudio.length && { noAudio }), ...(srsWords && { srsWords }) };
 }
 
 function parseWordBank(lines: string[]): WordBankExercise {
@@ -207,5 +228,6 @@ function parseWordBank(lines: string[]): WordBankExercise {
     ? (answerLine.match(/"([^"]+)"/g) || []).map((m) => m.replace(/"/g, ""))
     : [];
   const randomOrder = hasFlag(lines, "random_order");
-  return { type: "word-bank", text: rawText.text, words, answer, ...(randomOrder && { randomOrder }), ...(noAudio.length && { noAudio }) };
+  const srsWords = parseSrsWords(lines);
+  return { type: "word-bank", text: rawText.text, words, answer, ...(randomOrder && { randomOrder }), ...(noAudio.length && { noAudio }), ...(srsWords && { srsWords }) };
 }

@@ -5,6 +5,8 @@ import { srsCard } from "@/lib/db/schema";
 import { and, eq, lte, gt, count, sql, asc, isNotNull, inArray } from "drizzle-orm";
 import { requireSession } from "@/lib/auth-server";
 import { calculateNextReview, type Quality, type CardStatus } from "@/lib/srs";
+import type { Exercise } from "@/lib/content/types";
+import { extractSrsWords } from "@/lib/srs-words";
 
 export async function addWordToSrs(
   word: string,
@@ -375,4 +377,97 @@ export async function introduceNewCards(language: string, count_: number) {
     );
 
   return cards.map((c) => ({ ...c, status: "learning" as const, nextReviewAt: now }));
+}
+
+// ─── Exercise SRS integration ───
+
+/**
+ * Record a word practice from an exercise (not a server action — called from other server code with userId).
+ * Creates the card if it doesn't exist, then applies SRS review.
+ */
+export async function recordWordPractice(
+  userId: string,
+  word: string,
+  language: string,
+  translation: string,
+  correct: boolean
+) {
+  const normalizedWord = word.toLowerCase();
+  const quality: Quality = correct ? 4 : 1;
+
+  const [existing] = await db
+    .select()
+    .from(srsCard)
+    .where(
+      and(
+        eq(srsCard.word, normalizedWord),
+        eq(srsCard.language, language),
+        eq(srsCard.userId, userId)
+      )
+    );
+
+  if (!existing) {
+    // Insert new card in "learning" status, then apply review
+    const result = calculateNextReview(
+      { easeFactor: 2.5, interval: 0, repetitions: 0, status: "learning" },
+      quality
+    );
+    await db.insert(srsCard).values({
+      word: normalizedWord,
+      language,
+      userId,
+      translation,
+      status: result.status,
+      easeFactor: result.easeFactor,
+      interval: result.interval,
+      repetitions: result.repetitions,
+      nextReviewAt: result.nextReviewAt,
+      lastReviewedAt: new Date(),
+    }).onConflictDoNothing();
+    return;
+  }
+
+  const result = calculateNextReview(
+    {
+      easeFactor: existing.easeFactor,
+      interval: existing.interval,
+      repetitions: existing.repetitions,
+      status: (existing.status as CardStatus) ?? "learning",
+    },
+    quality
+  );
+
+  await db
+    .update(srsCard)
+    .set({
+      easeFactor: result.easeFactor,
+      interval: result.interval,
+      repetitions: result.repetitions,
+      status: result.status,
+      nextReviewAt: result.nextReviewAt,
+      lastReviewedAt: new Date(),
+    })
+    .where(
+      and(
+        eq(srsCard.word, normalizedWord),
+        eq(srsCard.language, language),
+        eq(srsCard.userId, userId)
+      )
+    );
+}
+
+/**
+ * Server action: record SRS practice for a chat exercise.
+ */
+export async function recordChatExerciseResult(
+  exercise: Exercise,
+  correct: boolean,
+  language: string
+) {
+  const session = await requireSession();
+  const words = extractSrsWords(exercise);
+
+  for (const w of words) {
+    await recordWordPractice(session.user.id, w.word, language, w.translation, correct);
+  }
 }

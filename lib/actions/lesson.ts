@@ -10,12 +10,15 @@ import {
   userAchievement,
   achievementDefinition,
   unit,
+  course,
 } from "@/lib/db/schema";
 import { eq, and, sql } from "drizzle-orm";
 import { requireSession } from "@/lib/auth-server";
 import { getLevelForXp } from "@/lib/game/levels";
 import { computeStreak } from "@/lib/game/streaks";
-import type { UnitLesson } from "@/lib/content/types";
+import type { UnitLesson, Exercise } from "@/lib/content/types";
+import { recordWordPractice } from "@/lib/actions/srs";
+import { extractSrsWords } from "@/lib/srs-words";
 
 interface CompleteLessonInput {
   unitId: string;
@@ -63,6 +66,38 @@ export async function completeLesson(input: CompleteLessonInput) {
         userAnswer: r.userAnswer,
       }))
     );
+  }
+
+  // Record SRS word practice
+  try {
+    const [unitRow] = await db
+      .select({ exercises: unit.exercises, courseId: unit.courseId })
+      .from(unit)
+      .where(eq(unit.id, input.unitId));
+
+    if (unitRow?.courseId) {
+      const [courseRow] = await db
+        .select({ targetLanguage: course.targetLanguage })
+        .from(course)
+        .where(eq(course.id, unitRow.courseId));
+
+      if (courseRow) {
+        const lessons = unitRow.exercises as UnitLesson[];
+        const lesson = lessons[input.lessonIndex];
+        if (lesson) {
+          for (const result of input.results) {
+            const exercise = lesson.exercises[result.exerciseIndex] as Exercise | undefined;
+            if (!exercise) continue;
+            const words = extractSrsWords(exercise);
+            for (const w of words) {
+              await recordWordPractice(userId, w.word, courseRow.targetLanguage, w.translation, result.correct);
+            }
+          }
+        }
+      }
+    }
+  } catch {
+    // SRS update is best-effort — don't block lesson completion
   }
 
   // Update user stats

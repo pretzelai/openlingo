@@ -14,7 +14,8 @@ interface ChatMessageProps {
   onExerciseComplete: (
     toolCallId: string,
     correct: boolean,
-    userAnswer: string
+    userAnswer: string,
+    exercise: import("@/lib/content/types").Exercise,
   ) => void;
   autoplayAudio?: boolean;
 }
@@ -101,23 +102,23 @@ export function ChatMessage({
               };
               const toolName = toolPart.type.slice(5);
 
-              // Exercise tool: render inline interactive exercise
-              if (toolName === "presentExercise" && toolPart.input?.exercise) {
-                const completed = completedExercises[toolPart.toolCallId];
-                return (
-                  <ChatExercise
-                    key={toolPart.toolCallId}
-                    exercise={
-                      toolPart.input
-                        .exercise as import("@/lib/content/types").Exercise
-                    }
-                    toolCallId={toolPart.toolCallId}
-                    language={language}
-                    completed={completed}
-                    onComplete={onExerciseComplete}
-                    autoplayAudio={autoplayAudio}
-                  />
-                );
+              // Exercise tool: render inline interactive exercise from parsed output
+              if (toolName === "presentExercise") {
+                const output = toolPart.output as { success?: boolean; exercise?: import("@/lib/content/types").Exercise } | undefined;
+                if (output?.success && output.exercise) {
+                  const completed = completedExercises[toolPart.toolCallId];
+                  return (
+                    <ChatExercise
+                      key={toolPart.toolCallId}
+                      exercise={output.exercise}
+                      toolCallId={toolPart.toolCallId}
+                      language={language}
+                      completed={completed}
+                      onComplete={onExerciseComplete}
+                      autoplayAudio={autoplayAudio}
+                    />
+                  );
+                }
               }
 
               // Unit creation tool: render unit summary card

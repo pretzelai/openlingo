@@ -22,6 +22,18 @@ choices:
   - "Green"
 \`\`\`
 
+## SRS Word Tracking
+
+Any exercise can include an optional \`srsWords\` field to track vocabulary in the spaced repetition system.
+Words practiced correctly reinforce the card; incorrect answers flag them for review.
+For \`matching-pairs\`, words are automatically inferred from the pairs — no need to add \`srsWords\`.
+
+\`\`\`
+srsWords:
+  - "gato" = "cat"
+  - "perro" = "dog"
+\`\`\`
+
 ## Exercise Types
 
 ### multiple-choice
@@ -33,6 +45,7 @@ Present a text with several choices. Exactly one is marked \`(correct)\`.
 | text | yes | The question text |
 | choices (list) | yes | \`- "text"\` items, one with \`(correct)\` |
 | random_order | no | \`true\` to shuffle choices at runtime |
+| srsWords | no | Words to track in SRS: \`- "word" = "translation"\` |
 
 \`\`\`
 [multiple-choice]
@@ -53,6 +66,7 @@ User translates a sentence. Supports alternate accepted answers.
 | sentence | yes | The sentence to translate |
 | answer | yes | The expected answer |
 | acceptAlso | no | Additional accepted answers: \`"alt1" "alt2"\` |
+| srsWords | no | Words to track in SRS: \`- "word" = "translation"\` |
 
 \`\`\`
 [translation]
@@ -70,6 +84,7 @@ User fills in the missing word in a sentence.
 |-------|----------|-------------|
 | sentence | yes | Sentence with \`___\` marking the blank |
 | blank | yes | The correct word for the blank |
+| srsWords | no | Words to track in SRS: \`- "word" = "translation"\` |
 
 \`\`\`
 [fill-in-the-blank]
@@ -85,6 +100,7 @@ User matches left-side items to right-side items.
 |-------|----------|-------------|
 | pairs (list) | yes | \`- "left" = "right"\` items |
 | random_order | no | \`true\` to shuffle pairs |
+| srsWords | no | Extra words to track (pairs are auto-tracked) |
 
 \`\`\`
 [matching-pairs]
@@ -102,6 +118,7 @@ User listens to TTS audio and types what they hear.
 | text | yes | The text that will be spoken |
 | ttsLang | yes | BCP-47 language code for TTS (e.g. \`es-ES\`) |
 | mode | no | \`choices\` or \`word-bank\` for alternate UI |
+| srsWords | no | Words to track in SRS: \`- "word" = "translation"\` |
 
 \`\`\`
 [listening]
@@ -119,6 +136,7 @@ User assembles a sentence from a set of word tiles.
 | words | yes | Available tiles: \`"word1" "word2" ...\` |
 | answer | yes | Correct order: \`"word1" "word2" ...\` |
 | random_order | no | \`true\` to shuffle tiles |
+| srsWords | no | Words to track in SRS: \`- "word" = "translation"\` |
 
 \`\`\`
 [word-bank]
@@ -135,6 +153,7 @@ User writes a free-form text response. After submitting, an AI prompt is called 
 |-------|----------|-------------|
 | text | yes | Instruction shown to user |
 | afterSubmitPrompt | yes | AI prompt template — use \`{userResponse}\` as placeholder |
+| srsWords | no | Words to track in SRS: \`- "word" = "translation"\` |
 
 \`\`\`
 [free-text]
@@ -149,6 +168,7 @@ User speaks a sentence aloud for pronunciation practice.
 | Field | Required | Description |
 |-------|----------|-------------|
 | sentence | yes | The sentence the user should say |
+| srsWords | no | Words to track in SRS: \`- "word" = "translation"\` |
 
 \`\`\`
 [speaking]

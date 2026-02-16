@@ -17,7 +17,8 @@ interface ChatExerciseProps {
   onComplete: (
     toolCallId: string,
     correct: boolean,
-    userAnswer: string
+    userAnswer: string,
+    exercise: Exercise,
   ) => void;
   autoplayAudio?: boolean;
 }
@@ -44,9 +45,9 @@ export function ChatExercise({
 
   const handleContinue = useCallback(() => {
     if (result) {
-      onComplete(toolCallId, result.correct, result.answer);
+      onComplete(toolCallId, result.correct, result.answer, exercise);
     }
-  }, [result, toolCallId, onComplete]);
+  }, [result, toolCallId, onComplete, exercise]);
 
   // Show completed state
   if (completed) {

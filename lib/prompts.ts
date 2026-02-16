@@ -55,71 +55,44 @@ Return the base form, English translation, part of speech, grammatical gender (o
   {
     id: "unit-generation",
     displayName: "Unit Generation",
-    description: "Prompt for generating lesson units via CLI script",
-    defaultTemplate: `You are a curriculum designer for a Duolingo-style German learning app. The learners are English speakers learning B1 level German.
+    description: "Prompt for generating lesson units via CLI script or AI tool",
+    defaultTemplate: `You are a curriculum designer for a language learning app. The learners are English speakers learning {langName} at {level} level.
 
-Generate a complete unit that teaches German vocabulary and grammar through the topic: "{topic}"
+Generate a complete unit that teaches {langName} vocabulary and grammar through the topic: "{topic}"
 
-The unit must have exactly {lessons} lessons (sections). Each lesson teaches 4-6 new German words/phrases related to the topic.
+The unit must have exactly {lessons} lessons (## sections). Each lesson teaches 4-6 new words/phrases related to the topic. Each lesson should have 3-5 varied exercises.
 
-Do not ask questions that requiere knowledge about the topic like when was someone born or when did something happen. The questions should be about the vocabulary and grammar of the lesson.
+Do not ask questions that require knowledge about the topic like when was someone born or when did something happen. The questions should be about the vocabulary and grammar of the lesson.
 
-Output a single markdown file in EXACTLY this format (no deviations):
+Exercises should progress from easier to harder within each lesson. The first exercise in each lesson should be a matching-pairs exercise introducing the new vocabulary.
 
-The first matching pairs exercise should introduce the 4-6 new German words/phrases of B1 level. The rest of the words in the lesson should be A1/A2 level.
+Output a single markdown file with YAML frontmatter followed by ## Lesson sections. Here is the exact format:
 
 ---
-title: "<Unit Title in German>"
+title: "<Unit Title in {langName}>"
 description: "<1-line English description of what this unit teaches>"
-order: 99
 icon: "<single emoji>"
 color: "<hex color>"
 ---
 
-## <Lesson 1 Title in German>
+## <Lesson 1 Title in {langName}>
 
-[matching-pairs]
-- "<German word 1>" = "<English meaning 1>"
-- "<German word 2>" = "<English meaning 2>"
-- "<German word 3>" = "<English meaning 3>"
-- "<German word 4>" = "<English meaning 4>"
+<exercises for lesson 1>
 
----
+## <Lesson 2 Title in {langName}>
 
-[multiple-choice]
-prompt: "<question about a German word/phrase>"
-choices:
-  - "<correct answer>" (correct)
-  - "<wrong answer>"
-  - "<wrong answer>"
+<exercises for lesson 2>
 
----
+(... continue for all {lessons} lessons)
 
-[multiple-choice]
-prompt: "<question about another German word/phrase>"
-choices:
-  - "<correct answer>" (correct)
-  - "<wrong answer>"
-  - "<wrong answer>"
+IMPORTANT: Use the ttsLang value "{langCode}" for all listening exercises.
 
----
+Below is the complete exercise syntax reference. Follow it EXACTLY — the output will be machine-parsed:
 
-[word-bank]
-prompt: "<Sentence in English>"
-words: ["<word1>", "<word2>", "<word3>", "<word4>", "<word5>", "<distractor>"]
-answer: ["<word1>", "<word2>", "<word3>", "<word4>", "<word5>"]
-
----
-
-[listening]
-text: "<A German sentence using vocabulary from this lesson>"
-ttsLang: "de"
-mode: word-bank
-
-## <Lesson 2 Title in German>
-
-... (same pattern)`,
-    variables: ["topic", "lessons"],
+<exercise-syntax>
+{exerciseReference}
+</exercise-syntax>`,
+    variables: ["topic", "lessons", "langName", "level", "langCode", "exerciseReference"],
   },
   {
     id: "chat-system",

@@ -73,8 +73,7 @@ function loadUnit(unitPath: string, unitId: string): Unit {
   };
 }
 
-function loadUnitFromFile(filePath: string, unitId: string): Unit {
-  const raw = fs.readFileSync(filePath, "utf-8");
+export function parseUnitFromMarkdown(raw: string, unitId: string): Unit {
   const { data: unitMeta, content } = matter(raw);
 
   const sections = content
@@ -108,6 +107,11 @@ function loadUnitFromFile(filePath: string, unitId: string): Unit {
     color: unitMeta.color,
     lessons,
   };
+}
+
+function loadUnitFromFile(filePath: string, unitId: string): Unit {
+  const raw = fs.readFileSync(filePath, "utf-8");
+  return parseUnitFromMarkdown(raw, unitId);
 }
 
 function loadLessonRaw(lessonPath: string): { title: string; xpReward: number; exercises: Exercise[] } {

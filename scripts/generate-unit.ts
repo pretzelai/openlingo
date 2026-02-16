@@ -15,7 +15,8 @@ import fs from "fs";
 import path from "path";
 import { generateText } from "ai";
 import { getModel } from "../lib/ai/models";
-import { getDefaultTemplate, interpolateTemplate } from "../lib/prompts";
+import { getDefaultTemplate, interpolateTemplate, langCodeToName } from "../lib/prompts";
+import { EXERCISE_SYNTAX } from "../lib/content/exercise-syntax";
 
 // ---------------------------------------------------------------------------
 // CLI args
@@ -51,6 +52,10 @@ function buildPrompt(topic: string, lessons: number): string {
   return interpolateTemplate(template, {
     topic,
     lessons: String(lessons),
+    langName: "German",
+    level: "B1",
+    langCode: "de",
+    exerciseReference: EXERCISE_SYNTAX,
   });
 }
 

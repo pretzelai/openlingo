@@ -1,4 +1,4 @@
-import { tool, generateObject } from "ai";
+import { tool, generateText } from "ai";
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
@@ -13,14 +13,16 @@ import {
 } from "@/lib/db/schema";
 import { and, eq, lte, count, sql, asc, isNotNull, inArray } from "drizzle-orm";
 import { calculateNextReview, type Quality, type CardStatus } from "@/lib/srs";
-import { exerciseSchema, generatedUnitSchema } from "./exercise-schema";
+import { exerciseSchema } from "./exercise-schema";
 import {
   lookupWord as wordLookup,
   getWordsByLevel,
 } from "@/lib/words";
-import { langCodeToName } from "@/lib/prompts";
+import { langCodeToName, getDefaultTemplate, interpolateTemplate } from "@/lib/prompts";
 import { supportedLanguages } from "@/lib/languages";
 import { getModel } from "./models";
+import { parseUnitFromMarkdown } from "@/lib/content/loader";
+import { EXERCISE_SYNTAX } from "@/lib/content/exercise-syntax";
 
 export function createTools(userId: string, language?: string) {
   return {
@@ -553,36 +555,48 @@ export function createTools(userId: string, language?: string) {
       }),
       execute: async ({ topic, level, lessonCount }) => {
         const lang = language ?? "de";
+        const langName = langCodeToName[lang] ?? lang;
 
-        const { object: generatedUnit } = await generateObject({
-          model: getModel("gemini-2.5-flash"),
-          schema: generatedUnitSchema,
-          prompt: `You are a curriculum designer for a ${lang} language learning app.
-
-Create a learning unit about: "${topic}"
-CEFR level: ${level}
-Number of lessons: ${lessonCount}
-
-Requirements:
-- Each lesson should have 3-5 varied exercises (multiple-choice, translation, fill-in-the-blank, matching-pairs, word-bank, listening)
-- Use vocabulary and grammar appropriate for ${level} level
-- Exercises should progress from easier to harder within each lesson
-- For listening exercises, set ttsLang to "${lang}"
-- For multiple-choice: provide 3 choices
-- For translation: include 1-2 alternative answers in acceptAlso
-- For fill-in-the-blank: use ___ as the blank placeholder
-- For matching-pairs: use 3-4 pairs
-- For word-bank: include 1-2 distractor words
-- Make the content practical and engaging
-- XP rewards: 10 for easy lessons, 15-20 for medium, 25-30 for hard`,
+        // Build prompt from template
+        const template = getDefaultTemplate("unit-generation");
+        const prompt = interpolateTemplate(template, {
+          topic,
+          lessons: String(lessonCount),
+          langName,
+          level,
+          langCode: lang,
+          exerciseReference: EXERCISE_SYNTAX,
         });
 
-        const courseId = crypto.randomUUID();
+        // Generate markdown via LLM
+        const { text: markdown } = await generateText({
+          model: getModel("gemini-2.5-flash"),
+          prompt,
+        });
+
+        // Strip code fences if present
+        const cleaned = markdown
+          .replace(/^```(?:markdown|md)?\n/m, "")
+          .replace(/\n```\s*$/, "")
+          .trim();
+
+        // Parse through the existing markdown parser
+        let parsedUnit;
         const unitId = crypto.randomUUID();
+        try {
+          parsedUnit = parseUnitFromMarkdown(cleaned, unitId);
+        } catch (err) {
+          return {
+            success: false,
+            error: `Failed to parse generated markdown: ${err instanceof Error ? err.message : String(err)}`,
+          };
+        }
+
+        const courseId = crypto.randomUUID();
 
         await db.insert(course).values({
           id: courseId,
-          title: generatedUnit.title,
+          title: parsedUnit.title,
           sourceLanguage: "en",
           targetLanguage: lang,
           level,
@@ -593,11 +607,11 @@ Requirements:
         await db.insert(unit).values({
           id: unitId,
           courseId,
-          title: generatedUnit.title,
-          description: generatedUnit.description,
-          icon: generatedUnit.icon,
-          color: generatedUnit.color,
-          exercises: generatedUnit.lessons,
+          title: parsedUnit.title,
+          description: parsedUnit.description,
+          icon: parsedUnit.icon,
+          color: parsedUnit.color,
+          exercises: parsedUnit.lessons,
           createdBy: userId,
         });
 
@@ -611,7 +625,7 @@ Requirements:
           .values({ userId })
           .onConflictDoNothing();
 
-        const exerciseCount = generatedUnit.lessons.reduce(
+        const exerciseCount = parsedUnit.lessons.reduce(
           (sum, l) => sum + l.exercises.length,
           0
         );
@@ -620,14 +634,14 @@ Requirements:
           success: true,
           courseId,
           unitId,
-          title: generatedUnit.title,
-          description: generatedUnit.description,
-          icon: generatedUnit.icon,
-          color: generatedUnit.color,
+          title: parsedUnit.title,
+          description: parsedUnit.description,
+          icon: parsedUnit.icon,
+          color: parsedUnit.color,
           level,
-          lessonCount: generatedUnit.lessons.length,
+          lessonCount: parsedUnit.lessons.length,
           exerciseCount,
-          lessonTitles: generatedUnit.lessons.map((l) => l.title),
+          lessonTitles: parsedUnit.lessons.map((l) => l.title),
         };
       },
     }),

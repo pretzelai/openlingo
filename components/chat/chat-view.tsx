@@ -3,13 +3,7 @@
 import { useChat } from "@ai-sdk/react";
 import type { UIMessage } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
-import {
-  useRef,
-  useEffect,
-  useState,
-  useCallback,
-  useMemo,
-} from "react";
+import { useRef, useEffect, useState, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { ChatMessage } from "./chat-message";
 import { ThinkingMessage } from "./thinking-message";
@@ -21,7 +15,11 @@ interface ChatViewProps {
   initialMessages?: UIMessage[];
 }
 
-export function ChatView({ language, conversationId, initialMessages }: ChatViewProps) {
+export function ChatView({
+  language,
+  conversationId,
+  initialMessages,
+}: ChatViewProps) {
   const router = useRouter();
   const containerRef = useRef<HTMLDivElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
@@ -32,14 +30,14 @@ export function ChatView({ language, conversationId, initialMessages }: ChatView
     Record<string, { correct: boolean; answer: string }>
   >({});
   const [initialMessageIds] = useState(
-    () => new Set((initialMessages ?? []).map((m) => m.id))
+    () => new Set((initialMessages ?? []).map((m) => m.id)),
   );
   const [chatId] = useState(() => conversationId ?? crypto.randomUUID());
   const convIdRef = useRef<string | null>(conversationId ?? null);
 
   const transport = useMemo(
     () => new DefaultChatTransport({ body: { language } }),
-    [language]
+    [language],
   );
 
   const { messages, sendMessage, status } = useChat({
@@ -54,7 +52,10 @@ export function ChatView({ language, conversationId, initialMessages }: ChatView
       } else {
         const firstUserMsg = allMessages.find((m) => m.role === "user");
         const title = firstUserMsg
-          ? (firstUserMsg.parts.find((p) => p.type === "text")?.text ?? "New chat").slice(0, 50)
+          ? (
+              firstUserMsg.parts.find((p) => p.type === "text")?.text ??
+              "New chat"
+            ).slice(0, 50)
           : "New chat";
         const newId = await createConversation(language, title, allMessages);
         convIdRef.current = newId;
@@ -117,7 +118,7 @@ export function ChatView({ language, conversationId, initialMessages }: ChatView
   function handleExerciseComplete(
     toolCallId: string,
     correct: boolean,
-    userAnswer: string
+    userAnswer: string,
   ) {
     setCompletedExercises((prev) => ({
       ...prev,
@@ -148,7 +149,10 @@ export function ChatView({ language, conversationId, initialMessages }: ChatView
         >
           <div className="mx-auto flex min-w-0 max-w-3xl flex-col gap-4 px-2 py-4 md:gap-6 md:px-4">
             {messages.length === 0 && (
-              <Greeting language={language} onSend={(text) => sendMessage({ text })} />
+              <Greeting
+                language={language}
+                onSend={(text) => sendMessage({ text })}
+              />
             )}
 
             {messages.map((message, index) => (
@@ -225,7 +229,11 @@ export function ChatView({ language, conversationId, initialMessages }: ChatView
               }}
               className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-lingo-text text-white transition-colors hover:bg-lingo-text/80"
             >
-              <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor">
+              <svg
+                className="h-3.5 w-3.5"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
                 <rect x="6" y="6" width="12" height="12" rx="2" />
               </svg>
             </button>
@@ -286,7 +294,13 @@ const LANG_NAMES: Record<string, string> = {
   en: "English",
 };
 
-function Greeting({ language, onSend }: { language: string; onSend: (text: string) => void }) {
+function Greeting({
+  language,
+  onSend,
+}: {
+  language: string;
+  onSend: (text: string) => void;
+}) {
   const flag = LANG_FLAGS[language] ?? "\u{1F30D}";
   const name = LANG_NAMES[language] ?? language;
 
@@ -295,25 +309,26 @@ function Greeting({ language, onSend }: { language: string; onSend: (text: strin
       <div className="flex h-12 w-12 items-center justify-center rounded-full bg-lingo-green/10 ring-1 ring-lingo-green/20 mb-4">
         <span className="text-2xl">{flag}</span>
       </div>
-      <h2 className="text-lg font-bold text-lingo-text mb-2">
-        {name} Tutor
-      </h2>
+      <h2 className="text-lg font-bold text-lingo-text mb-2">AI Tutor</h2>
       <p className="text-sm text-lingo-text-light max-w-sm leading-relaxed">
-        Practice vocabulary, review due words, or ask questions about {name}.
+        Practice vocabulary, review due words, or create custom lessons. Your
+        current language is {name}.
       </p>
       <div className="mt-6 flex flex-wrap justify-center gap-2">
-        {["Let's practice!", "How many words are due?", "Teach me something new"].map(
-          (label) => (
-            <button
-              key={label}
-              type="button"
-              onClick={() => onSend(label)}
-              className="rounded-full border-2 border-lingo-border bg-white px-4 py-2 text-xs font-medium text-lingo-text transition-colors hover:border-lingo-blue hover:bg-lingo-blue/5"
-            >
-              {label}
-            </button>
-          )
-        )}
+        {[
+          "Let's practice!",
+          "How many words are due?",
+          "Teach me something new",
+        ].map((label) => (
+          <button
+            key={label}
+            type="button"
+            onClick={() => onSend(label)}
+            className="rounded-full border-2 border-lingo-border bg-white px-4 py-2 text-xs font-medium text-lingo-text transition-colors hover:border-lingo-blue hover:bg-lingo-blue/5"
+          >
+            {label}
+          </button>
+        ))}
       </div>
     </div>
   );

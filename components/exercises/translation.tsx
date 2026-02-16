@@ -8,6 +8,7 @@ import { checkBestMatch } from "@/lib/similarity";
 import { ExerciseShell } from "./exercise-shell";
 import { HoverableText } from "@/components/word/hoverable-text";
 import { AudioSpinner } from "@/components/audio-spinner";
+import { ReplayButton } from "@/components/replay-button";
 
 interface Props {
   exercise: TranslationExercise;
@@ -50,9 +51,14 @@ export function Translation({ exercise, onResult, onContinue, language, autoplay
         <HoverableText text={exercise.text} language={language} noAudio={exercise.noAudio?.includes("text")} />
       </h2>
       <AudioSpinner loading={audioLoading} />
-      <p className="text-lg text-lingo-text-light mb-6">
-        &ldquo;<HoverableText text={exercise.sentence} language={language} noAudio={exercise.noAudio?.includes("sentence")} />&rdquo;
-      </p>
+      <div className="flex items-start gap-2 mb-6">
+        <p className="text-lg text-lingo-text-light">
+          &ldquo;<HoverableText text={exercise.sentence} language={language} noAudio={exercise.noAudio?.includes("sentence")} />&rdquo;
+        </p>
+        {!exercise.noAudio?.includes("sentence") && (
+          <ReplayButton onPlay={() => play(exercise.sentence, language)} />
+        )}
+      </div>
       <input
         type="text"
         value={input}

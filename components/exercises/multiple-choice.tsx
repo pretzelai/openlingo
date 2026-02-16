@@ -7,6 +7,7 @@ import { useAudio } from "@/hooks/use-audio";
 import { ExerciseShell } from "./exercise-shell";
 import { HoverableText } from "@/components/word/hoverable-text";
 import { AudioSpinner } from "@/components/audio-spinner";
+import { ReplayButton } from "@/components/replay-button";
 
 interface Props {
   exercise: MultipleChoiceExercise;
@@ -82,9 +83,14 @@ export function MultipleChoice({ exercise, onResult, onContinue, language, autop
       correctAnswer={choices[correctIndex]}
       language={language}
     >
-      <h2 className="text-xl font-bold text-lingo-text mb-6">
-        <HoverableText text={exercise.text} language={language} noAudio={exercise.noAudio?.includes("text")} />
-      </h2>
+      <div className="flex items-start gap-2 mb-6">
+        <h2 className="text-xl font-bold text-lingo-text">
+          <HoverableText text={exercise.text} language={language} noAudio={exercise.noAudio?.includes("text")} />
+        </h2>
+        {!exercise.noAudio?.includes("text") && (
+          <ReplayButton onPlay={() => play(exercise.text, language)} />
+        )}
+      </div>
       <AudioSpinner loading={audioLoading} />
       <div className="space-y-3">
         {choices.map((choice, i) => (

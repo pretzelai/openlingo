@@ -8,6 +8,7 @@ import { checkSimilarity } from "@/lib/similarity";
 import { ExerciseShell } from "./exercise-shell";
 import { HoverableText } from "@/components/word/hoverable-text";
 import { AudioSpinner } from "@/components/audio-spinner";
+import { ReplayButton } from "@/components/replay-button";
 
 interface Props {
   exercise: FillInTheBlankExercise;
@@ -48,9 +49,14 @@ export function FillInTheBlank({ exercise, onResult, onContinue, language, autop
       correctedMarkdown={correctedMarkdown}
       language={language}
     >
-      <h2 className="text-xl font-bold text-lingo-text mb-6">
-        Fill in the blank
-      </h2>
+      <div className="flex items-start gap-2 mb-6">
+        <h2 className="text-xl font-bold text-lingo-text">
+          Fill in the blank
+        </h2>
+        {!exercise.noAudio?.includes("sentence") && (
+          <ReplayButton onPlay={() => play(exercise.sentence.replace("___", exercise.blank), language)} />
+        )}
+      </div>
       <AudioSpinner loading={audioLoading} />
       <div className="flex flex-wrap items-center gap-2 text-2xl font-bold text-lingo-text mb-6">
         <HoverableText text={parts[0]} language={language} noAudio={exercise.noAudio?.includes("sentence")} />

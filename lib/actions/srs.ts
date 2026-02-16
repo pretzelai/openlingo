@@ -2,9 +2,9 @@
 
 import { db } from "@/lib/db";
 import { srsCard } from "@/lib/db/schema";
-import { and, eq, lte, gt, count, sql } from "drizzle-orm";
+import { and, eq, lte, gt, count, sql, asc, isNotNull, inArray } from "drizzle-orm";
 import { requireSession } from "@/lib/auth-server";
-import { calculateNextReview, type Quality } from "@/lib/srs";
+import { calculateNextReview, type Quality, type CardStatus } from "@/lib/srs";
 
 export async function addWordToSrs(
   word: string,
@@ -20,12 +20,15 @@ export async function addWordToSrs(
       language,
       userId: session.user.id,
       translation,
+      status: "new",
+      nextReviewAt: null,
     })
     .onConflictDoNothing();
 }
 
 /**
  * Add a word to SRS if new, or mark it as failed to remember if it already exists.
+ * New words go to "learning" with nextReviewAt = now (tooltip path — user is actively studying).
  * Returns "added" if the word was newly added, "failed" if it was reset.
  */
 export async function addOrFailWord(
@@ -54,6 +57,8 @@ export async function addOrFailWord(
       language,
       userId,
       translation,
+      status: "learning",
+      nextReviewAt: new Date(),
     });
     return "added";
   }
@@ -64,6 +69,7 @@ export async function addOrFailWord(
       easeFactor: existing.easeFactor,
       interval: existing.interval,
       repetitions: existing.repetitions,
+      status: (existing.status as CardStatus) ?? "learning",
     },
     0
   );
@@ -74,6 +80,7 @@ export async function addOrFailWord(
       easeFactor: result.easeFactor,
       interval: result.interval,
       repetitions: result.repetitions,
+      status: result.status,
       nextReviewAt: result.nextReviewAt,
       lastReviewedAt: new Date(),
     })
@@ -101,6 +108,8 @@ export async function bulkAddWordsToSrs(
     language,
     userId: session.user.id,
     translation: w.translation,
+    status: "new" as const,
+    nextReviewAt: null,
   }));
 
   // Insert in batches of 500 to avoid query size limits
@@ -146,6 +155,8 @@ export async function getDueCards(language?: string, limit = 20) {
 
   const conditions = [
     eq(srsCard.userId, session.user.id),
+    inArray(srsCard.status, ["learning", "review"]),
+    isNotNull(srsCard.nextReviewAt),
     lte(srsCard.nextReviewAt, now),
   ];
 
@@ -167,6 +178,8 @@ export async function getScheduledCards(language?: string, limit = 20) {
 
   const conditions = [
     eq(srsCard.userId, session.user.id),
+    inArray(srsCard.status, ["learning", "review"]),
+    isNotNull(srsCard.nextReviewAt),
     gt(srsCard.nextReviewAt, now),
   ];
 
@@ -225,6 +238,7 @@ export async function reviewCard(
       easeFactor: card.easeFactor,
       interval: card.interval,
       repetitions: card.repetitions,
+      status: (card.status as CardStatus) ?? "learning",
     },
     quality
   );
@@ -235,6 +249,7 @@ export async function reviewCard(
       easeFactor: result.easeFactor,
       interval: result.interval,
       repetitions: result.repetitions,
+      status: result.status,
       nextReviewAt: result.nextReviewAt,
       lastReviewedAt: new Date(),
     })
@@ -268,18 +283,96 @@ export async function getSrsStats(language?: string) {
   const [due] = await db
     .select({ count: count() })
     .from(srsCard)
-    .where(and(baseWhere, lte(srsCard.nextReviewAt, now)));
+    .where(
+      and(
+        baseWhere,
+        inArray(srsCard.status, ["learning", "review"]),
+        isNotNull(srsCard.nextReviewAt),
+        lte(srsCard.nextReviewAt, now)
+      )
+    );
 
-  const [learned] = await db
+  const [newCards] = await db
     .select({ count: count() })
     .from(srsCard)
-    .where(
-      and(baseWhere, sql`${srsCard.repetitions} >= 3`)
-    );
+    .where(and(baseWhere, eq(srsCard.status, "new")));
+
+  const [learning] = await db
+    .select({ count: count() })
+    .from(srsCard)
+    .where(and(baseWhere, eq(srsCard.status, "learning")));
+
+  const [review] = await db
+    .select({ count: count() })
+    .from(srsCard)
+    .where(and(baseWhere, eq(srsCard.status, "review")));
 
   return {
     total: total.count,
     due: due.count,
-    learned: learned.count,
+    new: newCards.count,
+    learning: learning.count,
+    review: review.count,
+    learned: review.count, // alias for backwards compat
   };
+}
+
+export async function getNewCards(language: string, limit = 20) {
+  const session = await requireSession();
+
+  return db
+    .select()
+    .from(srsCard)
+    .where(
+      and(
+        eq(srsCard.userId, session.user.id),
+        eq(srsCard.language, language),
+        eq(srsCard.status, "new")
+      )
+    )
+    .orderBy(asc(srsCard.createdAt))
+    .limit(limit);
+}
+
+export async function introduceNewCards(language: string, count_: number) {
+  const session = await requireSession();
+  const userId = session.user.id;
+
+  const cards = await db
+    .select()
+    .from(srsCard)
+    .where(
+      and(
+        eq(srsCard.userId, userId),
+        eq(srsCard.language, language),
+        eq(srsCard.status, "new")
+      )
+    )
+    .orderBy(asc(srsCard.createdAt))
+    .limit(count_);
+
+  if (cards.length === 0) return [];
+
+  const now = new Date();
+
+  // Update all selected cards to learning status
+  await db
+    .update(srsCard)
+    .set({
+      status: "learning",
+      nextReviewAt: now,
+    })
+    .where(
+      and(
+        eq(srsCard.userId, userId),
+        eq(srsCard.language, language),
+        eq(srsCard.status, "new"),
+        inArray(
+          srsCard.word,
+          cards.map((c) => c.word)
+        )
+      )
+    );
+
+  return cards.map((c) => ({ ...c, status: "learning" as const, nextReviewAt: now }));
 }

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { reviewCard, getScheduledCards } from "@/lib/actions/srs";
+import { reviewCard, getScheduledCards, introduceNewCards } from "@/lib/actions/srs";
 import { interpolateTemplate } from "@/lib/prompts";
 import type { Quality } from "@/lib/srs";
 
@@ -10,10 +10,11 @@ type SrsCard = {
   word: string;
   language: string;
   translation: string;
+  status: string;
   easeFactor: number;
   interval: number;
   repetitions: number;
-  nextReviewAt: Date;
+  nextReviewAt: Date | null;
   lastReviewedAt: Date | null;
   createdAt: Date;
 };
@@ -21,6 +22,9 @@ type SrsCard = {
 type Stats = {
   total: number;
   due: number;
+  new: number;
+  learning: number;
+  review: number;
   learned: number;
 };
 
@@ -64,6 +68,7 @@ export function ReviewSession({
   const [completed, setCompleted] = useState(false);
   const [scheduledLoading, setScheduledLoading] = useState(false);
   const [isScheduledMode, setIsScheduledMode] = useState(false);
+  const [learnNewLoading, setLearnNewLoading] = useState(false);
 
   // AI state
   const [aiEnabled, setAiEnabled] = useState(false);
@@ -94,6 +99,23 @@ export function ReviewSession({
       }
     } finally {
       setScheduledLoading(false);
+    }
+  }
+
+  async function handleLearnNew() {
+    setLearnNewLoading(true);
+    try {
+      const introduced = await introduceNewCards(language, 10);
+      if (introduced.length > 0) {
+        setCards(introduced);
+        setCurrentIndex(0);
+        setPhase("front");
+        setCompleted(false);
+        setIsScheduledMode(false);
+        setAiResponse(null);
+      }
+    } finally {
+      setLearnNewLoading(false);
     }
   }
 
@@ -151,6 +173,18 @@ export function ReviewSession({
     </div>
   );
 
+  const learnNewButton = stats.new > 0 && (
+    <button
+      onClick={handleLearnNew}
+      disabled={learnNewLoading}
+      className="px-6 py-3 bg-lingo-green text-white font-bold rounded-xl border-b-4 border-lingo-green-dark active:border-b-0 active:mt-1 transition-all disabled:opacity-50"
+    >
+      {learnNewLoading
+        ? "Loading..."
+        : `Learn ${Math.min(10, stats.new)} new word${Math.min(10, stats.new) !== 1 ? "s" : ""}`}
+    </button>
+  );
+
   if (cards.length === 0) {
     return (
       <div className="py-6">
@@ -168,16 +202,25 @@ export function ReviewSession({
             <span>{stats.total} total cards</span>
             <span>·</span>
             <span>{stats.learned} learned</span>
+            {stats.new > 0 && (
+              <>
+                <span>·</span>
+                <span>{stats.new} new</span>
+              </>
+            )}
           </div>
-          {stats.total > 0 && (
-            <button
-              onClick={startScheduledReview}
-              disabled={scheduledLoading}
-              className="mt-6 px-6 py-3 bg-lingo-blue text-white font-bold rounded-xl border-b-4 border-lingo-blue/70 active:border-b-0 active:mt-[25px] transition-all disabled:opacity-50"
-            >
-              {scheduledLoading ? "Loading..." : "Review scheduled cards"}
-            </button>
-          )}
+          <div className="mt-6 flex gap-3">
+            {learnNewButton}
+            {stats.total > 0 && (
+              <button
+                onClick={startScheduledReview}
+                disabled={scheduledLoading}
+                className="px-6 py-3 bg-lingo-blue text-white font-bold rounded-xl border-b-4 border-lingo-blue/70 active:border-b-0 active:mt-1 transition-all disabled:opacity-50"
+              >
+                {scheduledLoading ? "Loading..." : "Review scheduled cards"}
+              </button>
+            )}
+          </div>
         </div>
       </div>
     );
@@ -199,16 +242,25 @@ export function ReviewSession({
             <span>{stats.total} total cards</span>
             <span>·</span>
             <span>{stats.learned} learned</span>
+            {stats.new > 0 && (
+              <>
+                <span>·</span>
+                <span>{stats.new} new</span>
+              </>
+            )}
           </div>
-          {!isScheduledMode && stats.total > stats.due && (
-            <button
-              onClick={startScheduledReview}
-              disabled={scheduledLoading}
-              className="mt-6 px-6 py-3 bg-lingo-blue text-white font-bold rounded-xl border-b-4 border-lingo-blue/70 active:border-b-0 active:mt-[25px] transition-all disabled:opacity-50"
-            >
-              {scheduledLoading ? "Loading..." : "Review scheduled cards"}
-            </button>
-          )}
+          <div className="mt-6 flex gap-3">
+            {learnNewButton}
+            {!isScheduledMode && stats.total > stats.due && (
+              <button
+                onClick={startScheduledReview}
+                disabled={scheduledLoading}
+                className="px-6 py-3 bg-lingo-blue text-white font-bold rounded-xl border-b-4 border-lingo-blue/70 active:border-b-0 active:mt-1 transition-all disabled:opacity-50"
+              >
+                {scheduledLoading ? "Loading..." : "Review scheduled cards"}
+              </button>
+            )}
+          </div>
         </div>
       </div>
     );
@@ -238,6 +290,15 @@ export function ReviewSession({
           Review{isScheduledMode && " (Scheduled)"}
         </h1>
         <div className="flex items-center gap-3">
+          {stats.new > 0 && (
+            <button
+              onClick={handleLearnNew}
+              disabled={learnNewLoading}
+              className="text-sm font-bold text-lingo-green hover:text-lingo-green/80 transition-colors disabled:opacity-50"
+            >
+              {learnNewLoading ? "Loading..." : `+ ${Math.min(10, stats.new)} new`}
+            </button>
+          )}
           {!isScheduledMode && (
             <button
               onClick={startScheduledReview}

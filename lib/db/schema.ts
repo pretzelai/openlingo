@@ -201,10 +201,11 @@ export const srsCard = pgTable(
     gender: text("gender"),
     exampleNative: text("example_native"),
     exampleEnglish: text("example_english"),
+    status: text("status").notNull().default("new"),
     easeFactor: real("ease_factor").notNull().default(2.5),
     interval: integer("interval").notNull().default(0), // days
     repetitions: integer("repetitions").notNull().default(0),
-    nextReviewAt: timestamp("next_review_at").notNull().defaultNow(),
+    nextReviewAt: timestamp("next_review_at"),
     lastReviewedAt: timestamp("last_reviewed_at"),
     createdAt: timestamp("created_at").notNull().defaultNow(),
   },

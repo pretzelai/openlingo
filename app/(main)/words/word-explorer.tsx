@@ -19,10 +19,11 @@ interface SrsCard {
   word: string;
   language: string;
   translation: string;
+  status: string;
   easeFactor: number;
   interval: number;
   repetitions: number;
-  nextReviewAt: Date;
+  nextReviewAt: Date | null;
   lastReviewedAt: Date | null;
   createdAt: Date;
 }
@@ -30,6 +31,9 @@ interface SrsCard {
 interface SrsStats {
   total: number;
   due: number;
+  new: number;
+  learning: number;
+  review: number;
   learned: number;
 }
 
@@ -407,19 +411,21 @@ function MyWordsTab({
   const filtered = useMemo(() => {
     let cards = srsCards;
 
-    // Apply SRS filter
+    // Apply SRS filter using real status column
     switch (filter) {
       case "due":
-        cards = cards.filter((c) => new Date(c.nextReviewAt) <= now);
+        cards = cards.filter(
+          (c) => c.nextReviewAt && new Date(c.nextReviewAt) <= now && c.status !== "new"
+        );
         break;
       case "new":
-        cards = cards.filter((c) => c.repetitions === 0);
+        cards = cards.filter((c) => c.status === "new");
         break;
       case "learning":
-        cards = cards.filter((c) => c.repetitions > 0 && c.repetitions < 3);
+        cards = cards.filter((c) => c.status === "learning");
         break;
       case "learned":
-        cards = cards.filter((c) => c.repetitions >= 3);
+        cards = cards.filter((c) => c.status === "review");
         break;
     }
 
@@ -456,27 +462,22 @@ function MyWordsTab({
   const filters: { key: SrsFilter; label: string; count: number }[] = [
     { key: "all", label: "All", count: srsStats.total },
     { key: "due", label: "Due", count: srsStats.due },
-    {
-      key: "new",
-      label: "New",
-      count: srsCards.filter((c) => c.repetitions === 0).length,
-    },
-    {
-      key: "learning",
-      label: "Learning",
-      count: srsCards.filter((c) => c.repetitions > 0 && c.repetitions < 3)
-        .length,
-    },
+    { key: "new", label: "New", count: srsStats.new },
+    { key: "learning", label: "Learning", count: srsStats.learning },
     { key: "learned", label: "Learned", count: srsStats.learned },
   ];
 
   return (
     <div>
       {/* Stats bar */}
-      <div className="mb-4 grid grid-cols-3 gap-3">
+      <div className="mb-4 grid grid-cols-4 gap-3">
         <div className="rounded-xl border-2 border-lingo-border bg-lingo-card p-3 text-center">
           <p className="text-lg font-black text-lingo-blue">{srsStats.total}</p>
           <p className="text-xs font-bold text-lingo-text-light">Total</p>
+        </div>
+        <div className="rounded-xl border-2 border-lingo-border bg-lingo-card p-3 text-center">
+          <p className="text-lg font-black text-lingo-text-light">{srsStats.new}</p>
+          <p className="text-xs font-bold text-lingo-text-light">New</p>
         </div>
         <div className="rounded-xl border-2 border-lingo-border bg-lingo-card p-3 text-center">
           <p className="text-lg font-black text-lingo-orange">{srsStats.due}</p>
@@ -598,10 +599,12 @@ function SrsCardRow({
 }) {
   const [expanded, setExpanded] = useState(false);
 
-  const nextReview = new Date(card.nextReviewAt);
-  const isDue = nextReview <= now;
-  const status = getCardStatus(card);
-  const statusStyle = STATUS_STYLES[status];
+  const isDue =
+    card.nextReviewAt && card.status !== "new"
+      ? new Date(card.nextReviewAt) <= now
+      : false;
+  const statusLabel = getStatusLabel(card.status);
+  const statusStyle = STATUS_STYLES[statusLabel];
 
   return (
     <div className="rounded-xl border-2 border-lingo-border bg-lingo-card hover:border-lingo-gray-dark transition-colors">
@@ -627,7 +630,7 @@ function SrsCardRow({
             </span>
           )}
           <span className={`rounded-md px-2 py-0.5 text-xs font-bold ${statusStyle}`}>
-            {status}
+            {statusLabel}
           </span>
         </div>
       </div>
@@ -656,7 +659,13 @@ function SrsCardRow({
             <div>
               <span className="font-bold text-lingo-text-light">Next</span>
               <span className="ml-2 font-bold text-lingo-text">
-                {isDue ? "Now" : formatRelativeDate(nextReview, now)}
+                {card.status === "new"
+                  ? "Not started"
+                  : card.nextReviewAt
+                    ? isDue
+                      ? "Now"
+                      : formatRelativeDate(new Date(card.nextReviewAt), now)
+                    : "—"}
               </span>
             </div>
           </div>
@@ -665,9 +674,9 @@ function SrsCardRow({
           <div className="mt-3 h-1.5 rounded-full bg-lingo-gray/60 overflow-hidden">
             <div
               className={`h-full rounded-full transition-all ${
-                card.repetitions >= 3
+                card.status === "review"
                   ? "bg-lingo-green"
-                  : card.repetitions > 0
+                  : card.status === "learning"
                     ? "bg-lingo-blue"
                     : "bg-lingo-gray-dark"
               }`}
@@ -693,10 +702,17 @@ function SrsCardRow({
 
 /* ─── Helpers ─── */
 
-function getCardStatus(card: SrsCard): string {
-  if (card.repetitions === 0) return "New";
-  if (card.repetitions < 3) return "Learning";
-  return "Learned";
+function getStatusLabel(status: string): string {
+  switch (status) {
+    case "new":
+      return "New";
+    case "learning":
+      return "Learning";
+    case "review":
+      return "Learned";
+    default:
+      return "New";
+  }
 }
 
 const STATUS_STYLES: Record<string, string> = {

@@ -11,6 +11,8 @@ const TOOL_LABELS: Record<string, string> = {
   lookupWord: "Looking up word",
   removeWord: "Removing word",
   listCards: "Listing cards",
+  getNewCards: "Fetching new cards",
+  introduceCards: "Introducing new cards",
   readMemory: "Reading memory",
   addMemory: "Saving to memory",
   rewriteAllMemory: "Rewriting memory",

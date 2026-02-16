@@ -1,10 +1,8 @@
-import fs from "fs/promises";
-import path from "path";
 import { generateObject } from "ai";
 import { z } from "zod";
 import { getModel } from "@/lib/ai";
 import { db } from "@/lib/db";
-import { wordCache } from "@/lib/db/schema";
+import { dictionaryWord, wordCache } from "@/lib/db/schema";
 import { and, eq } from "drizzle-orm";
 import {
   getDefaultTemplate,
@@ -21,61 +19,40 @@ export interface WordEntry {
   example_sentence_english: string;
   gender: string;
   useful_for_flashcard?: boolean;
+  word_frequency?: number;
 }
 
-export const langCodeToFile: Record<string, string> = {
-  de: "german",
-  fr: "french",
-  es: "spanish",
-  it: "italian",
-  pt: "portuguese_generic",
-  "pt-BR": "portuguese_brazilian",
-  "pt-PT": "portuguese_european",
-  ru: "russian",
-  ar: "arabic",
-  hi: "hindi",
-  ko: "korean",
-  zh: "mandarin",
-  ja: "hiragana",
-  en: "english",
-};
+function rowToWordEntry(row: typeof dictionaryWord.$inferSelect): WordEntry {
+  return {
+    word: row.word,
+    pos: row.pos ?? "",
+    cefr_level: row.cefrLevel ?? "",
+    english_translation: row.englishTranslation,
+    example_sentence_native: row.exampleSentenceNative ?? "",
+    example_sentence_english: row.exampleSentenceEnglish ?? "",
+    gender: row.gender ?? "",
+    useful_for_flashcard: row.usefulForFlashcard ?? true,
+    word_frequency: row.wordFrequency ?? undefined,
+  };
+}
 
-// Module-level cache: language -> Map<lowercaseWord, WordEntry>
-const dictCache = new Map<string, Map<string, WordEntry>>();
+export async function loadLanguageRaw(langCode: string): Promise<WordEntry[]> {
+  const rows = await db
+    .select()
+    .from(dictionaryWord)
+    .where(eq(dictionaryWord.language, langCode));
 
-// Raw array cache for getWordsByLevel filtering
-const rawCache = new Map<string, WordEntry[]>();
-
-async function loadLanguageRaw(langCode: string): Promise<WordEntry[]> {
-  const existing = rawCache.get(langCode);
-  if (existing) return existing;
-
-  const fileName = langCodeToFile[langCode];
-  if (!fileName) return [];
-
-  const filePath = path.join(process.cwd(), "words", `${fileName}.json`);
-  try {
-    const raw = await fs.readFile(filePath, "utf-8");
-    const words: WordEntry[] = JSON.parse(raw);
-    rawCache.set(langCode, words);
-    return words;
-  } catch {
-    return [];
-  }
+  return rows.map(rowToWordEntry);
 }
 
 export async function loadLanguage(
   langCode: string
 ): Promise<Map<string, WordEntry>> {
-  const existing = dictCache.get(langCode);
-  if (existing) return existing;
-
   const words = await loadLanguageRaw(langCode);
   const map = new Map<string, WordEntry>();
   for (const w of words) {
     map.set(w.word.toLowerCase(), w);
   }
-  dictCache.set(langCode, map);
   return map;
 }
 
@@ -191,21 +168,29 @@ export async function lookupWord(
   word: string,
   language: string
 ): Promise<WordLookupResult> {
-  // 1. Try dictionary
-  const map = await loadLanguage(language);
-  const entry = map.get(word.toLowerCase());
+  // 1. Try dictionary (single row query, no full load)
+  const [entry] = await db
+    .select()
+    .from(dictionaryWord)
+    .where(
+      and(
+        eq(dictionaryWord.word, word.toLowerCase()),
+        eq(dictionaryWord.language, language)
+      )
+    )
+    .limit(1);
 
   if (entry) {
     return {
       found: true,
       source: "dictionary",
       word: entry.word,
-      translation: entry.english_translation,
+      translation: entry.englishTranslation,
       pos: entry.pos,
       gender: entry.gender || null,
-      cefrLevel: entry.cefr_level,
-      exampleNative: entry.example_sentence_native,
-      exampleEnglish: entry.example_sentence_english,
+      cefrLevel: entry.cefrLevel,
+      exampleNative: entry.exampleSentenceNative,
+      exampleEnglish: entry.exampleSentenceEnglish,
     };
   }
 
@@ -223,10 +208,18 @@ export async function getWordsByLevel(
   language: string,
   level: string
 ): Promise<WordEntry[]> {
-  const words = await loadLanguageRaw(language);
   const upperLevel = level.toUpperCase();
-  return words.filter(
-    (w) =>
-      w.cefr_level === upperLevel && w.useful_for_flashcard !== false
-  );
+  const rows = await db
+    .select()
+    .from(dictionaryWord)
+    .where(
+      and(
+        eq(dictionaryWord.language, language),
+        eq(dictionaryWord.cefrLevel, upperLevel)
+      )
+    );
+
+  return rows
+    .filter((r) => r.usefulForFlashcard !== false)
+    .map(rowToWordEntry);
 }

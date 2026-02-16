@@ -51,10 +51,12 @@ export function ReviewSession({
   dueCards,
   stats,
   aiPromptTemplate,
+  language = "de",
 }: {
   dueCards: SrsCard[];
   stats: Stats;
   aiPromptTemplate: string;
+  language?: string;
 }) {
   const [cards, setCards] = useState<SrsCard[]>(dueCards);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -81,7 +83,7 @@ export function ReviewSession({
   async function startScheduledReview() {
     setScheduledLoading(true);
     try {
-      const scheduled = await getScheduledCards("de");
+      const scheduled = await getScheduledCards(language);
       if (scheduled.length > 0) {
         setCards(scheduled);
         setCurrentIndex(0);

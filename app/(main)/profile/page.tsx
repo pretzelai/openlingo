@@ -6,11 +6,16 @@ import { HeartsDisplay } from "@/components/gamification/hearts-display";
 import { LevelBadge } from "@/components/gamification/level-badge";
 import { AchievementCard } from "@/components/gamification/achievement-card";
 import { NativeLanguagePicker } from "./native-language-picker";
+import { TargetLanguagePicker } from "./target-language-picker";
+import { getTargetLanguage } from "@/lib/actions/preferences";
 
 export const metadata = { title: "Profile — LingoClaw" };
 
 export default async function ProfilePage() {
-  const { user, stats, achievements } = await getProfileData();
+  const [{ user, stats, achievements }, targetLanguage] = await Promise.all([
+    getProfileData(),
+    getTargetLanguage(),
+  ]);
 
   return (
     <div className="mx-auto max-w-lg space-y-6">
@@ -28,6 +33,7 @@ export default async function ProfilePage() {
       {/* Settings */}
       <Card>
         <h3 className="font-bold text-lingo-text mb-3">Settings</h3>
+        <TargetLanguagePicker currentLanguage={targetLanguage} />
         <NativeLanguagePicker currentLanguage={stats.nativeLanguage ?? null} />
       </Card>
 

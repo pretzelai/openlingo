@@ -1,6 +1,7 @@
 import { seedAchievements } from "../lib/db/seed-achievements";
 import { seedCoursesFromFilesystem } from "../lib/db/seed-courses";
 import { seedTestUser } from "../lib/db/seed-test-user";
+import { seedWords } from "../lib/db/seed-words";
 
 async function main() {
   console.log("Seeding achievements...");
@@ -11,6 +12,9 @@ async function main() {
 
   console.log("Seeding test user...");
   await seedTestUser();
+
+  console.log("Seeding dictionary words...");
+  await seedWords();
 
   console.log("Done!");
   process.exit(0);

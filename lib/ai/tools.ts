@@ -8,6 +8,7 @@ import {
   unit,
   userCourseEnrollment,
   userStats,
+  userPreferences,
 } from "@/lib/db/schema";
 import { and, eq, lte, count, sql } from "drizzle-orm";
 import { calculateNextReview, type Quality } from "@/lib/srs";
@@ -16,6 +17,8 @@ import {
   lookupWord as wordLookup,
   getWordsByLevel,
 } from "@/lib/words";
+import { langCodeToName } from "@/lib/prompts";
+import { supportedLanguages } from "@/lib/languages";
 import { getModel } from "./models";
 
 export function createTools(userId: string, language?: string) {
@@ -505,6 +508,46 @@ Requirements:
           lessonCount: generatedUnit.lessons.length,
           exerciseCount,
           lessonTitles: generatedUnit.lessons.map((l) => l.title),
+        };
+      },
+    }),
+
+    switchLanguage: tool({
+      description:
+        "Switch the user's target language globally. Changes which language they're learning across all pages.",
+      inputSchema: z.object({
+        language: z
+          .string()
+          .describe(
+            "Language code (e.g. 'fr', 'es', 'de', 'it', 'pt', 'ru', 'ar', 'hi', 'ko', 'zh', 'ja')"
+          ),
+      }),
+      execute: async ({ language: langCode }) => {
+        if (!supportedLanguages[langCode]) {
+          const supported = Object.keys(supportedLanguages)
+            .filter((k) => k !== "en")
+            .map((k) => `${k} (${langCodeToName[k] || k})`)
+            .join(", ");
+          return {
+            success: false,
+            error: `Unsupported language "${langCode}". Supported: ${supported}`,
+          };
+        }
+
+        await db
+          .insert(userPreferences)
+          .values({ userId, targetLanguage: langCode })
+          .onConflictDoUpdate({
+            target: userPreferences.userId,
+            set: { targetLanguage: langCode, updatedAt: new Date() },
+          });
+
+        const name = langCodeToName[langCode] || langCode;
+        return {
+          success: true,
+          language: langCode,
+          languageName: name,
+          message: `Switched target language to ${name}. All pages will now use ${name}.`,
         };
       },
     }),

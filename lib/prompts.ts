@@ -143,6 +143,7 @@ Your capabilities:
 - Read user notes/preferences with readMemory, append new notes with addMemory, or rewrite all memory with rewriteAllMemory
 - Present interactive exercises with presentExercise
 - Create a full learning unit on any topic with createUnit (generates lessons + exercises, auto-enrolls the user)
+- Switch the user's target language with switchLanguage (changes which language they're learning globally)
 
 When the user wants to practice or review:
 1. Use getDueCards to fetch words that need review

@@ -82,6 +82,14 @@ export const userStats = pgTable("user_stats", {
   nativeLanguage: text("native_language"),
 });
 
+export const userPreferences = pgTable("user_preferences", {
+  userId: text("user_id")
+    .primaryKey()
+    .references(() => user.id, { onDelete: "cascade" }),
+  targetLanguage: text("target_language").notNull().default("de"),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
 export const userCourseEnrollment = pgTable(
   "user_course_enrollment",
   {
@@ -202,6 +210,30 @@ export const srsCard = pgTable(
   },
   (table) => [
     primaryKey({ columns: [table.word, table.language, table.userId] }),
+  ]
+);
+
+// ─── Dictionary words (seeded from JSON) ───
+
+export const dictionaryWord = pgTable(
+  "dictionary_word",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    word: text("word").notNull(),
+    language: text("language").notNull(),
+    pos: text("pos"),
+    cefrLevel: text("cefr_level"),
+    englishTranslation: text("english_translation").notNull(),
+    exampleSentenceNative: text("example_sentence_native"),
+    exampleSentenceEnglish: text("example_sentence_english"),
+    gender: text("gender"),
+    wordFrequency: integer("word_frequency"),
+    usefulForFlashcard: boolean("useful_for_flashcard").default(true),
+  },
+  (table) => [
+    uniqueIndex("dictionary_word_unique").on(table.word, table.language),
   ]
 );
 

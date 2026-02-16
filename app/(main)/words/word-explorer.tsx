@@ -12,7 +12,7 @@ interface Word {
   example_sentence_native: string;
   example_sentence_english: string;
   gender: string;
-  word_frequency: number;
+  word_frequency?: number;
 }
 
 interface SrsCard {

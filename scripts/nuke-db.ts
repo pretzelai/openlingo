@@ -5,6 +5,7 @@ import { db } from "../lib/db";
 const PRESERVED_TABLES = [
   "user", "session", "account", "verification", // Better Auth
   "audio_cache", // TTS cache (expensive to regenerate)
+  "dictionary_word", // Seeded reference data (~208k rows)
 ];
 
 // Get all tables in public schema

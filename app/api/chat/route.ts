@@ -3,6 +3,7 @@ import { getModel, createTools } from "@/lib/ai";
 import { requireSession } from "@/lib/auth-server";
 import { langCodeToName, interpolateTemplate } from "@/lib/prompts";
 import { getUserPromptTemplate } from "@/lib/actions/prompts";
+import { getTargetLanguage } from "@/lib/actions/preferences";
 import { db } from "@/lib/db";
 import { userMemory } from "@/lib/db/schema";
 import { and, eq } from "drizzle-orm";
@@ -11,7 +12,7 @@ export async function POST(req: Request) {
   const session = await requireSession();
   const { messages, language: lang } = await req.json();
 
-  const language: string = lang || "de";
+  const language: string = lang || (await getTargetLanguage(session.user.id));
   const langName = langCodeToName[language] || language;
   const tools = createTools(session.user.id, language);
 

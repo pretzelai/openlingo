@@ -1,18 +1,22 @@
-import words from "@/words/german.json";
 import { getAllCards, getSrsStats } from "@/lib/actions/srs";
+import { getTargetLanguage } from "@/lib/actions/preferences";
+import { loadLanguageRaw } from "@/lib/words";
 import { WordExplorer } from "./word-explorer";
 
 export const metadata = { title: "Words — LingoClaw" };
 
 export default async function WordsPage() {
-  const [srsCards, stats] = await Promise.all([
-    getAllCards("de"),
-    getSrsStats("de"),
+  const language = await getTargetLanguage();
+
+  const [words, srsCards, stats] = await Promise.all([
+    loadLanguageRaw(language),
+    getAllCards(language),
+    getSrsStats(language),
   ]);
 
   return (
     <div className="mx-auto max-w-2xl">
-      <WordExplorer words={words} srsCards={srsCards} srsStats={stats} language="de" />
+      <WordExplorer words={words} srsCards={srsCards} srsStats={stats} language={language} />
     </div>
   );
 }

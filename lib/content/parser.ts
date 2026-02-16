@@ -9,6 +9,7 @@ import type {
   SpeakingExercise,
   FreeTextExercise,
 } from "./types";
+import { exerciseSchema } from "./exercise-schema";
 
 /**
  * Parse raw markdown content (after frontmatter) into Exercise[].
@@ -52,26 +53,56 @@ export function parseExercise(block: string): Exercise {
     .split("\n")
     .map((l) => l.trim());
 
+  let exercise: Exercise;
   switch (type) {
     case "multiple-choice":
-      return parseMultipleChoice(lines);
+      exercise = parseMultipleChoice(lines);
+      break;
     case "translation":
-      return parseTranslation(lines);
+      exercise = parseTranslation(lines);
+      break;
     case "fill-in-the-blank":
-      return parseFillInTheBlank(lines);
+      exercise = parseFillInTheBlank(lines);
+      break;
     case "matching-pairs":
-      return parseMatchingPairs(lines);
+      exercise = parseMatchingPairs(lines);
+      break;
     case "listening":
-      return parseListening(lines);
+      exercise = parseListening(lines);
+      break;
     case "word-bank":
-      return parseWordBank(lines);
+      exercise = parseWordBank(lines);
+      break;
     case "speaking":
-      return parseSpeaking(lines);
+      exercise = parseSpeaking(lines);
+      break;
     case "free-text":
-      return parseFreeText(lines);
+      exercise = parseFreeText(lines);
+      break;
     default:
       throw new Error(`Unknown exercise type: ${type}`);
   }
+
+  return validateExercise(exercise);
+}
+
+/**
+ * Validate a parsed exercise against the Zod schema.
+ * Throws a descriptive error that AI can read and fix.
+ */
+function validateExercise(exercise: Exercise): Exercise {
+  const result = exerciseSchema.safeParse(exercise);
+  if (result.success) return result.data;
+
+  const issues = result.error.issues.map((issue) => {
+    const path = issue.path.length > 0 ? issue.path.join(".") : "(root)";
+    return `  - ${path}: ${issue.message}`;
+  });
+
+  throw new Error(
+    `Invalid [${exercise.type}] exercise:\n${issues.join("\n")}\n` +
+    `Parsed data: ${JSON.stringify(exercise, null, 2)}`
+  );
 }
 
 const NO_AUDIO_RE = /\s*\[no-audio\]\s*$/;

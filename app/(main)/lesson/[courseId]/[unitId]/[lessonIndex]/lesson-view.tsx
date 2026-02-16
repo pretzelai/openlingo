@@ -3,7 +3,7 @@
 import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import type { UnitLesson, Exercise } from "@/lib/content/types";
-import { exerciseSchema } from "@/lib/ai/exercise-schema";
+import { exerciseSchema } from "@/lib/content/exercise-schema";
 import { useLesson } from "@/hooks/use-lesson";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import { MultipleChoice } from "@/components/exercises/multiple-choice";

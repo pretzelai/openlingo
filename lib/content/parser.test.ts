@@ -184,7 +184,8 @@ describe("matching-pairs", () => {
 
   test("parses [no-audio] on pair values", () => {
     const block = `[matching-pairs]
-- "gato [no-audio]" = "cat"`;
+- "gato [no-audio]" = "cat"
+- "perro" = "dog"`;
     const ex = parseExercise(block);
     if (ex.type === "matching-pairs") {
       expect(ex.pairs[0].left).toBe("gato");

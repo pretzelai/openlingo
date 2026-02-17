@@ -9,8 +9,10 @@ import {
   userCourseEnrollment,
   userStats,
   userPreferences,
+  dictionaryWord,
+  srsCard,
 } from "@/lib/db/schema";
-import { and, eq } from "drizzle-orm";
+import { and, eq, gte, lte, sql } from "drizzle-orm";
 import { parseExercise } from "@/lib/content/parser";
 import { langCodeToName } from "@/lib/prompts";
 import { supportedLanguages } from "@/lib/languages";
@@ -212,6 +214,101 @@ export function createTools(userId: string, language?: string) {
           lessonCount: parsedUnit.lessons.length,
           exerciseCount,
           lessonTitles: parsedUnit.lessons.map((l) => l.title),
+        };
+      },
+    }),
+
+    addWordsToSrs: tool({
+      description:
+        "Bulk-add words from the dictionary to the user's SRS deck. Filters by language (required), and optionally by CEFR level and/or word frequency range. Only adds words marked as useful for flashcards that aren't already in the user's deck.",
+      inputSchema: z.object({
+        language: z
+          .string()
+          .describe("Language code, e.g. 'de', 'fr', 'es'"),
+        cefrLevel: z
+          .enum(["A1", "A2", "B1", "B2", "C1", "C2"])
+          .optional()
+          .describe("Filter by CEFR level (exact match)"),
+        minFrequency: z
+          .number()
+          .int()
+          .optional()
+          .describe("Minimum word frequency (inclusive)"),
+        maxFrequency: z
+          .number()
+          .int()
+          .optional()
+          .describe("Maximum word frequency (inclusive)"),
+        limit: z
+          .number()
+          .int()
+          .min(1)
+          .max(5000)
+          .default(500)
+          .describe("Max words to add (default 500, max 5000)"),
+      }),
+      execute: async ({ language: lang, cefrLevel, minFrequency, maxFrequency, limit: maxWords }) => {
+        const conditions = [
+          eq(dictionaryWord.language, lang),
+          eq(dictionaryWord.usefulForFlashcard, true),
+        ];
+
+        if (cefrLevel) {
+          conditions.push(eq(dictionaryWord.cefrLevel, cefrLevel));
+        }
+        if (minFrequency !== undefined) {
+          conditions.push(gte(dictionaryWord.wordFrequency, minFrequency));
+        }
+        if (maxFrequency !== undefined) {
+          conditions.push(lte(dictionaryWord.wordFrequency, maxFrequency));
+        }
+
+        const words = await db
+          .select({
+            word: dictionaryWord.word,
+            translation: dictionaryWord.englishTranslation,
+            cefrLevel: dictionaryWord.cefrLevel,
+            pos: dictionaryWord.pos,
+            gender: dictionaryWord.gender,
+            exampleNative: dictionaryWord.exampleSentenceNative,
+            exampleEnglish: dictionaryWord.exampleSentenceEnglish,
+          })
+          .from(dictionaryWord)
+          .where(and(...conditions))
+          .orderBy(dictionaryWord.wordFrequency)
+          .limit(maxWords);
+
+        if (words.length === 0) {
+          return { success: true, added: 0, message: "No matching words found in dictionary." };
+        }
+
+        const BATCH_SIZE = 500;
+        for (let i = 0; i < words.length; i += BATCH_SIZE) {
+          const batch = words.slice(i, i + BATCH_SIZE);
+          await db
+            .insert(srsCard)
+            .values(
+              batch.map((w) => ({
+                word: w.word.toLowerCase(),
+                language: lang,
+                userId,
+                translation: w.translation,
+                cefrLevel: w.cefrLevel,
+                pos: w.pos,
+                gender: w.gender,
+                exampleNative: w.exampleNative,
+                exampleEnglish: w.exampleEnglish,
+                status: "new" as const,
+                nextReviewAt: null,
+              }))
+            )
+            .onConflictDoNothing();
+        }
+
+        return {
+          success: true,
+          totalMatched: words.length,
+          message: `Matched ${words.length} words from dictionary and added to SRS (duplicates skipped).`,
         };
       },
     }),

@@ -68,7 +68,7 @@ function buildPrompt(topic: string, lessons: number): string {
 // ---------------------------------------------------------------------------
 
 const providerModels: Record<string, string> = {
-  google: "gemini-3-flash",
+  google: "gemini-3-flash-preview",
   openai: "gpt-4o",
   anthropic: "claude-sonnet-4-5-20250929",
 };

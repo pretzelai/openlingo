@@ -115,7 +115,7 @@ export async function aiLookup(
 
     const model = userId
       ? await getUserModel(userId)
-      : getModel("gemini-3-flash-lite");
+      : getModel("gemini-3-flash-preview");
     const { object: analysis } = await generateObject({
       model,
       schema: wordAnalysisSchema,

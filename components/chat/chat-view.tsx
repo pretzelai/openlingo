@@ -136,8 +136,8 @@ export function ChatView({
 
     sendMessage({
       text: correct
-        ? `Exercise result: CORRECT. My answer: "${userAnswer}".`
-        : `Exercise result: INCORRECT. My answer: "${userAnswer}".`,
+        ? `Exercise result: CORRECT. My answer: "${userAnswer}". (SRS already updated — do not run an SRS update query.)`
+        : `Exercise result: INCORRECT. My answer: "${userAnswer}". (SRS already updated — do not run an SRS update query.)`,
     });
   }
 

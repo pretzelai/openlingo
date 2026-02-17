@@ -30,6 +30,9 @@ CREATE TABLE srs_card (
   PRIMARY KEY (word, language, user_id)
 );
 
+Be careful if you use LIMIT parameter in your SQL queries as they don't give the full picture.
+For example you should NOT use LIMIT for due cards.
+
 -- SM-2 Algorithm Rules (apply these when updating a card after review)
 -- Quality scale: 0=blackout, 1=wrong, 2=wrong but close, 3=correct with difficulty, 4=correct, 5=perfect
 --
@@ -71,8 +74,8 @@ export async function POST(req: Request) {
       .where(
         and(
           eq(userMemory.userId, session.user.id),
-          eq(userMemory.key, "memory")
-        )
+          eq(userMemory.key, "memory"),
+        ),
       )
       .limit(1)
       .then((rows) => rows[0]),

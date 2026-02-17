@@ -1,26 +1,24 @@
 import { tool } from "ai";
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
-import { db } from "@/lib/db";
+import { db, client } from "@/lib/db";
 import {
   userMemory,
-  srsCard,
   course,
   unit,
   userCourseEnrollment,
   userStats,
   userPreferences,
 } from "@/lib/db/schema";
-import { and, eq, lte, count, sql, asc, isNotNull, inArray } from "drizzle-orm";
-import { calculateNextReview, type Quality, type CardStatus } from "@/lib/srs";
+import { and, eq } from "drizzle-orm";
 import { parseExercise } from "@/lib/content/parser";
-import {
-  lookupWord as wordLookup,
-  getWordsByLevel,
-} from "@/lib/words";
 import { langCodeToName } from "@/lib/prompts";
 import { supportedLanguages } from "@/lib/languages";
 import { parseUnitFromMarkdown } from "@/lib/content/loader";
+
+const ALLOWED_TABLE = /\bsrs_card\b/i;
+const FORBIDDEN_TABLES =
+  /\b(user|session|account|verification|user_stats|user_preferences|user_course_enrollment|lesson_completion|exercise_attempt|achievement_definition|user_achievement|daily_activity|dictionary_word|word_cache|user_memory|course|unit|audio_cache|chat_conversation)\b/i;
 
 export function createTools(userId: string, language?: string) {
   return {
@@ -88,438 +86,30 @@ export function createTools(userId: string, language?: string) {
       },
     }),
 
-    getDueCards: tool({
-      description: "Get SRS cards that are due for review",
-      inputSchema: z.object({
-        limit: z
-          .number()
-          .optional()
-          .default(20)
-          .describe("Max cards to return"),
-      }),
-      execute: async ({ limit }) => {
-        const now = new Date();
-        const conditions = [
-          eq(srsCard.userId, userId),
-          inArray(srsCard.status, ["learning", "review"]),
-          isNotNull(srsCard.nextReviewAt),
-          lte(srsCard.nextReviewAt, now),
-        ];
-        if (language) {
-          conditions.push(eq(srsCard.language, language));
-        }
-        const cards = await db
-          .select()
-          .from(srsCard)
-          .where(and(...conditions))
-          .orderBy(srsCard.nextReviewAt)
-          .limit(limit);
-        return { cards, count: cards.length };
-      },
-    }),
-
-    getSrsStats: tool({
+    srs: tool({
       description:
-        "Get SRS statistics: total cards, due cards, new cards, learning cards, and review/learned cards",
-      inputSchema: z.object({}),
-      execute: async () => {
-        const now = new Date();
-        const conditions = [eq(srsCard.userId, userId)];
-        if (language) {
-          conditions.push(eq(srsCard.language, language));
+        "Execute SQL on the srs_card table. $1 is always bound to the current user's ID. Returns rows for SELECT, or affected row count for mutations. Only the srs_card table is accessible.",
+      inputSchema: z.object({
+        sql: z.string().describe("SQL query — use $1 for user_id"),
+      }),
+      execute: async ({ sql: query }) => {
+        if (!ALLOWED_TABLE.test(query)) {
+          return { error: "Query must reference the srs_card table." };
         }
-        const baseWhere = and(...conditions);
-
-        const [total] = await db
-          .select({ count: count() })
-          .from(srsCard)
-          .where(baseWhere);
-
-        const [due] = await db
-          .select({ count: count() })
-          .from(srsCard)
-          .where(
-            and(
-              baseWhere,
-              inArray(srsCard.status, ["learning", "review"]),
-              isNotNull(srsCard.nextReviewAt),
-              lte(srsCard.nextReviewAt, now)
-            )
-          );
-
-        const [newCards] = await db
-          .select({ count: count() })
-          .from(srsCard)
-          .where(and(baseWhere, eq(srsCard.status, "new")));
-
-        const [learning] = await db
-          .select({ count: count() })
-          .from(srsCard)
-          .where(and(baseWhere, eq(srsCard.status, "learning")));
-
-        const [review] = await db
-          .select({ count: count() })
-          .from(srsCard)
-          .where(and(baseWhere, eq(srsCard.status, "review")));
-
-        return {
-          total: total.count,
-          due: due.count,
-          new: newCards.count,
-          learning: learning.count,
-          review: review.count,
-          learned: review.count,
-        };
-      },
-    }),
-
-    addWordToSrs: tool({
-      description:
-        "Add a new word to the user's SRS deck with auto-enrichment from dictionary/AI",
-      inputSchema: z.object({
-        word: z.string().describe("The word in the target language"),
-        translation: z
-          .string()
-          .optional()
-          .describe("English translation (auto-filled if omitted)"),
-      }),
-      execute: async ({ word, translation }) => {
-        const lang = language ?? "de";
-        const normalized = word.toLowerCase();
-
-        // Look up enrichment data
-        const lookup = await wordLookup(word, lang, userId);
-
-        const finalTranslation =
-          translation || lookup.translation || word;
-
-        await db
-          .insert(srsCard)
-          .values({
-            word: normalized,
-            language: lang,
-            userId,
-            translation: finalTranslation,
-            cefrLevel: lookup.cefrLevel ?? null,
-            pos: lookup.pos ?? null,
-            gender: lookup.gender ?? null,
-            exampleNative: lookup.exampleNative ?? null,
-            exampleEnglish: lookup.exampleEnglish ?? null,
-            status: "new",
-            nextReviewAt: null,
-          })
-          .onConflictDoUpdate({
-            target: [srsCard.word, srsCard.language, srsCard.userId],
-            set: {
-              // Backfill enrichment but don't overwrite SRS scheduling fields
-              cefrLevel: sql`COALESCE(${srsCard.cefrLevel}, excluded.cefr_level)`,
-              pos: sql`COALESCE(${srsCard.pos}, excluded.pos)`,
-              gender: sql`COALESCE(${srsCard.gender}, excluded.gender)`,
-              exampleNative: sql`COALESCE(${srsCard.exampleNative}, excluded.example_native)`,
-              exampleEnglish: sql`COALESCE(${srsCard.exampleEnglish}, excluded.example_english)`,
-            },
-          });
-
-        return {
-          success: true,
-          word: normalized,
-          translation: finalTranslation,
-          cefrLevel: lookup.cefrLevel ?? null,
-          pos: lookup.pos ?? null,
-          source: lookup.source ?? null,
-        };
-      },
-    }),
-
-    addWordsByLevel: tool({
-      description:
-        "Batch-add words at a specific CEFR level (A1-C2) from the dictionary to the user's SRS deck",
-      inputSchema: z.object({
-        level: z
-          .enum(["A1", "A2", "B1", "B2", "C1", "C2"])
-          .describe("CEFR level"),
-        limit: z
-          .number()
-          .optional()
-          .default(50)
-          .describe("Max words to add (default 50, max 500)"),
-      }),
-      execute: async ({ level, limit }) => {
-        const lang = language ?? "de";
-        const cap = Math.min(limit, 500);
-
-        const words = await getWordsByLevel(lang, level);
-        const batch = words.slice(0, cap);
-
-        if (batch.length === 0) {
-          return { added: 0, totalAvailable: 0, level };
+        if (FORBIDDEN_TABLES.test(query)) {
+          return { error: "Access denied: only the srs_card table is accessible." };
         }
 
-        const rows = batch.map((w) => ({
-          word: w.word.toLowerCase(),
-          language: lang,
-          userId,
-          translation: w.english_translation,
-          cefrLevel: w.cefr_level,
-          pos: w.pos,
-          gender: w.gender || null,
-          exampleNative: w.example_sentence_native,
-          exampleEnglish: w.example_sentence_english,
-          status: "new" as const,
-          nextReviewAt: null,
-        }));
-
-        await db.insert(srsCard).values(rows).onConflictDoNothing();
-
-        return {
-          added: batch.length,
-          totalAvailable: words.length,
-          level,
-        };
-      },
-    }),
-
-    lookupWord: tool({
-      description:
-        "Look up a word in the dictionary or via AI without adding it to SRS. Returns translation, part of speech, gender, CEFR level, and examples.",
-      inputSchema: z.object({
-        word: z.string().describe("The word to look up"),
-      }),
-      execute: async ({ word }) => {
-        const lang = language ?? "de";
-        return wordLookup(word, lang, userId);
-      },
-    }),
-
-    removeWord: tool({
-      description: "Remove a word from the user's SRS deck",
-      inputSchema: z.object({
-        word: z.string().describe("The word to remove"),
-      }),
-      execute: async ({ word }) => {
-        const lang = language ?? "de";
-        const deleted = await db
-          .delete(srsCard)
-          .where(
-            and(
-              eq(srsCard.word, word.toLowerCase()),
-              eq(srsCard.language, lang),
-              eq(srsCard.userId, userId)
-            )
-          )
-          .returning({ word: srsCard.word });
-
-        if (deleted.length === 0) {
-          return { success: false, error: "Card not found" };
+        try {
+          const rows = await client.unsafe(query, [userId]);
+          const isSelect = /^\s*select/i.test(query);
+          if (isSelect) {
+            return { rows: Array.from(rows), count: rows.length };
+          }
+          return { affected: rows.count ?? rows.length };
+        } catch (e) {
+          return { error: (e as Error).message };
         }
-        return { success: true, word: deleted[0].word };
-      },
-    }),
-
-    listCards: tool({
-      description: "List words in the user's SRS deck",
-      inputSchema: z.object({
-        level: z
-          .enum(["A1", "A2", "B1", "B2", "C1", "C2"])
-          .optional()
-          .describe("Filter by CEFR level"),
-        status: z
-          .enum(["new", "learning", "review"])
-          .optional()
-          .describe("Filter by card status"),
-        limit: z
-          .number()
-          .optional()
-          .default(50)
-          .describe("Max cards to return"),
-        offset: z
-          .number()
-          .optional()
-          .default(0)
-          .describe("Offset for pagination"),
-      }),
-      execute: async ({ level, status, limit, offset }) => {
-        const conditions = [eq(srsCard.userId, userId)];
-        if (language) {
-          conditions.push(eq(srsCard.language, language));
-        }
-        if (level) {
-          conditions.push(eq(srsCard.cefrLevel, level));
-        }
-        if (status) {
-          conditions.push(eq(srsCard.status, status));
-        }
-
-        const cards = await db
-          .select({
-            word: srsCard.word,
-            translation: srsCard.translation,
-            cefrLevel: srsCard.cefrLevel,
-            pos: srsCard.pos,
-            gender: srsCard.gender,
-            status: srsCard.status,
-            interval: srsCard.interval,
-            repetitions: srsCard.repetitions,
-            nextReviewAt: srsCard.nextReviewAt,
-          })
-          .from(srsCard)
-          .where(and(...conditions))
-          .orderBy(srsCard.word)
-          .limit(limit)
-          .offset(offset);
-
-        return { cards, count: cards.length };
-      },
-    }),
-
-    reviewCard: tool({
-      description:
-        "Update an SRS card after practice. Quality: 0=blackout, 1=wrong, 2=wrong but close, 3=correct with difficulty, 4=correct, 5=perfect",
-      inputSchema: z.object({
-        word: z.string().describe("The word to review"),
-        quality: z
-          .number()
-          .int()
-          .min(0)
-          .max(5)
-          .describe("Review quality score 0-5"),
-      }),
-      execute: async ({ word, quality }) => {
-        const lang = language ?? "de";
-        const normalizedWord = word.toLowerCase();
-
-        const [card] = await db
-          .select()
-          .from(srsCard)
-          .where(
-            and(
-              eq(srsCard.word, normalizedWord),
-              eq(srsCard.language, lang),
-              eq(srsCard.userId, userId)
-            )
-          );
-
-        if (!card) return { success: false, error: "Card not found" };
-
-        const result = calculateNextReview(
-          {
-            easeFactor: card.easeFactor,
-            interval: card.interval,
-            repetitions: card.repetitions,
-            status: (card.status as CardStatus) ?? "learning",
-          },
-          quality as Quality
-        );
-
-        await db
-          .update(srsCard)
-          .set({
-            easeFactor: result.easeFactor,
-            interval: result.interval,
-            repetitions: result.repetitions,
-            status: result.status,
-            nextReviewAt: result.nextReviewAt,
-            lastReviewedAt: new Date(),
-          })
-          .where(
-            and(
-              eq(srsCard.word, normalizedWord),
-              eq(srsCard.language, lang),
-              eq(srsCard.userId, userId)
-            )
-          );
-
-        return {
-          success: true,
-          status: result.status,
-          nextReviewAt: result.nextReviewAt.toISOString(),
-          interval: result.interval,
-        };
-      },
-    }),
-
-    getNewCards: tool({
-      description:
-        "Get cards with status 'new' that haven't been introduced for study yet",
-      inputSchema: z.object({
-        limit: z
-          .number()
-          .optional()
-          .default(20)
-          .describe("Max cards to return"),
-      }),
-      execute: async ({ limit }) => {
-        const lang = language ?? "de";
-        const cards = await db
-          .select()
-          .from(srsCard)
-          .where(
-            and(
-              eq(srsCard.userId, userId),
-              eq(srsCard.language, lang),
-              eq(srsCard.status, "new")
-            )
-          )
-          .orderBy(asc(srsCard.createdAt))
-          .limit(limit);
-        return { cards, count: cards.length };
-      },
-    }),
-
-    introduceCards: tool({
-      description:
-        "Move N 'new' cards to 'learning' status so they become due for review immediately. Use when the user wants to start studying new words.",
-      inputSchema: z.object({
-        count: z
-          .number()
-          .int()
-          .min(1)
-          .max(100)
-          .describe("Number of new cards to introduce"),
-      }),
-      execute: async ({ count: cnt }) => {
-        const lang = language ?? "de";
-        const now = new Date();
-
-        const cards = await db
-          .select()
-          .from(srsCard)
-          .where(
-            and(
-              eq(srsCard.userId, userId),
-              eq(srsCard.language, lang),
-              eq(srsCard.status, "new")
-            )
-          )
-          .orderBy(asc(srsCard.createdAt))
-          .limit(cnt);
-
-        if (cards.length === 0) {
-          return { introduced: 0, message: "No new cards available" };
-        }
-
-        await db
-          .update(srsCard)
-          .set({
-            status: "learning",
-            nextReviewAt: now,
-          })
-          .where(
-            and(
-              eq(srsCard.userId, userId),
-              eq(srsCard.language, lang),
-              eq(srsCard.status, "new"),
-              inArray(
-                srsCard.word,
-                cards.map((c) => c.word)
-              )
-            )
-          );
-
-        return {
-          introduced: cards.length,
-          words: cards.map((c) => c.word),
-        };
       },
     }),
 
@@ -556,13 +146,11 @@ export function createTools(userId: string, language?: string) {
       execute: async ({ markdown, level }) => {
         const lang = language ?? "de";
 
-        // Strip code fences if present
         const cleaned = markdown
           .replace(/^```(?:markdown|md)?\n/m, "")
           .replace(/\n```\s*$/, "")
           .trim();
 
-        // Parse through the existing markdown parser
         let parsedUnit;
         const unitId = crypto.randomUUID();
         try {

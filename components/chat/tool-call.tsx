@@ -3,16 +3,7 @@
 import { useState } from "react";
 
 const TOOL_LABELS: Record<string, string> = {
-  getDueCards: "Fetching due cards",
-  getSrsStats: "Checking learning stats",
-  reviewCard: "Updating SRS card",
-  addWordToSrs: "Adding word to deck",
-  addWordsByLevel: "Adding words by level",
-  lookupWord: "Looking up word",
-  removeWord: "Removing word",
-  listCards: "Listing cards",
-  getNewCards: "Fetching new cards",
-  introduceCards: "Introducing new cards",
+  srs: "Running SRS query",
   readMemory: "Reading memory",
   addMemory: "Saving to memory",
   rewriteAllMemory: "Rewriting memory",

@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect, useRef } from "react";
 import Markdown from "react-markdown";
 import type { FreeTextExercise } from "@/lib/content/types";
 import { Button } from "@/components/ui/button";
+import { HoverableText } from "@/components/word/hoverable-text";
 
 interface Props {
   exercise: FreeTextExercise;
@@ -88,7 +89,7 @@ export function FreeText({ exercise, onResult, onContinue, language }: Props) {
     <div className="flex flex-col min-h-[400px]">
       <div className="flex-1">
         <h2 className="text-xl font-bold text-lingo-text mb-6">
-          {exercise.text}
+          <HoverableText text={exercise.text} language={language} noAudio />
         </h2>
 
         {(phase === "writing" || phase === "loading") && (

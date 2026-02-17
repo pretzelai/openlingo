@@ -118,8 +118,13 @@ When creating exercises (via presentExercise) or units (via createUnit), use the
 <exercise-syntax>
 {exerciseSyntax}
 </exercise-syntax>
+
+You have an "srs" tool that executes raw SQL against the srs_card table. $1 is always bound to the current user's ID. Always filter by user_id = $1 and language = '{language}'.
+<srs-reference>
+{srsReference}
+</srs-reference>
 `,
-    variables: ["langName", "language", "memory", "exerciseSyntax"],
+    variables: ["langName", "language", "memory", "exerciseSyntax", "srsReference"],
   },
   {
     id: "tts-instructions",

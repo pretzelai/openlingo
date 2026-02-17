@@ -2,10 +2,7 @@ import { z } from "zod";
 
 const noAudio = z.array(z.string()).optional().describe("Words to skip TTS for");
 
-const srsWords = z.array(z.object({
-  word: z.string().describe("Word in target language"),
-  translation: z.string().describe("English translation"),
-})).optional().describe("Words to track in SRS for this exercise");
+const srsWords = z.union([z.string().min(1), z.array(z.string()).min(1)]).describe("Target-language word(s) to track in SRS for this exercise");
 
 export const multipleChoiceSchema = z.object({
   type: z.literal("multiple-choice"),
@@ -103,13 +100,13 @@ export const freeTextSchema = z.object({
     .string()
     .describe("AI prompt template — use {userResponse} as placeholder"),
   noAudio,
-  srsWords,
+  srsWords: srsWords.optional(),
 });
 
 export const flashcardReviewSchema = z.object({
   type: z.literal("flashcard-review"),
-  word: z.string().describe("Word in target language"),
-  translation: z.string().describe("English translation"),
+  front: z.string().describe("Front of the card (markdown)"),
+  back: z.string().describe("Back of the card (markdown)"),
   noAudio,
   srsWords,
 });

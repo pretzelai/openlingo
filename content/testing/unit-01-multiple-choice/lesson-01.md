@@ -10,3 +10,4 @@ choices:
   - "Trotzdem" (correct)
   - "Deshalb"
   - "Außerdem"
+srsWords: "Trotzdem"

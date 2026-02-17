@@ -136,16 +136,31 @@ export function getOptionalField(lines: string[], key: string): string | undefin
   return line.slice(key.length + 1).trim().replace(/^"(.*)"$/, "$1");
 }
 
-function parseSrsWords(lines: string[]): { word: string; translation: string }[] | undefined {
+function parseSrsWords(lines: string[]): string | string[] | undefined {
   const startIdx = lines.findIndex((l) => l.startsWith("srsWords:"));
   if (startIdx === -1) return undefined;
-  const words: { word: string; translation: string }[] = [];
-  for (let i = startIdx + 1; i < lines.length; i++) {
-    const match = lines[i].match(/^- "(.+?)"\s*=\s*"(.+?)"/);
-    if (!match) break;
-    words.push({ word: match[1], translation: match[2] });
+
+  // Inline value: srsWords: "word" or srsWords: "word1" "word2"
+  const inlineValue = lines[startIdx].slice("srsWords:".length).trim();
+  if (inlineValue) {
+    const matches = inlineValue.match(/"([^"]+)"/g);
+    if (matches) {
+      const words = matches.map((m) => m.replace(/"/g, ""));
+      return words.length === 1 ? words[0] : words;
+    }
+    // Unquoted single word
+    return inlineValue;
   }
-  return words.length > 0 ? words : undefined;
+
+  // List format: - "word" (with optional legacy = "translation" which we ignore)
+  const words: string[] = [];
+  for (let i = startIdx + 1; i < lines.length; i++) {
+    const match = lines[i].match(/^- "(.+?)"(\s*=\s*".*")?/);
+    if (!match) break;
+    words.push(match[1]);
+  }
+  if (words.length === 0) return undefined;
+  return words.length === 1 ? words[0] : words;
 }
 
 function parseMultipleChoice(lines: string[]): MultipleChoiceExercise {
@@ -169,8 +184,8 @@ function parseMultipleChoice(lines: string[]): MultipleChoiceExercise {
   });
 
   const randomOrder = hasFlag(lines, "random_order");
-  const srsWords = parseSrsWords(lines);
-  return { type: "multiple-choice", text: rawText.text, choices, correctIndex, ...(randomOrder && { randomOrder }), ...(noAudio.length && { noAudio }), ...(srsWords && { srsWords }) };
+  const srsWords = parseSrsWords(lines) ?? "";
+  return { type: "multiple-choice", text: rawText.text, choices, correctIndex, srsWords, ...(randomOrder && { randomOrder }), ...(noAudio.length && { noAudio }) };
 }
 
 function parseTranslation(lines: string[]): TranslationExercise {
@@ -188,8 +203,8 @@ function parseTranslation(lines: string[]): TranslationExercise {
     if (matches) acceptAlso.push(...matches.map((m) => m.replace(/"/g, "")));
   }
 
-  const srsWords = parseSrsWords(lines);
-  return { type: "translation", text: rawText.text, sentence: rawSentence.text, answer, acceptAlso, ...(noAudio.length && { noAudio }), ...(srsWords && { srsWords }) };
+  const srsWords = parseSrsWords(lines) ?? "";
+  return { type: "translation", text: rawText.text, sentence: rawSentence.text, answer, acceptAlso, srsWords, ...(noAudio.length && { noAudio }) };
 }
 
 function parseFillInTheBlank(lines: string[]): FillInTheBlankExercise {
@@ -197,8 +212,8 @@ function parseFillInTheBlank(lines: string[]): FillInTheBlankExercise {
   const rawSentence = stripNoAudio(getField(lines, "sentence"));
   if (rawSentence.flagged) noAudio.push("sentence");
   const blank = getField(lines, "blank");
-  const srsWords = parseSrsWords(lines);
-  return { type: "fill-in-the-blank", sentence: rawSentence.text, blank, ...(noAudio.length && { noAudio }), ...(srsWords && { srsWords }) };
+  const srsWords = parseSrsWords(lines) ?? "";
+  return { type: "fill-in-the-blank", sentence: rawSentence.text, blank, srsWords, ...(noAudio.length && { noAudio }) };
 }
 
 function parseMatchingPairs(lines: string[]): MatchingPairsExercise {
@@ -215,8 +230,8 @@ function parseMatchingPairs(lines: string[]): MatchingPairsExercise {
     return { left: left.text, right: right.text };
   });
   const randomOrder = hasFlag(lines, "random_order");
-  const srsWords = parseSrsWords(lines);
-  return { type: "matching-pairs", pairs, ...(randomOrder && { randomOrder }), ...(noAudio.length && { noAudio }), ...(srsWords && { srsWords }) };
+  const srsWords = parseSrsWords(lines) ?? (pairs.length === 1 ? pairs[0].left : pairs.map((p) => p.left));
+  return { type: "matching-pairs", pairs, srsWords, ...(randomOrder && { randomOrder }), ...(noAudio.length && { noAudio }) };
 }
 
 function parseListening(lines: string[]): ListeningExercise {
@@ -225,16 +240,16 @@ function parseListening(lines: string[]): ListeningExercise {
   if (rawText.flagged) noAudio.push("text");
   const ttsLang = getField(lines, "ttsLang");
   const mode = getOptionalField(lines, "mode") as "choices" | "word-bank" | undefined;
-  const srsWords = parseSrsWords(lines);
-  return { type: "listening", text: rawText.text, ttsLang, ...(mode && { mode }), ...(noAudio.length && { noAudio }), ...(srsWords && { srsWords }) };
+  const srsWords = parseSrsWords(lines) ?? "";
+  return { type: "listening", text: rawText.text, ttsLang, srsWords, ...(mode && { mode }), ...(noAudio.length && { noAudio }) };
 }
 
 function parseSpeaking(lines: string[]): SpeakingExercise {
   const noAudio: string[] = [];
   const rawSentence = stripNoAudio(getField(lines, "sentence"));
   if (rawSentence.flagged) noAudio.push("sentence");
-  const srsWords = parseSrsWords(lines);
-  return { type: "speaking", sentence: rawSentence.text, ...(noAudio.length && { noAudio }), ...(srsWords && { srsWords }) };
+  const srsWords = parseSrsWords(lines) ?? "";
+  return { type: "speaking", sentence: rawSentence.text, srsWords, ...(noAudio.length && { noAudio }) };
 }
 
 function parseFreeText(lines: string[]): FreeTextExercise {
@@ -243,7 +258,7 @@ function parseFreeText(lines: string[]): FreeTextExercise {
   if (rawText.flagged) noAudio.push("text");
   const afterSubmitPrompt = getField(lines, "afterSubmitPrompt");
   const srsWords = parseSrsWords(lines);
-  return { type: "free-text", text: rawText.text, afterSubmitPrompt, ...(noAudio.length && { noAudio }), ...(srsWords && { srsWords }) };
+  return { type: "free-text", text: rawText.text, afterSubmitPrompt, ...(srsWords && { srsWords }), ...(noAudio.length && { noAudio }) };
 }
 
 function parseWordBank(lines: string[]): WordBankExercise {
@@ -263,13 +278,13 @@ function parseWordBank(lines: string[]): WordBankExercise {
     ? (answerLine.match(/"([^"]+)"/g) || []).map((m) => m.replace(/"/g, ""))
     : [];
   const randomOrder = hasFlag(lines, "random_order");
-  const srsWords = parseSrsWords(lines);
-  return { type: "word-bank", text: rawText.text, words, answer, ...(randomOrder && { randomOrder }), ...(noAudio.length && { noAudio }), ...(srsWords && { srsWords }) };
+  const srsWords = parseSrsWords(lines) ?? "";
+  return { type: "word-bank", text: rawText.text, words, answer, srsWords, ...(randomOrder && { randomOrder }), ...(noAudio.length && { noAudio }) };
 }
 
 function parseFlashcardReview(lines: string[]): FlashcardReviewExercise {
-  const word = getField(lines, "word");
-  const translation = getField(lines, "translation");
-  const srsWords = parseSrsWords(lines);
-  return { type: "flashcard-review", word, translation, ...(srsWords && { srsWords }) };
+  const front = getField(lines, "front");
+  const back = getField(lines, "back");
+  const srsWords = parseSrsWords(lines) ?? "";
+  return { type: "flashcard-review", front, back, srsWords };
 }

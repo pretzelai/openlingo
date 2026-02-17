@@ -88,9 +88,11 @@ export async function completeLesson(input: CompleteLessonInput) {
           for (const result of input.results) {
             const exercise = lesson.exercises[result.exerciseIndex] as Exercise | undefined;
             if (!exercise) continue;
+            // flashcard-review handles its own SRS via reviewCard in the component
+            if (exercise.type === "flashcard-review") continue;
             const words = extractSrsWords(exercise);
             for (const w of words) {
-              await recordWordPractice(userId, w.word, courseRow.targetLanguage, w.translation, result.correct);
+              await recordWordPractice(userId, w, courseRow.targetLanguage, "", result.correct);
             }
           }
         }

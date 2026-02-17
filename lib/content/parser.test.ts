@@ -7,11 +7,13 @@ describe("parseExercisesFromMarkdown", () => {
 // this is a comment
 [speaking]
 sentence: "Hola"
+srsWords: "hola"
 
 // another comment
   // indented comment
 [speaking]
 sentence: "Adiós"
+srsWords: "adiós"
 `;
     const exercises = parseExercisesFromMarkdown(md);
     expect(exercises).toHaveLength(2);
@@ -23,12 +25,15 @@ sentence: "Adiós"
     const md = `
 [speaking]
 sentence: "Hola"
+srsWords: "hola"
 
 [speaking]
 sentence: "Adiós"
+srsWords: "adiós"
 
 [speaking]
 sentence: "Gracias"
+srsWords: "gracias"
 `;
     const exercises = parseExercisesFromMarkdown(md);
     expect(exercises).toHaveLength(3);
@@ -38,9 +43,11 @@ sentence: "Gracias"
     const md = `
 [speaking]
 sentence: "Hola"
+srsWords: "hola"
 ---
 [speaking]
 sentence: "Adiós"
+srsWords: "adiós"
 `;
     const exercises = parseExercisesFromMarkdown(md);
     expect(exercises).toHaveLength(2);
@@ -68,13 +75,15 @@ text: "What does 'gato' mean?"
 choices:
   - "Dog"
   - "Cat" (correct)
-  - "Bird"`;
+  - "Bird"
+srsWords: "gato"`;
     const ex = parseExercise(block);
     expect(ex).toEqual({
       type: "multiple-choice",
       text: "What does 'gato' mean?",
       choices: ["Dog", "Cat", "Bird"],
       correctIndex: 1,
+      srsWords: "gato",
     });
   });
 
@@ -84,7 +93,8 @@ text: "Pick one"
 random_order: true
 choices:
   - "A" (correct)
-  - "B"`;
+  - "B"
+srsWords: "a"`;
     const ex = parseExercise(block);
     expect(ex.type).toBe("multiple-choice");
     if (ex.type === "multiple-choice") {
@@ -97,12 +107,22 @@ choices:
 text: "Pick one" [no-audio]
 choices:
   - "A" (correct)
-  - "B"`;
+  - "B"
+srsWords: "a"`;
     const ex = parseExercise(block);
     if (ex.type === "multiple-choice") {
       expect(ex.noAudio).toEqual(["text"]);
       expect(ex.text).toBe("Pick one");
     }
+  });
+
+  test("rejects missing srsWords", () => {
+    const block = `[multiple-choice]
+text: "Pick one"
+choices:
+  - "A" (correct)
+  - "B"`;
+    expect(() => parseExercise(block)).toThrow("Invalid [multiple-choice]");
   });
 });
 
@@ -111,7 +131,8 @@ describe("translation", () => {
     const block = `[translation]
 text: "Translate to English"
 sentence: "El gato es negro"
-answer: "The cat is black"`;
+answer: "The cat is black"
+srsWords: "gato"`;
     const ex = parseExercise(block);
     expect(ex).toEqual({
       type: "translation",
@@ -119,6 +140,7 @@ answer: "The cat is black"`;
       sentence: "El gato es negro",
       answer: "The cat is black",
       acceptAlso: [],
+      srsWords: "gato",
     });
   });
 
@@ -127,7 +149,8 @@ answer: "The cat is black"`;
 text: "Translate"
 sentence: "El gato"
 answer: "The cat"
-acceptAlso: "A cat" "Cats"`;
+acceptAlso: "A cat" "Cats"
+srsWords: "gato"`;
     const ex = parseExercise(block);
     if (ex.type === "translation") {
       expect(ex.acceptAlso).toEqual(["A cat", "Cats"]);
@@ -146,19 +169,22 @@ describe("fill-in-the-blank", () => {
   test("parses basic fill-in-the-blank", () => {
     const block = `[fill-in-the-blank]
 sentence: "El ___ es negro"
-blank: "gato"`;
+blank: "gato"
+srsWords: "gato"`;
     const ex = parseExercise(block);
     expect(ex).toEqual({
       type: "fill-in-the-blank",
       sentence: "El ___ es negro",
       blank: "gato",
+      srsWords: "gato",
     });
   });
 
   test("parses [no-audio] on sentence", () => {
     const block = `[fill-in-the-blank]
 sentence: "El ___ es negro" [no-audio]
-blank: "gato"`;
+blank: "gato"
+srsWords: "gato"`;
     const ex = parseExercise(block);
     if (ex.type === "fill-in-the-blank") {
       expect(ex.noAudio).toEqual(["sentence"]);
@@ -168,7 +194,7 @@ blank: "gato"`;
 });
 
 describe("matching-pairs", () => {
-  test("parses basic matching pairs", () => {
+  test("parses basic matching pairs (auto-infers srsWords)", () => {
     const block = `[matching-pairs]
 - "gato" = "cat"
 - "perro" = "dog"`;
@@ -179,6 +205,7 @@ describe("matching-pairs", () => {
         { left: "gato", right: "cat" },
         { left: "perro", right: "dog" },
       ],
+      srsWords: ["gato", "perro"],
     });
   });
 
@@ -192,18 +219,31 @@ describe("matching-pairs", () => {
       expect(ex.noAudio).toEqual(["left:0"]);
     }
   });
+
+  test("explicit srsWords overrides auto-infer", () => {
+    const block = `[matching-pairs]
+- "gato" = "cat"
+- "perro" = "dog"
+srsWords: "gato"`;
+    const ex = parseExercise(block);
+    if (ex.type === "matching-pairs") {
+      expect(ex.srsWords).toBe("gato");
+    }
+  });
 });
 
 describe("listening", () => {
   test("parses basic listening", () => {
     const block = `[listening]
 text: "El gato es negro"
-ttsLang: es-ES`;
+ttsLang: es-ES
+srsWords: "gato"`;
     const ex = parseExercise(block);
     expect(ex).toEqual({
       type: "listening",
       text: "El gato es negro",
       ttsLang: "es-ES",
+      srsWords: "gato",
     });
   });
 
@@ -211,7 +251,8 @@ ttsLang: es-ES`;
     const block = `[listening]
 text: "Hola"
 ttsLang: es-ES
-mode: word-bank`;
+mode: word-bank
+srsWords: "hola"`;
     const ex = parseExercise(block);
     if (ex.type === "listening") {
       expect(ex.mode).toBe("word-bank");
@@ -224,13 +265,15 @@ describe("word-bank", () => {
     const block = `[word-bank]
 text: "Arrange the translation"
 words: "the" "cat" "is" "black"
-answer: "the" "cat" "is" "black"`;
+answer: "the" "cat" "is" "black"
+srsWords: "gato"`;
     const ex = parseExercise(block);
     expect(ex).toEqual({
       type: "word-bank",
       text: "Arrange the translation",
       words: ["the", "cat", "is", "black"],
       answer: ["the", "cat", "is", "black"],
+      srsWords: "gato",
     });
   });
 
@@ -239,7 +282,8 @@ answer: "the" "cat" "is" "black"`;
 text: "Order"
 words: "a" "b"
 answer: "a" "b"
-random_order: true`;
+random_order: true
+srsWords: "a"`;
     const ex = parseExercise(block);
     if (ex.type === "word-bank") {
       expect(ex.randomOrder).toBe(true);
@@ -248,7 +292,7 @@ random_order: true`;
 });
 
 describe("free-text", () => {
-  test("parses basic free-text", () => {
+  test("parses basic free-text without srsWords", () => {
     const block = `[free-text]
 text: "Write a short paragraph introducing yourself in German"
 afterSubmitPrompt: "The user wrote: {userResponse}. Please provide feedback."`;
@@ -258,6 +302,17 @@ afterSubmitPrompt: "The user wrote: {userResponse}. Please provide feedback."`;
       text: "Write a short paragraph introducing yourself in German",
       afterSubmitPrompt: "The user wrote: {userResponse}. Please provide feedback.",
     });
+  });
+
+  test("parses free-text with optional srsWords", () => {
+    const block = `[free-text]
+text: "Write something"
+afterSubmitPrompt: "Evaluate: {userResponse}"
+srsWords: "schreiben"`;
+    const ex = parseExercise(block);
+    if (ex.type === "free-text") {
+      expect(ex.srsWords).toBe("schreiben");
+    }
   });
 
   test("parses [no-audio] on text", () => {
@@ -281,21 +336,104 @@ text: "Write something"`;
 describe("speaking", () => {
   test("parses basic speaking", () => {
     const block = `[speaking]
-sentence: "El gato es negro"`;
+sentence: "El gato es negro"
+srsWords: "gato"`;
     const ex = parseExercise(block);
     expect(ex).toEqual({
       type: "speaking",
       sentence: "El gato es negro",
+      srsWords: "gato",
     });
   });
 
   test("parses [no-audio] on sentence", () => {
     const block = `[speaking]
-sentence: "El gato" [no-audio]`;
+sentence: "El gato" [no-audio]
+srsWords: "gato"`;
     const ex = parseExercise(block);
     if (ex.type === "speaking") {
       expect(ex.noAudio).toEqual(["sentence"]);
       expect(ex.sentence).toBe("El gato");
     }
+  });
+
+  test("rejects missing srsWords", () => {
+    const block = `[speaking]
+sentence: "El gato"`;
+    expect(() => parseExercise(block)).toThrow("Invalid [speaking]");
+  });
+});
+
+describe("srsWords", () => {
+  test("parses single srsWord inline", () => {
+    const block = `[multiple-choice]
+text: "What does 'hund' mean?"
+choices:
+  - "Cat"
+  - "Dog" (correct)
+srsWords: "hund"`;
+    const ex = parseExercise(block);
+    if (ex.type === "multiple-choice") {
+      expect(ex.srsWords).toBe("hund");
+    }
+  });
+
+  test("parses multiple srsWords inline", () => {
+    const block = `[multiple-choice]
+text: "What does 'hund' mean?"
+choices:
+  - "Cat"
+  - "Dog" (correct)
+srsWords: "hund" "katze"`;
+    const ex = parseExercise(block);
+    if (ex.type === "multiple-choice") {
+      expect(ex.srsWords).toEqual(["hund", "katze"]);
+    }
+  });
+
+  test("parses legacy list format (ignores translations)", () => {
+    const block = `[multiple-choice]
+text: "What does 'hund' mean?"
+choices:
+  - "Cat"
+  - "Dog" (correct)
+srsWords:
+  - "hund" = "dog"
+  - "katze" = "cat"`;
+    const ex = parseExercise(block);
+    if (ex.type === "multiple-choice") {
+      expect(ex.srsWords).toEqual(["hund", "katze"]);
+    }
+  });
+
+  test("matching-pairs auto-infers srsWords from pairs", () => {
+    const block = `[matching-pairs]
+- "gato" = "cat"
+- "perro" = "dog"`;
+    const ex = parseExercise(block);
+    if (ex.type === "matching-pairs") {
+      expect(ex.srsWords).toEqual(["gato", "perro"]);
+    }
+  });
+
+  test("flashcard-review parses srsWords", () => {
+    const block = `[flashcard-review]
+front: "Katze"
+back: "cat"
+srsWords: "Katze"`;
+    const ex = parseExercise(block);
+    expect(ex).toEqual({
+      type: "flashcard-review",
+      front: "Katze",
+      back: "cat",
+      srsWords: "Katze",
+    });
+  });
+
+  test("flashcard-review rejects missing srsWords", () => {
+    const block = `[flashcard-review]
+front: "Katze"
+back: "cat"`;
+    expect(() => parseExercise(block)).toThrow("Invalid [flashcard-review]");
   });
 });

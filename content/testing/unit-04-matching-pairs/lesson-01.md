@@ -5,8 +5,7 @@ xpReward: 10
 ---
 
 [matching-pairs]
-pairs:
-  - "die Erfahrung" = "the experience"
-  - "die Entscheidung" = "the decision"
-  - "die Bedeutung" = "the meaning"
-  - "die Beziehung" = "the relationship"
+- "die Erfahrung" = "the experience"
+- "die Entscheidung" = "the decision"
+- "die Bedeutung" = "the meaning"
+- "die Beziehung" = "the relationship"

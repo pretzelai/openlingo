@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Markdown from "react-markdown";
 import { reviewCard } from "@/lib/actions/srs";
 import type { FlashcardReviewExercise } from "@/lib/content/types";
 import type { Quality } from "@/lib/srs";
@@ -30,8 +31,11 @@ export function FlashcardReview({
     if (rated) return;
     setRated(true);
 
-    // Update SRS directly
-    reviewCard(exercise.word, language, quality).catch(() => {});
+    // Update SRS for each tracked word
+    const words = typeof exercise.srsWords === "string" ? [exercise.srsWords] : exercise.srsWords;
+    for (const w of words) {
+      reviewCard(w, language, quality).catch(() => {});
+    }
 
     const correct = quality >= 3;
     const label = QUALITY_BUTTONS.find((b) => b.quality === quality)!.label;
@@ -50,21 +54,21 @@ export function FlashcardReview({
             : "border-lingo-border bg-white"
         }`}
       >
-        <p className="text-3xl font-black text-lingo-text mb-2">
-          {exercise.word}
-        </p>
+        <div className="prose prose-lg font-black text-lingo-text [&>p]:m-0">
+          <Markdown>{exercise.front}</Markdown>
+        </div>
 
         {!revealed && (
-          <p className="text-sm text-lingo-text-light font-bold">
+          <p className="text-sm text-lingo-text-light font-bold mt-2">
             Tap to reveal
           </p>
         )}
 
         {revealed && (
           <div className="mt-4 pt-4 border-t-2 border-lingo-border">
-            <p className="text-xl font-bold text-lingo-text-light">
-              {exercise.translation}
-            </p>
+            <div className="prose font-bold text-lingo-text-light [&>p]:m-0">
+              <Markdown>{exercise.back}</Markdown>
+            </div>
           </div>
         )}
       </div>

@@ -51,7 +51,7 @@ export interface MultipleChoiceExercise {
   correctIndex: number;
   randomOrder?: boolean;
   noAudio?: string[];
-  srsWords?: { word: string; translation: string }[];
+  srsWords: string | string[];
 }
 
 export interface TranslationExercise {
@@ -61,7 +61,7 @@ export interface TranslationExercise {
   answer: string;
   acceptAlso: string[];
   noAudio?: string[];
-  srsWords?: { word: string; translation: string }[];
+  srsWords: string | string[];
 }
 
 export interface FillInTheBlankExercise {
@@ -69,7 +69,7 @@ export interface FillInTheBlankExercise {
   sentence: string;
   blank: string;
   noAudio?: string[];
-  srsWords?: { word: string; translation: string }[];
+  srsWords: string | string[];
 }
 
 export interface MatchingPairsExercise {
@@ -77,7 +77,7 @@ export interface MatchingPairsExercise {
   pairs: { left: string; right: string }[];
   randomOrder?: boolean;
   noAudio?: string[];
-  srsWords?: { word: string; translation: string }[];
+  srsWords: string | string[];
 }
 
 export interface ListeningExercise {
@@ -86,7 +86,7 @@ export interface ListeningExercise {
   ttsLang: string;
   mode?: "choices" | "word-bank";
   noAudio?: string[];
-  srsWords?: { word: string; translation: string }[];
+  srsWords: string | string[];
 }
 
 export interface WordBankExercise {
@@ -96,14 +96,14 @@ export interface WordBankExercise {
   answer: string[];
   randomOrder?: boolean;
   noAudio?: string[];
-  srsWords?: { word: string; translation: string }[];
+  srsWords: string | string[];
 }
 
 export interface SpeakingExercise {
   type: "speaking";
   sentence: string;
   noAudio?: string[];
-  srsWords?: { word: string; translation: string }[];
+  srsWords: string | string[];
 }
 
 export interface FreeTextExercise {
@@ -111,15 +111,15 @@ export interface FreeTextExercise {
   text: string;
   afterSubmitPrompt: string;
   noAudio?: string[];
-  srsWords?: { word: string; translation: string }[];
+  srsWords?: string | string[];
 }
 
 export interface FlashcardReviewExercise {
   type: "flashcard-review";
-  word: string;
-  translation: string;
+  front: string;
+  back: string;
   noAudio?: string[];
-  srsWords?: { word: string; translation: string }[];
+  srsWords: string | string[];
 }
 
 export interface CourseListItem {

@@ -1,34 +1,16 @@
 import type { Exercise } from "@/lib/content/types";
 
 /**
- * Extract SRS words from an exercise.
- * - matching-pairs: infers from pairs (left = target word, right = translation)
- * - All types: appends exercise.srsWords if present
- * Returns deduplicated list.
+ * Extract SRS words (target-language) from an exercise as a flat string array.
  */
-export function extractSrsWords(
-  exercise: Exercise
-): { word: string; translation: string }[] {
-  const seen = new Map<string, string>();
+export function extractSrsWords(exercise: Exercise): string[] {
+  if (!exercise.srsWords) return [];
 
-  // Infer from matching-pairs
-  if (exercise.type === "matching-pairs") {
-    for (const pair of exercise.pairs) {
-      const key = pair.left.toLowerCase();
-      if (!seen.has(key)) seen.set(key, pair.right);
-    }
-  }
+  const words = typeof exercise.srsWords === "string"
+    ? [exercise.srsWords]
+    : exercise.srsWords;
 
-  // Append explicit srsWords
-  if (exercise.srsWords) {
-    for (const w of exercise.srsWords) {
-      const key = w.word.toLowerCase();
-      if (!seen.has(key)) seen.set(key, w.translation);
-    }
-  }
-
-  return Array.from(seen.entries()).map(([word, translation]) => ({
-    word,
-    translation,
-  }));
+  return words
+    .map((w) => w.toLowerCase())
+    .filter((w, i, arr) => w && arr.indexOf(w) === i);
 }

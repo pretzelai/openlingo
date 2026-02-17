@@ -7,3 +7,4 @@ xpReward: 10
 [fill-in-the-blank]
 sentence: "Er hat sich ___ die Prüfung vorbereitet."
 blank: "auf"
+srsWords: "vorbereitet"

@@ -468,6 +468,6 @@ export async function recordChatExerciseResult(
   const words = extractSrsWords(exercise);
 
   for (const w of words) {
-    await recordWordPractice(session.user.id, w.word, language, w.translation, correct);
+    await recordWordPractice(session.user.id, w, language, "", correct);
   }
 }

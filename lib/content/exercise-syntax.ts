@@ -24,15 +24,22 @@ choices:
 
 ## SRS Word Tracking
 
-Any exercise can include an optional \`srsWords\` field to track vocabulary in the spaced repetition system.
+Every exercise **must** include an \`srsWords\` field listing the target-language word(s) to track in the spaced repetition system.
 Words practiced correctly reinforce the card; incorrect answers flag them for review.
-For \`matching-pairs\`, words are automatically inferred from the pairs — no need to add \`srsWords\`.
+
+For most exercises this will be a single word. Use quotes for the value.
 
 \`\`\`
-srsWords:
-  - "gato" = "cat"
-  - "perro" = "dog"
+srsWords: "gato"
 \`\`\`
+
+For multiple words, quote each one on the same line:
+
+\`\`\`
+srsWords: "gato" "perro"
+\`\`\`
+
+For \`matching-pairs\`, srsWords are auto-inferred from the left side of the pairs if omitted.
 
 ## Exercise Types
 
@@ -45,7 +52,7 @@ Present a text with several choices. Exactly one is marked \`(correct)\`.
 | text | yes | The question text |
 | choices (list) | yes | \`- "text"\` items, one with \`(correct)\` |
 | random_order | no | \`true\` to shuffle choices at runtime |
-| srsWords | no | Words to track in SRS: \`- "word" = "translation"\` |
+| srsWords | **yes** | Target-language word(s) for SRS |
 
 \`\`\`
 [multiple-choice]
@@ -54,6 +61,7 @@ choices:
   - "Dog"
   - "Cat" (correct)
   - "Bird"
+srsWords: "gato"
 \`\`\`
 
 ### translation
@@ -66,7 +74,7 @@ User translates a sentence. Supports alternate accepted answers.
 | sentence | yes | The sentence to translate |
 | answer | yes | The expected answer |
 | acceptAlso | no | Additional accepted answers: \`"alt1" "alt2"\` |
-| srsWords | no | Words to track in SRS: \`- "word" = "translation"\` |
+| srsWords | **yes** | Target-language word(s) for SRS |
 
 \`\`\`
 [translation]
@@ -74,6 +82,7 @@ text: "Translate to English"
 sentence: "El gato es negro"
 answer: "The cat is black"
 acceptAlso: "The cat's black"
+srsWords: "gato" "negro"
 \`\`\`
 
 ### fill-in-the-blank
@@ -84,12 +93,13 @@ User fills in the missing word in a sentence.
 |-------|----------|-------------|
 | sentence | yes | Sentence with \`___\` marking the blank |
 | blank | yes | The correct word for the blank |
-| srsWords | no | Words to track in SRS: \`- "word" = "translation"\` |
+| srsWords | **yes** | Target-language word(s) for SRS |
 
 \`\`\`
 [fill-in-the-blank]
 sentence: "El ___ es negro"
 blank: "gato"
+srsWords: "gato"
 \`\`\`
 
 ### matching-pairs
@@ -100,7 +110,7 @@ User matches left-side items to right-side items.
 |-------|----------|-------------|
 | pairs (list) | yes | \`- "left" = "right"\` items |
 | random_order | no | \`true\` to shuffle pairs |
-| srsWords | no | Extra words to track (pairs are auto-tracked) |
+| srsWords | no | Target-language word(s) for SRS (auto-inferred from pairs if omitted) |
 
 \`\`\`
 [matching-pairs]
@@ -118,12 +128,13 @@ User listens to TTS audio and types what they hear.
 | text | yes | The text that will be spoken |
 | ttsLang | yes | BCP-47 language code for TTS (e.g. \`es-ES\`) |
 | mode | no | \`choices\` or \`word-bank\` for alternate UI |
-| srsWords | no | Words to track in SRS: \`- "word" = "translation"\` |
+| srsWords | **yes** | Target-language word(s) for SRS |
 
 \`\`\`
 [listening]
 text: "El gato es negro"
 ttsLang: es-ES
+srsWords: "gato" "negro"
 \`\`\`
 
 ### word-bank
@@ -136,13 +147,14 @@ User assembles a sentence from a set of word tiles.
 | words | yes | Available tiles: \`"word1" "word2" ...\` |
 | answer | yes | Correct order: \`"word1" "word2" ...\` |
 | random_order | no | \`true\` to shuffle tiles |
-| srsWords | no | Words to track in SRS: \`- "word" = "translation"\` |
+| srsWords | **yes** | Target-language word(s) for SRS |
 
 \`\`\`
 [word-bank]
 text: "Arrange the translation"
 words: "cat" "the" "is" "black" "big"
 answer: "the" "cat" "is" "black"
+srsWords: "gato" "negro"
 \`\`\`
 
 ### free-text
@@ -153,7 +165,7 @@ User writes a free-form text response. After submitting, an AI prompt is called 
 |-------|----------|-------------|
 | text | yes | Instruction shown to user |
 | afterSubmitPrompt | yes | AI prompt template — use \`{userResponse}\` as placeholder |
-| srsWords | no | Words to track in SRS: \`- "word" = "translation"\` |
+| srsWords | no | Target-language word(s) for SRS (optional for free-text) |
 
 \`\`\`
 [free-text]
@@ -168,25 +180,27 @@ User speaks a sentence aloud for pronunciation practice.
 | Field | Required | Description |
 |-------|----------|-------------|
 | sentence | yes | The sentence the user should say |
-| srsWords | no | Words to track in SRS: \`- "word" = "translation"\` |
+| srsWords | **yes** | Target-language word(s) for SRS |
 
 \`\`\`
 [speaking]
 sentence: "El gato es negro"
+srsWords: "gato" "negro"
 \`\`\`
 
 ### flashcard-review
 
-A flashcard exercise for spaced repetition review. The user sees the word, taps to reveal the translation, then rates their recall.
+A flashcard exercise for spaced repetition review. The user sees the front of the card, taps to reveal the back, then rates their recall. Both \`front\` and \`back\` support markdown.
 
 | Field | Required | Description |
 |-------|----------|-------------|
-| word | yes | Word in target language |
-| translation | yes | English translation |
-| srsWords | no | Words to track in SRS: \`- "word" = "translation"\` |
+| front | yes | Front of the card (markdown) |
+| back | yes | Back of the card (markdown) |
+| srsWords | **yes** | Target-language word(s) for SRS |
 
 \`\`\`
 [flashcard-review]
-word: "Katze"
-translation: "cat"
+front: "Katze"
+back: "cat"
+srsWords: "Katze"
 \`\`\``;

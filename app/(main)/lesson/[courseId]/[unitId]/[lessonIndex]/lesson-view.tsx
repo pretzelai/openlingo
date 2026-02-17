@@ -14,6 +14,7 @@ import { Listening } from "@/components/exercises/listening";
 import { WordBank } from "@/components/exercises/word-bank";
 import { Speaking } from "@/components/exercises/speaking";
 import { FreeText } from "@/components/exercises/free-text";
+import { FlashcardReview } from "@/components/exercises/flashcard-review";
 import { HoverableText } from "@/components/word/hoverable-text";
 import { LessonCompleteModal } from "@/components/gamification/lesson-complete-modal";
 import { completeLesson } from "@/lib/actions/lesson";
@@ -227,6 +228,15 @@ function ExerciseRenderer({
           onResult={onResult}
           onContinue={onContinue}
           language={language}
+        />
+      );
+    case "flashcard-review":
+      return (
+        <FlashcardReview
+          exercise={ex}
+          language={language}
+          onResult={onResult}
+          onContinue={onContinue}
         />
       );
   }

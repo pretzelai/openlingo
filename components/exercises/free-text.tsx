@@ -35,7 +35,7 @@ export function FreeText({ exercise, onResult, onContinue, language }: Props) {
     );
 
     try {
-      const res = await fetch("/api/review/ai-prompt", {
+      const res = await fetch("/api/ai-prompt", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt }),

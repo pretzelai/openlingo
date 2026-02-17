@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import type { Exercise } from "@/lib/content/types";
 import { MultipleChoice } from "@/components/exercises/multiple-choice";
 import { Translation } from "@/components/exercises/translation";
@@ -8,6 +8,7 @@ import { FillInTheBlank } from "@/components/exercises/fill-in-the-blank";
 import { MatchingPairs } from "@/components/exercises/matching-pairs";
 import { Listening } from "@/components/exercises/listening";
 import { WordBank } from "@/components/exercises/word-bank";
+import { FlashcardReview } from "@/components/exercises/flashcard-review";
 
 interface ChatExerciseProps {
   exercise: Exercise;
@@ -35,19 +36,23 @@ export function ChatExercise({
     correct: boolean;
     answer: string;
   } | null>(null);
+  const resultRef = useRef<{ correct: boolean; answer: string } | null>(null);
 
   const handleResult = useCallback(
     (correct: boolean, answer: string) => {
-      setResult({ correct, answer });
+      const r = { correct, answer };
+      resultRef.current = r;
+      setResult(r);
     },
     []
   );
 
   const handleContinue = useCallback(() => {
-    if (result) {
-      onComplete(toolCallId, result.correct, result.answer, exercise);
+    const r = resultRef.current;
+    if (r) {
+      onComplete(toolCallId, r.correct, r.answer, exercise);
     }
-  }, [result, toolCallId, onComplete, exercise]);
+  }, [toolCallId, onComplete, exercise]);
 
   // Show completed state
   if (completed) {
@@ -157,6 +162,15 @@ function ExerciseRenderer({
           onContinue={onContinue}
           language={language}
           autoplayAudio={autoplayAudio}
+        />
+      );
+    case "flashcard-review":
+      return (
+        <FlashcardReview
+          exercise={exercise}
+          language={language}
+          onResult={onResult}
+          onContinue={onContinue}
         />
       );
     default:

@@ -128,8 +128,11 @@ export function ChatView({
       [toolCallId]: { correct, answer: userAnswer },
     }));
 
-    // Record SRS practice (fire-and-forget)
-    recordChatExerciseResult(exercise, correct, language).catch(() => {});
+    // Record SRS practice (fire-and-forget) — skip for flashcard-review
+    // since it handles its own SRS update via reviewCard
+    if (exercise.type !== "flashcard-review") {
+      recordChatExerciseResult(exercise, correct, language).catch(() => {});
+    }
 
     sendMessage({
       text: correct

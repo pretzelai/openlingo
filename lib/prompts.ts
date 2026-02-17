@@ -68,23 +68,6 @@ Return the base form, English translation, part of speech, grammatical gender (o
     variables: ["langName", "word"],
   },
   {
-    id: "review-ai",
-    displayName: "Review AI",
-    description: "AI hint shown during flashcard review sessions",
-    defaultTemplate: `Give me a helpful mnemonic or usage example for the {language} word "{word}" (meaning: {translation}).`,
-    variables: [
-      "word",
-      "language",
-      "translation",
-      "ease_factor",
-      "interval",
-      "repetitions",
-      "next_review_at",
-      "last_reviewed_at",
-      "created_at",
-    ],
-  },
-  {
     id: "unit-generation",
     displayName: "Unit Generation",
     description: "Prompt for generating lesson units via CLI script or AI tool",

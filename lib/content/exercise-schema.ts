@@ -106,6 +106,14 @@ export const freeTextSchema = z.object({
   srsWords,
 });
 
+export const flashcardReviewSchema = z.object({
+  type: z.literal("flashcard-review"),
+  word: z.string().describe("Word in target language"),
+  translation: z.string().describe("English translation"),
+  noAudio,
+  srsWords,
+});
+
 export const exerciseSchema = z.discriminatedUnion("type", [
   multipleChoiceSchema,
   translationSchema,
@@ -115,6 +123,7 @@ export const exerciseSchema = z.discriminatedUnion("type", [
   listeningSchema,
   speakingSchema,
   freeTextSchema,
+  flashcardReviewSchema,
 ]);
 
 export type ChatExercise = z.infer<typeof exerciseSchema>;

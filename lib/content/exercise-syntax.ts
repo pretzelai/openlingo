@@ -173,4 +173,20 @@ User speaks a sentence aloud for pronunciation practice.
 \`\`\`
 [speaking]
 sentence: "El gato es negro"
+\`\`\`
+
+### flashcard-review
+
+A flashcard exercise for spaced repetition review. The user sees the word, taps to reveal the translation, then rates their recall.
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| word | yes | Word in target language |
+| translation | yes | English translation |
+| srsWords | no | Words to track in SRS: \`- "word" = "translation"\` |
+
+\`\`\`
+[flashcard-review]
+word: "Katze"
+translation: "cat"
 \`\`\``;

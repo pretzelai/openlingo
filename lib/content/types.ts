@@ -41,7 +41,8 @@ export type Exercise =
   | ListeningExercise
   | WordBankExercise
   | SpeakingExercise
-  | FreeTextExercise;
+  | FreeTextExercise
+  | FlashcardReviewExercise;
 
 export interface MultipleChoiceExercise {
   type: "multiple-choice";
@@ -109,6 +110,14 @@ export interface FreeTextExercise {
   type: "free-text";
   text: string;
   afterSubmitPrompt: string;
+  noAudio?: string[];
+  srsWords?: { word: string; translation: string }[];
+}
+
+export interface FlashcardReviewExercise {
+  type: "flashcard-review";
+  word: string;
+  translation: string;
   noAudio?: string[];
   srsWords?: { word: string; translation: string }[];
 }

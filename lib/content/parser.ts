@@ -8,6 +8,7 @@ import type {
   WordBankExercise,
   SpeakingExercise,
   FreeTextExercise,
+  FlashcardReviewExercise,
 } from "./types";
 import { exerciseSchema } from "./exercise-schema";
 
@@ -78,6 +79,9 @@ export function parseExercise(block: string): Exercise {
       break;
     case "free-text":
       exercise = parseFreeText(lines);
+      break;
+    case "flashcard-review":
+      exercise = parseFlashcardReview(lines);
       break;
     default:
       throw new Error(`Unknown exercise type: ${type}`);
@@ -261,4 +265,11 @@ function parseWordBank(lines: string[]): WordBankExercise {
   const randomOrder = hasFlag(lines, "random_order");
   const srsWords = parseSrsWords(lines);
   return { type: "word-bank", text: rawText.text, words, answer, ...(randomOrder && { randomOrder }), ...(noAudio.length && { noAudio }), ...(srsWords && { srsWords }) };
+}
+
+function parseFlashcardReview(lines: string[]): FlashcardReviewExercise {
+  const word = getField(lines, "word");
+  const translation = getField(lines, "translation");
+  const srsWords = parseSrsWords(lines);
+  return { type: "flashcard-review", word, translation, ...(srsWords && { srsWords }) };
 }

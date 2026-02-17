@@ -48,7 +48,7 @@ export async function getPreferredModel(userId?: string): Promise<string> {
     .where(eq(userPreferences.userId, uid))
     .limit(1);
 
-  return row?.preferredModel ?? "gemini-2.5-flash";
+  return row?.preferredModel ?? "gemini-3-flash";
 }
 
 export async function updatePreferredModel(model: string) {

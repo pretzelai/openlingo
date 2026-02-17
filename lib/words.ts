@@ -46,7 +46,7 @@ export async function loadLanguageRaw(langCode: string): Promise<WordEntry[]> {
 }
 
 export async function loadLanguage(
-  langCode: string
+  langCode: string,
 ): Promise<Map<string, WordEntry>> {
   const words = await loadLanguageRaw(langCode);
   const map = new Map<string, WordEntry>();
@@ -62,14 +62,12 @@ const wordAnalysisSchema = z.object({
   pos: z
     .string()
     .describe(
-      "Part of speech (noun/verb/adjective/adverb/preposition/conjunction/article/pronoun)"
+      "Part of speech (noun/verb/adjective/adverb/preposition/conjunction/article/pronoun)",
     ),
   gender: z
     .string()
     .nullable()
-    .describe(
-      "Grammatical gender if applicable (masculine/feminine/neuter)"
-    ),
+    .describe("Grammatical gender if applicable (masculine/feminine/neuter)"),
   cefrLevel: z.string().describe("CEFR level (A1/A2/B1/B2/C1/C2)"),
   exampleNative: z
     .string()
@@ -79,7 +77,11 @@ const wordAnalysisSchema = z.object({
     .describe("English translation of the example sentence"),
 });
 
-export async function aiLookup(word: string, language: string, userId?: string) {
+export async function aiLookup(
+  word: string,
+  language: string,
+  userId?: string,
+) {
   const normalizedWord = word.toLowerCase().trim();
   const langName = langCodeToName[language] || language;
 
@@ -88,7 +90,7 @@ export async function aiLookup(word: string, language: string, userId?: string) 
     .select()
     .from(wordCache)
     .where(
-      and(eq(wordCache.word, normalizedWord), eq(wordCache.language, language))
+      and(eq(wordCache.word, normalizedWord), eq(wordCache.language, language)),
     )
     .limit(1);
 
@@ -111,7 +113,9 @@ export async function aiLookup(word: string, language: string, userId?: string) 
     const promptTemplate = getDefaultTemplate("word-analysis");
     const prompt = interpolateTemplate(promptTemplate, { langName, word });
 
-    const model = userId ? await getUserModel(userId) : getModel("gemini-2.5-flash-lite");
+    const model = userId
+      ? await getUserModel(userId)
+      : getModel("gemini-3-flash-lite");
     const { object: analysis } = await generateObject({
       model,
       schema: wordAnalysisSchema,
@@ -168,7 +172,7 @@ export type WordLookupResult = {
 export async function lookupWord(
   word: string,
   language: string,
-  userId?: string
+  userId?: string,
 ): Promise<WordLookupResult> {
   // 1. Try dictionary (single row query, no full load)
   const [entry] = await db
@@ -177,8 +181,8 @@ export async function lookupWord(
     .where(
       and(
         eq(dictionaryWord.word, word.toLowerCase()),
-        eq(dictionaryWord.language, language)
-      )
+        eq(dictionaryWord.language, language),
+      ),
     )
     .limit(1);
 
@@ -208,7 +212,7 @@ export async function lookupWord(
 
 export async function getWordsByLevel(
   language: string,
-  level: string
+  level: string,
 ): Promise<WordEntry[]> {
   const upperLevel = level.toUpperCase();
   const rows = await db
@@ -217,11 +221,9 @@ export async function getWordsByLevel(
     .where(
       and(
         eq(dictionaryWord.language, language),
-        eq(dictionaryWord.cefrLevel, upperLevel)
-      )
+        eq(dictionaryWord.cefrLevel, upperLevel),
+      ),
     );
 
-  return rows
-    .filter((r) => r.usefulForFlashcard !== false)
-    .map(rowToWordEntry);
+  return rows.filter((r) => r.usefulForFlashcard !== false).map(rowToWordEntry);
 }

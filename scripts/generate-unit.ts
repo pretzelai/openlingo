@@ -15,7 +15,11 @@ import fs from "fs";
 import path from "path";
 import { generateText } from "ai";
 import { getModel } from "../lib/ai/models";
-import { getDefaultTemplate, interpolateTemplate, langCodeToName } from "../lib/prompts";
+import {
+  getDefaultTemplate,
+  interpolateTemplate,
+  langCodeToName,
+} from "../lib/prompts";
 import { EXERCISE_SYNTAX } from "../lib/content/exercise-syntax";
 
 // ---------------------------------------------------------------------------
@@ -64,7 +68,7 @@ function buildPrompt(topic: string, lessons: number): string {
 // ---------------------------------------------------------------------------
 
 const providerModels: Record<string, string> = {
-  google: "gemini-2.5-flash",
+  google: "gemini-3-flash",
   openai: "gpt-4o",
   anthropic: "claude-sonnet-4-5-20250929",
 };

@@ -6,7 +6,7 @@ import { getModel } from "./models";
 export { getModel, AVAILABLE_MODELS } from "./models";
 export { createTools } from "./tools";
 
-const DEFAULT_MODEL = "gemini-2.5-flash";
+const DEFAULT_MODEL = "gemini-3-flash";
 
 export async function getUserModel(userId: string) {
   const [row] = await db

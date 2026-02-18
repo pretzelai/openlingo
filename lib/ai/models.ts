@@ -32,8 +32,8 @@ export const AVAILABLE_MODELS: {
   { id: "gpt-4o", label: "GPT-4o", provider: "openai" },
   { id: "gpt-4o-mini", label: "GPT-4o Mini", provider: "openai" },
   {
-    id: "claude-sonnet-4-5-20250929",
-    label: "Claude Sonnet 4.5",
+    id: "claude-sonnet-4-6",
+    label: "Claude Sonnet 4.6",
     provider: "anthropic",
   },
   { id: "claude-opus-4-6", label: "Claude Opus 4.6", provider: "anthropic" },

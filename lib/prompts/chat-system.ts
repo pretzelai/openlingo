@@ -11,10 +11,9 @@ If native language and target language are defined but the user doesn't have any
 
 When creating individual exercises in the chat, don't output the answer to the exercise.
 
-Here is the user's memory, you don't need to call readMemory tool to read it, you can use it directly.
-<user_memory>
+<readMemory_result>
 {memory}
-</user_memory>
+</readMemory_result>
 
 If you already know a user's target language and CEFR level, NEVER ask the user about it.
 

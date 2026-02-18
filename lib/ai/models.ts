@@ -17,26 +17,31 @@ const anthropic = createAnthropic({
 
 const registry = createProviderRegistry({ google, openai, anthropic });
 
-const MODEL_ALIASES: Record<string, string> = {
-  "gemini-3-flash-preview": "google:gemini-3-flash-preview",
-  "gemini-3-pro": "google:gemini-3-pro-preview",
-  "gpt-4o": "openai:gpt-4o",
-  "gpt-4o-mini": "openai:gpt-4o-mini",
-  "claude-sonnet-4-5-20250929": "anthropic:claude-sonnet-4-5-20250929",
-  "claude-opus-4-6": "anthropic:claude-opus-4-6",
-};
-
-export const AVAILABLE_MODELS: { id: string; label: string }[] = [
-  { id: "gemini-3-flash-preview", label: "Gemini 3 Flash" },
-  { id: "gemini-3-pro-preview", label: "Gemini 3 Pro" },
-  { id: "gpt-4o", label: "GPT-4o" },
-  { id: "gpt-4o-mini", label: "GPT-4o Mini" },
-  { id: "claude-sonnet-4-5-20250929", label: "Claude Sonnet 4.5" },
-  { id: "claude-opus-4-6", label: "Claude Opus 4.6" },
+export const AVAILABLE_MODELS: {
+  id: string;
+  label: string;
+  provider: string;
+}[] = [
+  { id: "gemini-3-flash-preview", label: "Gemini 3 Flash", provider: "google" },
+  { id: "gemini-3-pro-preview", label: "Gemini 3 Pro", provider: "google" },
+  {
+    id: "gemini-2.5-flash-lite",
+    label: "Gemini 2.5 Flash Lite",
+    provider: "google",
+  },
+  { id: "gpt-4o", label: "GPT-4o", provider: "openai" },
+  { id: "gpt-4o-mini", label: "GPT-4o Mini", provider: "openai" },
+  {
+    id: "claude-sonnet-4-5-20250929",
+    label: "Claude Sonnet 4.5",
+    provider: "anthropic",
+  },
+  { id: "claude-opus-4-6", label: "Claude Opus 4.6", provider: "anthropic" },
 ];
 
-export function getModel(name: string) {
-  const resolved = MODEL_ALIASES[name] ?? name;
+export function getModel(id: string) {
+  const resolved =
+    AVAILABLE_MODELS.find((m) => m.id === id)?.provider + ":" + id;
   return registry.languageModel(
     resolved as Parameters<typeof registry.languageModel>[0],
   );

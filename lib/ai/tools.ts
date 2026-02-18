@@ -372,16 +372,22 @@ export function createTools(userId: string, language?: string) {
 
     readArticle: tool({
       description:
-        "Read a web article and translate it to the user's target language at a CEFR level. Creates a saved article the user can read later. Returns immediately with article ID — translation happens in background.",
+        "Read a web article and translate it to a target language at a CEFR level. Creates a saved article the user can read later. Returns immediately with article ID — translation happens in background.",
       inputSchema: z.object({
         url: z.string().url().describe("The URL of the article to translate"),
         cefrLevel: z
           .enum(["A1", "A2", "B1", "B2", "C1", "C2"])
           .default("B1")
           .describe("CEFR difficulty level for the translation"),
+        targetLanguage: z
+          .string()
+          .optional()
+          .describe(
+            "Language code to translate into (e.g. 'de', 'fr', 'es'). Defaults to the user's current target language.",
+          ),
       }),
-      execute: async ({ url, cefrLevel }) => {
-        const lang = language ?? "de";
+      execute: async ({ url, cefrLevel, targetLanguage }) => {
+        const lang = targetLanguage || language || "de";
         const langName = langCodeToName[lang] || lang;
 
         // Check for existing article with same URL + language + level

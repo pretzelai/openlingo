@@ -16,7 +16,7 @@ const NATIVE_LANGUAGES = [
   "th", "vi", "id", "ms", "uk", "bg",
 ];
 
-export function PromptsView({
+export function SettingsView({
   prompts,
   initialMemory,
   targetLanguage,
@@ -32,9 +32,9 @@ export function PromptsView({
 
   return (
     <div className="mx-auto max-w-2xl py-6">
-      <h1 className="text-2xl font-black text-lingo-text mb-1">AI Prompts</h1>
+      <h1 className="text-2xl font-black text-lingo-text mb-1">Settings</h1>
       <p className="text-sm text-lingo-text-light font-bold mb-6">
-        Customize the prompts used by AI features throughout the app.
+        Customize your language preferences and AI settings.
       </p>
 
       {/* Language settings */}

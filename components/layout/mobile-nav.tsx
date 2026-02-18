@@ -8,7 +8,7 @@ const navItems = [
   { href: "/units", label: "Units", icon: "📚" },
   { href: "/words", label: "Words", icon: "🔤" },
   { href: "/read", label: "Read", icon: "📖" },
-  { href: "/prompts", label: "Prompts", icon: "✏️" },
+  { href: "/settings", label: "Settings", icon: "⚙️" },
 ];
 
 export function MobileNav() {

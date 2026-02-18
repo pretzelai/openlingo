@@ -46,7 +46,7 @@ export default async function LearnPage() {
           </p>
           <p className="text-sm text-lingo-text-light">
             Change your native language in{" "}
-            <a href="/prompts" className="font-bold text-lingo-blue underline">
+            <a href="/settings" className="font-bold text-lingo-blue underline">
               settings
             </a>{" "}
             to see more courses.

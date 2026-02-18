@@ -61,10 +61,13 @@ export function MatchingPairs({ exercise, onResult, onContinue, language }: Prop
 
   const allMatched = matched.size === exercise.pairs.length * 2;
 
-  function handleCheck() {
-    checkAnswer(true);
-    onResult(true, "all matched");
-  }
+  // Auto-complete when all pairs are matched — no "Check" button needed
+  useEffect(() => {
+    if (allMatched && status === "answering") {
+      checkAnswer(true);
+      onResult(true, "all matched");
+    }
+  }, [allMatched, status, checkAnswer, onResult]);
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
@@ -89,9 +92,9 @@ export function MatchingPairs({ exercise, onResult, onContinue, language }: Prop
   return (
     <ExerciseShell
       status={status}
-      onCheck={handleCheck}
+      onCheck={() => {}}
       onContinue={onContinue}
-      canCheck={allMatched}
+      canCheck={false}
       language={language}
     >
       <h2 className="text-xl font-bold text-lingo-text mb-6">

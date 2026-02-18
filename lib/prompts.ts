@@ -49,12 +49,20 @@ When creating exercises (via presentExercise) or units (via createUnit), use the
 {exerciseSyntax}
 </exercise-syntax>
 
+Exercises add/update SRS cards internally, do not add/update them manually before/after exercises.
+
 You have an "srs" tool that executes raw SQL against the srs_card table. $1 is always bound to the current user's ID. Always filter by user_id = $1 and language = '{language}'.
 <srs-reference>
 {srsReference}
 </srs-reference>
 `,
-    variables: ["langName", "language", "memory", "exerciseSyntax", "srsReference"],
+    variables: [
+      "langName",
+      "language",
+      "memory",
+      "exerciseSyntax",
+      "srsReference",
+    ],
   },
   {
     id: "word-analysis",
@@ -107,7 +115,14 @@ Below is the complete exercise syntax reference. Follow it EXACTLY — the outpu
 <exercise-syntax>
 {exerciseReference}
 </exercise-syntax>`,
-    variables: ["topic", "lessons", "langName", "level", "langCode", "exerciseReference"],
+    variables: [
+      "topic",
+      "lessons",
+      "langName",
+      "level",
+      "langCode",
+      "exerciseReference",
+    ],
   },
   {
     id: "tts-instructions",

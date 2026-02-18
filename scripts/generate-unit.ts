@@ -52,7 +52,42 @@ function parseArgs() {
 // Prompt
 // ---------------------------------------------------------------------------
 function buildPrompt(topic: string, lessons: number): string {
-  const template = getDefaultTemplate("unit-generation");
+  const template = `You are a curriculum designer for a language learning app. The learners are English speakers learning {langName} at {level} level.
+
+Generate a complete unit that teaches {langName} vocabulary and grammar through the topic: "{topic}"
+
+The unit must have exactly {lessons} lessons (## sections). Each lesson teaches 4-6 new words/phrases related to the topic. Each lesson should have 3-5 varied exercises.
+
+Do not ask questions that require knowledge about the topic like when was someone born or when did something happen. The questions should be about the vocabulary and grammar of the lesson.
+
+Exercises should progress from easier to harder within each lesson. The first exercise in each lesson should be a matching-pairs exercise introducing the new vocabulary.
+
+Output a single markdown file with YAML frontmatter followed by ## Lesson sections. Here is the exact format:
+
+---
+title: "<Unit Title in {langName}>"
+description: "<1-line English description of what this unit teaches>"
+icon: "<single emoji>"
+color: "<hex color>"
+---
+
+## <Lesson 1 Title in {langName}>
+
+<exercises for lesson 1>
+
+## <Lesson 2 Title in {langName}>
+
+<exercises for lesson 2>
+
+(... continue for all {lessons} lessons)
+
+IMPORTANT: Use the ttsLang value "{langCode}" for all listening exercises.
+
+Below is the complete exercise syntax reference. Follow it EXACTLY — the output will be machine-parsed:
+
+<exercise-syntax>
+{exerciseReference}
+</exercise-syntax>`;
   return interpolateTemplate(template, {
     topic,
     lessons: String(lessons),

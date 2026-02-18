@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { getSession } from "@/lib/auth-server";
 import { redirect } from "next/navigation";
+import { DEFAULT_PATH } from "@/lib/constants";
 
 export default async function LandingPage() {
   const session = await getSession();
-  if (session) redirect("/learn");
+  if (session) redirect(DEFAULT_PATH);
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-lingo-bg px-4">

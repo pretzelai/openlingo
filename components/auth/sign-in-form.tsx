@@ -6,6 +6,7 @@ import { signIn } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
+import { DEFAULT_PATH } from "@/lib/constants";
 
 export function SignInForm() {
   const router = useRouter();
@@ -25,7 +26,7 @@ export function SignInForm() {
     if (result.error) {
       setError(result.error.message || "Sign in failed");
     } else {
-      router.push("/learn");
+      router.push(DEFAULT_PATH);
     }
   }
 

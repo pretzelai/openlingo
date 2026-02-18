@@ -9,7 +9,7 @@ interface CourseCardProps {
 export function CourseCard({ course }: CourseCardProps) {
   return (
     <Link
-      href={`/learn/${course.id}`}
+      href={`/units/${course.id}`}
       className="block rounded-2xl border-2 border-lingo-border bg-lingo-card p-5 transition-transform hover:scale-[1.02] active:scale-[0.98]"
     >
       <h3 className="text-lg font-bold text-lingo-text">{course.title}</h3>

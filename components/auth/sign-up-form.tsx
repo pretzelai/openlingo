@@ -6,6 +6,7 @@ import { signUp } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
+import { DEFAULT_PATH } from "@/lib/constants";
 
 export function SignUpForm() {
   const router = useRouter();
@@ -26,7 +27,7 @@ export function SignUpForm() {
     if (result.error) {
       setError(result.error.message || "Sign up failed");
     } else {
-      router.push("/learn");
+      router.push(DEFAULT_PATH);
     }
   }
 

@@ -118,7 +118,7 @@ export function ChatUnitCard({
       <div className="border-t border-lingo-border/50 px-4 py-3">
         <button
           type="button"
-          onClick={() => router.push(`/learn/${courseId}`)}
+          onClick={() => router.push(`/units/${courseId}`)}
           className="w-full rounded-xl bg-lingo-green py-2.5 text-sm font-bold text-white shadow-[0_4px_0_0] shadow-lingo-green-dark active:translate-y-[2px] active:shadow-[0_2px_0_0] active:shadow-lingo-green-dark transition-all"
         >
           Start Learning

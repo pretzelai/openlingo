@@ -5,9 +5,9 @@ import { usePathname } from "next/navigation";
 
 const navItems = [
   { href: "/chat", label: "Chat", icon: "💬" },
-  { href: "/learn", label: "Learn", icon: "📚" },
-  { href: "/words", label: "Words", icon: "🔤" },
+  { href: "/units", label: "Units", icon: "📚" },
   { href: "/read", label: "Read", icon: "📖" },
+  { href: "/words", label: "Words", icon: "🔤" },
   { href: "/prompts", label: "Prompts", icon: "✏️" },
   { href: "/profile", label: "Profile", icon: "👤" },
 ];
@@ -18,13 +18,14 @@ export function Sidebar() {
   return (
     <aside className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0 border-r-2 border-lingo-border bg-white">
       <div className="flex h-16 items-center px-6">
-        <Link href="/learn" className="text-2xl font-black text-lingo-green">
+        <Link href="/units" className="text-2xl font-black text-lingo-green">
           LingoClaw
         </Link>
       </div>
       <nav className="flex-1 px-3 py-4 space-y-1">
         {navItems.map((item) => {
-          const active = pathname === item.href || pathname.startsWith(item.href + "/");
+          const active =
+            pathname === item.href || pathname.startsWith(item.href + "/");
           return (
             <Link
               key={item.href}

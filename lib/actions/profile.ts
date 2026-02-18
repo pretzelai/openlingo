@@ -10,6 +10,7 @@ import {
 import { eq, and, desc } from "drizzle-orm";
 import { requireSession } from "@/lib/auth-server";
 import { revalidatePath } from "next/cache";
+import { DEFAULT_PATH } from "../constants";
 
 export async function getProfileData() {
   const session = await requireSession();
@@ -83,7 +84,7 @@ export async function updateNativeLanguage(language: string) {
     await db.insert(userStats).values({ userId, nativeLanguage: language });
   }
 
-  revalidatePath("/learn");
+  revalidatePath(DEFAULT_PATH);
   revalidatePath("/profile");
 }
 

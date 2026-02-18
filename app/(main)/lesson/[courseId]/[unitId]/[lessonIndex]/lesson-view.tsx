@@ -96,7 +96,7 @@ export function LessonView({
         xpEarned={lessonResult.xpEarned}
         perfectScore={lessonResult.perfectScore}
         heartsLost={lessonResult.heartsLost}
-        onContinue={() => router.push(`/learn/${courseId}?unit=${unitId}`)}
+        onContinue={() => router.push(`/units/${courseId}?unit=${unitId}`)}
       />
     );
   }
@@ -106,7 +106,7 @@ export function LessonView({
       {/* Header */}
       <div className="mb-6 flex items-center gap-4">
         <button
-          onClick={() => router.push(`/learn/${courseId}?unit=${unitId}`)}
+          onClick={() => router.push(`/units/${courseId}?unit=${unitId}`)}
           className="text-lingo-text-light hover:text-lingo-text"
         >
           <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

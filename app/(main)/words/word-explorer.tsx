@@ -79,7 +79,7 @@ export function WordExplorer({
   srsStats: SrsStats;
   language: string;
 }) {
-  const [tab, setTab] = useState<Tab>("all");
+  const [tab, setTab] = useState<Tab>("my-words");
 
   return (
     <div>
@@ -94,16 +94,6 @@ export function WordExplorer({
       {/* Tabs */}
       <div className="mb-5 flex rounded-xl border-2 border-lingo-border bg-lingo-card overflow-hidden">
         <button
-          onClick={() => setTab("all")}
-          className={`flex-1 py-2.5 text-sm font-bold transition-colors ${
-            tab === "all"
-              ? "bg-lingo-blue text-white"
-              : "text-lingo-text-light hover:text-lingo-text"
-          }`}
-        >
-          All Words
-        </button>
-        <button
           onClick={() => setTab("my-words")}
           className={`flex-1 py-2.5 text-sm font-bold transition-colors ${
             tab === "my-words"
@@ -117,6 +107,16 @@ export function WordExplorer({
               ({srsStats.total})
             </span>
           )}
+        </button>
+        <button
+          onClick={() => setTab("all")}
+          className={`flex-1 py-2.5 text-sm font-bold transition-colors ${
+            tab === "all"
+              ? "bg-lingo-blue text-white"
+              : "text-lingo-text-light hover:text-lingo-text"
+          }`}
+        >
+          Add Words
         </button>
       </div>
 
@@ -551,7 +551,7 @@ function MyWordsTab({
         <div className="py-12 text-center">
           <p className="text-lg font-bold text-lingo-text">No words yet</p>
           <p className="mt-1 text-sm text-lingo-text-light">
-            Switch to &quot;All Words&quot; and add words to start learning
+            Switch to &quot;Add Words&quot; and add words to start learning
           </p>
         </div>
       ) : filtered.length === 0 ? (

@@ -133,34 +133,6 @@ export const exerciseAttempt = pgTable("exercise_attempt", {
   userAnswer: text("user_answer"),
 });
 
-export const achievementDefinition = pgTable("achievement_definition", {
-  id: text("id").primaryKey(),
-  title: text("title").notNull(),
-  description: text("description").notNull(),
-  icon: text("icon").notNull(),
-  category: text("category").notNull(),
-  requirement: jsonb("requirement").notNull(),
-});
-
-export const userAchievement = pgTable(
-  "user_achievement",
-  {
-    id: text("id")
-      .primaryKey()
-      .$defaultFn(() => crypto.randomUUID()),
-    userId: text("user_id")
-      .notNull()
-      .references(() => user.id, { onDelete: "cascade" }),
-    achievementId: text("achievement_id")
-      .notNull()
-      .references(() => achievementDefinition.id, { onDelete: "cascade" }),
-    unlockedAt: timestamp("unlocked_at").notNull().defaultNow(),
-  },
-  (table) => [
-    uniqueIndex("user_achievement_unique").on(table.userId, table.achievementId),
-  ]
-);
-
 export const dailyActivity = pgTable(
   "daily_activity",
   {

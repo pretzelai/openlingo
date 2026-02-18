@@ -4,6 +4,7 @@ import { requireSession } from "@/lib/auth-server";
 import { langCodeToName, interpolateTemplate, SRS_REFERENCE } from "@/lib/prompts";
 import { getUserPromptTemplate } from "@/lib/actions/prompts";
 import { getTargetLanguage } from "@/lib/actions/preferences";
+import { getNativeLanguage } from "@/lib/actions/profile";
 import { EXERCISE_SYNTAX } from "@/lib/content/exercise-syntax";
 import { db } from "@/lib/db";
 import { userMemory } from "@/lib/db/schema";
@@ -19,10 +20,10 @@ export async function POST(req: Request) {
   const modelId = AVAILABLE_MODELS.some((m) => m.id === requestedModel)
     ? requestedModel
     : DEFAULT_CHAT_MODEL;
-  const langName = langCodeToName[language] || language;
+  const target_language = langCodeToName[language] || language;
   const tools = createTools(session.user.id, language);
 
-  const [chatTemplate, memoryRow] = await Promise.all([
+  const [chatTemplate, memoryRow, nativeLang] = await Promise.all([
     getUserPromptTemplate(session.user.id, "chat-system"),
     db
       .select()
@@ -35,16 +36,20 @@ export async function POST(req: Request) {
       )
       .limit(1)
       .then((rows) => rows[0]),
+    getNativeLanguage(session.user.id),
   ]);
 
   const memory = memoryRow?.value ?? "";
 
+  const native_language = nativeLang ? (langCodeToName[nativeLang] || nativeLang) : "English";
+
   const systemPrompt = interpolateTemplate(chatTemplate, {
-    langName,
-    language,
+    target_language,
+    target_language_code: language,
+    native_language,
     memory,
-    exerciseSyntax: EXERCISE_SYNTAX,
-    srsReference: SRS_REFERENCE,
+    exercise_syntax: EXERCISE_SYNTAX,
+    srs_reference: SRS_REFERENCE,
   });
 
   const result = streamText({

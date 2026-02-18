@@ -82,7 +82,7 @@ export async function aiLookup(
   language: string,
 ) {
   const normalizedWord = word.toLowerCase().trim();
-  const langName = langCodeToName[language] || language;
+  const target_language = langCodeToName[language] || language;
 
   // Check DB cache first
   const cached = await db
@@ -110,7 +110,7 @@ export async function aiLookup(
 
   try {
     const promptTemplate = getDefaultTemplate("word-analysis");
-    const prompt = interpolateTemplate(promptTemplate, { langName, word });
+    const prompt = interpolateTemplate(promptTemplate, { target_language, word });
 
     const model = getModel("gemini-2.5-flash-lite");
     const { object: analysis } = await generateObject({

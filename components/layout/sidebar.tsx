@@ -9,7 +9,6 @@ const navItems = [
   { href: "/read", label: "Read", icon: "📖" },
   { href: "/words", label: "Words", icon: "🔤" },
   { href: "/prompts", label: "Prompts", icon: "✏️" },
-  { href: "/profile", label: "Profile", icon: "👤" },
 ];
 
 export function Sidebar() {

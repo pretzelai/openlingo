@@ -17,7 +17,7 @@ export default async function LandingPage() {
           The free, fun, and effective way to learn a new language!
         </p>
         <p className="text-base text-lingo-text-light mb-8">
-          Earn XP, keep your streak, and unlock achievements as you master German.
+          Keep your streak and master a new language the fun way!
         </p>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           <Link

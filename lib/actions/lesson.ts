@@ -7,12 +7,10 @@ import {
   lessonCompletion,
   exerciseAttempt,
   dailyActivity,
-  userAchievement,
-  achievementDefinition,
   unit,
   course,
 } from "@/lib/db/schema";
-import { eq, and, sql } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { requireSession } from "@/lib/auth-server";
 import { computeStreak } from "@/lib/game/streaks";
 import type { UnitLesson, Exercise } from "@/lib/content/types";
@@ -154,13 +152,6 @@ export async function completeLesson(input: CompleteLessonInput) {
   // Advance enrollment progress
   await advanceEnrollment(userId, input.unitId, input.lessonIndex);
 
-  // Check achievements
-  await checkAndAwardAchievements(userId, {
-    totalLessonsCompleted: totalCompleted,
-    streak: newStreak,
-    perfectScore,
-  });
-
   return { perfectScore };
 }
 
@@ -232,56 +223,3 @@ async function advanceEnrollment(
   }
 }
 
-async function checkAndAwardAchievements(
-  userId: string,
-  stats: {
-    totalLessonsCompleted: number;
-    streak: number;
-    perfectScore: boolean;
-  }
-) {
-  const definitions = await db.select().from(achievementDefinition);
-  const existing = await db
-    .select()
-    .from(userAchievement)
-    .where(eq(userAchievement.userId, userId));
-
-  const existingIds = new Set(existing.map((a) => a.achievementId));
-
-  // Count perfect lessons
-  const [perfectCount] = await db
-    .select({ count: sql<number>`count(*)` })
-    .from(lessonCompletion)
-    .where(
-      and(
-        eq(lessonCompletion.userId, userId),
-        eq(lessonCompletion.perfectScore, true)
-      )
-    );
-
-  for (const def of definitions) {
-    if (existingIds.has(def.id)) continue;
-
-    const req = def.requirement as { type: string; value: number };
-    let earned = false;
-
-    switch (req.type) {
-      case "lessons_completed":
-        earned = stats.totalLessonsCompleted >= req.value;
-        break;
-      case "streak":
-        earned = stats.streak >= req.value;
-        break;
-      case "perfect_lessons":
-        earned = (perfectCount?.count ?? 0) >= req.value;
-        break;
-    }
-
-    if (earned) {
-      await db
-        .insert(userAchievement)
-        .values({ userId, achievementId: def.id })
-        .onConflictDoNothing();
-    }
-  }
-}

@@ -45,9 +45,9 @@ export default async function LearnPage() {
             No courses available for your language yet.
           </p>
           <p className="text-sm text-lingo-text-light">
-            Change your native language in your{" "}
-            <a href="/profile" className="font-bold text-lingo-blue underline">
-              profile
+            Change your native language in{" "}
+            <a href="/prompts" className="font-bold text-lingo-blue underline">
+              settings
             </a>{" "}
             to see more courses.
           </p>

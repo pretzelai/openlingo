@@ -32,9 +32,9 @@ export async function generateSpeech(
   }
 
   // Generate with OpenAI TTS
-  const language_name = langCodeToName[language] || "the target language";
+  const target_language = langCodeToName[language] || "the target language";
   const ttsTemplate = getDefaultTemplate("tts-instructions");
-  const instructions = interpolateTemplate(ttsTemplate, { language_name });
+  const instructions = interpolateTemplate(ttsTemplate, { target_language });
 
   const response = await openai.audio.speech.create({
     model: "gpt-4o-mini-tts",

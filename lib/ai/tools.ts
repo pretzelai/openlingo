@@ -22,7 +22,7 @@ import { processTranslation } from "@/lib/article/process";
 
 const ALLOWED_TABLE = /\bsrs_card\b/i;
 const FORBIDDEN_TABLES =
-  /\b(user|session|account|verification|user_stats|user_preferences|user_course_enrollment|lesson_completion|exercise_attempt|achievement_definition|user_achievement|daily_activity|dictionary_word|word_cache|user_memory|course|unit|audio_cache|chat_conversation|article)\b/i;
+  /\b(user|session|account|verification|user_stats|user_preferences|user_course_enrollment|lesson_completion|exercise_attempt|daily_activity|dictionary_word|word_cache|user_memory|course|unit|audio_cache|chat_conversation|article)\b/i;
 
 export function createTools(userId: string, language?: string) {
   return {
@@ -336,42 +336,82 @@ export function createTools(userId: string, language?: string) {
 
     switchLanguage: tool({
       description:
-        "Switch the user's target language globally. Changes which language they're learning across all pages.",
+        "Switch the user's target language and/or native language. At least one must be provided.",
       inputSchema: z.object({
-        language: z
+        target_language: z
           .string()
+          .optional()
           .describe(
-            "Language code (e.g. 'fr', 'es', 'de', 'it', 'pt', 'ru', 'ar', 'hi', 'ko', 'zh', 'ja')",
+            "Target language code (e.g. 'fr', 'es', 'de', 'it', 'pt', 'ru', 'ar', 'hi', 'ko', 'zh', 'ja')",
+          ),
+        native_language: z
+          .string()
+          .optional()
+          .describe(
+            "Native language code (e.g. 'en', 'fr', 'es', 'de')",
           ),
       }),
-      execute: async ({ language: langCode }) => {
-        if (!supportedLanguages[langCode]) {
-          const supported = Object.keys(supportedLanguages)
-            .filter((k) => k !== "en")
-            .map((k) => `${k} (${langCodeToName[k] || k})`)
-            .join(", ");
+      execute: async ({ target_language, native_language }) => {
+        if (!target_language && !native_language) {
+          return { success: false, error: "Provide at least one of target_language or native_language." };
+        }
+
+        const allSupported = Object.keys(supportedLanguages);
+        const supportedList = allSupported
+          .map((k) => `${k} (${langCodeToName[k] || k})`)
+          .join(", ");
+
+        if (target_language && !supportedLanguages[target_language]) {
           return {
             success: false,
-            error: `Unsupported language "${langCode}". Supported: ${supported}`,
+            error: `Unsupported target language "${target_language}". Supported: ${supportedList}`,
           };
         }
 
-        await db
-          .insert(userPreferences)
-          .values({ userId, targetLanguage: langCode })
-          .onConflictDoUpdate({
-            target: userPreferences.userId,
-            set: { targetLanguage: langCode, updatedAt: new Date() },
-          });
+        if (native_language && !supportedLanguages[native_language]) {
+          return {
+            success: false,
+            error: `Unsupported native language "${native_language}". Supported: ${supportedList}`,
+          };
+        }
+
+        const changes: string[] = [];
+
+        if (target_language) {
+          await db
+            .insert(userPreferences)
+            .values({ userId, targetLanguage: target_language })
+            .onConflictDoUpdate({
+              target: userPreferences.userId,
+              set: { targetLanguage: target_language, updatedAt: new Date() },
+            });
+          changes.push(`target language to ${langCodeToName[target_language] || target_language}`);
+        }
+
+        if (native_language) {
+          const [existing] = await db
+            .select()
+            .from(userStats)
+            .where(eq(userStats.userId, userId));
+
+          if (existing) {
+            await db
+              .update(userStats)
+              .set({ nativeLanguage: native_language })
+              .where(eq(userStats.userId, userId));
+          } else {
+            await db.insert(userStats).values({ userId, nativeLanguage: native_language });
+          }
+          changes.push(`native language to ${langCodeToName[native_language] || native_language}`);
+        }
 
         revalidatePath("/");
 
-        const name = langCodeToName[langCode] || langCode;
         return {
           success: true,
-          language: langCode,
-          languageName: name,
-          message: `Switched target language to ${name}. All pages will now use ${name}.`,
+          target_language: target_language ?? undefined,
+          native_language: native_language ?? undefined,
+          message: `Switched ${changes.join(" and ")}.`,
         };
       },
     }),

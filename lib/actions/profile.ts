@@ -3,11 +3,9 @@
 import { db } from "@/lib/db";
 import {
   userStats,
-  userAchievement,
-  achievementDefinition,
   lessonCompletion,
 } from "@/lib/db/schema";
-import { eq, and, desc } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 import { requireSession } from "@/lib/auth-server";
 import { revalidatePath } from "next/cache";
 import { DEFAULT_PATH } from "../constants";
@@ -20,24 +18,6 @@ export async function getProfileData() {
     .select()
     .from(userStats)
     .where(eq(userStats.userId, userId));
-
-  const achievements = await db
-    .select({
-      id: achievementDefinition.id,
-      title: achievementDefinition.title,
-      description: achievementDefinition.description,
-      icon: achievementDefinition.icon,
-      category: achievementDefinition.category,
-      unlockedAt: userAchievement.unlockedAt,
-    })
-    .from(achievementDefinition)
-    .leftJoin(
-      userAchievement,
-      and(
-        eq(userAchievement.achievementId, achievementDefinition.id),
-        eq(userAchievement.userId, userId)
-      )
-    );
 
   const recentCompletions = await db
     .select()
@@ -54,10 +34,6 @@ export async function getProfileData() {
       totalLessonsCompleted: 0,
       nativeLanguage: null as string | null,
     },
-    achievements: achievements.map((a) => ({
-      ...a,
-      unlocked: !!a.unlockedAt,
-    })),
     recentCompletions,
   };
 }
@@ -81,7 +57,7 @@ export async function updateNativeLanguage(language: string) {
   }
 
   revalidatePath(DEFAULT_PATH);
-  revalidatePath("/profile");
+  revalidatePath("/prompts");
 }
 
 export async function getNativeLanguage(userId: string): Promise<string | null> {

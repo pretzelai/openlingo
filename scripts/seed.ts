@@ -1,13 +1,9 @@
 import { seedCoursesFromFilesystem } from "../lib/db/seed-courses";
-import { seedTestUser } from "../lib/db/seed-test-user";
 import { seedWords } from "../lib/db/seed-words";
 
 async function main() {
   console.log("Seeding courses from filesystem...");
   await seedCoursesFromFilesystem();
-
-  console.log("Seeding test user...");
-  await seedTestUser();
 
   console.log("Seeding dictionary words...");
   await seedWords();

@@ -55,7 +55,7 @@ export function FlashcardReview({
         }`}
       >
         <div className="prose prose-lg font-black text-lingo-text [&>p]:m-0">
-          <Markdown>{exercise.front}</Markdown>
+          <Markdown breaks>{exercise.front.replace(/\\n/g, "\n")}</Markdown>
         </div>
 
         {!revealed && (
@@ -67,7 +67,7 @@ export function FlashcardReview({
         {revealed && (
           <div className="mt-4 pt-4 border-t-2 border-lingo-border">
             <div className="prose font-bold text-lingo-text-light [&>p]:m-0">
-              <Markdown>{exercise.back}</Markdown>
+              <Markdown breaks>{exercise.back.replace(/\\n/g, "\n")}</Markdown>
             </div>
           </div>
         )}

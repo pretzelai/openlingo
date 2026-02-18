@@ -10,8 +10,7 @@ import { getNativeLanguage } from "@/lib/actions/profile";
 import { ContinueLearning } from "./continue-learning";
 import { CourseBrowser } from "./course-browser";
 
-const NEW_UNIT_PROMPT =
-  "I want to create a new personalised unit, ask me all relevant questions so you can make it";
+const NEW_UNIT_PROMPT = "I want to create a new personalised unit";
 
 export const metadata = { title: "Learn — ClaudeLingo" };
 

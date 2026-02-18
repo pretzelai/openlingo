@@ -4,8 +4,7 @@ import { db } from "@/lib/db";
 import { article } from "@/lib/db/schema";
 import { eq, desc } from "drizzle-orm";
 
-const NEW_ARTICLE_PROMPT =
-  "I want to create a new translated article, ask me all relevant questions so you can make it";
+const NEW_ARTICLE_PROMPT = "I want to create a new translated article";
 
 export const metadata = { title: "Read — ClaudeLingo" };
 

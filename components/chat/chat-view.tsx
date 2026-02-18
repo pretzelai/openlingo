@@ -46,7 +46,10 @@ export function ChatView({
   const convIdRef = useRef<string | null>(conversationId ?? null);
 
   const transport = useMemo(
-    () => new DefaultChatTransport({ body: { language: effectiveLanguage, model } }),
+    () =>
+      new DefaultChatTransport({
+        body: { language: effectiveLanguage, model },
+      }),
     [effectiveLanguage, model],
   );
 
@@ -67,7 +70,11 @@ export function ChatView({
               "New chat"
             ).slice(0, 50)
           : "New chat";
-        const newId = await createConversation(effectiveLanguage, title, allMessages);
+        const newId = await createConversation(
+          effectiveLanguage,
+          title,
+          allMessages,
+        );
         convIdRef.current = newId;
         window.history.replaceState(null, "", `/chat/${newId}`);
         router.refresh();
@@ -114,7 +121,12 @@ export function ChatView({
   // Auto-send initial prompt (e.g. from "New Unit" / "New Article" buttons)
   const promptSent = useRef(false);
   useEffect(() => {
-    if (initialPrompt && !promptSent.current && !initialMessages?.length && language) {
+    if (
+      initialPrompt &&
+      !promptSent.current &&
+      !initialMessages?.length &&
+      language
+    ) {
       promptSent.current = true;
       sendMessage({ text: initialPrompt });
     }
@@ -157,7 +169,9 @@ export function ChatView({
     // Record SRS practice (fire-and-forget) — skip for flashcard-review
     // since it handles its own SRS update via reviewCard
     if (exercise.type !== "flashcard-review") {
-      recordChatExerciseResult(exercise, correct, effectiveLanguage).catch(() => {});
+      recordChatExerciseResult(exercise, correct, effectiveLanguage).catch(
+        () => {},
+      );
     }
 
     sendMessage({
@@ -204,7 +218,19 @@ export function ChatView({
               />
             ))}
 
-            {status === "submitted" && <ThinkingMessage />}
+            {(status === "submitted" ||
+              (status === "streaming" &&
+                (() => {
+                  const last = messages[messages.length - 1];
+                  if (!last || last.role !== "assistant") return false;
+                  const lastPart = last.parts[last.parts.length - 1] as
+                    | { type: string; state?: string }
+                    | undefined;
+                  return (
+                    lastPart?.type?.startsWith("tool-") &&
+                    lastPart.state === "output-available"
+                  );
+                })())) && <ThinkingMessage />}
 
             <div ref={endRef} className="min-h-[24px] shrink-0" />
           </div>
@@ -368,10 +394,19 @@ function Greeting({
       </p>
       <div className="mt-6 flex flex-wrap justify-center gap-2">
         {[
-          { label: "Make a new learning unit", prompt: "I want to create a new personalised unit, ask me all relevant questions so you can make it" },
-          { label: "Translate an article", prompt: "I want to create a new translated article, ask me all relevant questions so you can make it" },
+          {
+            label: "Make a new learning unit",
+            prompt: "I want to create a new personalised unit",
+          },
+          {
+            label: "Translate an article",
+            prompt: "I want to create a new translated article",
+          },
           { label: "Let's practice!", prompt: "Let's practice!" },
-          { label: "How many words are due?", prompt: "How many words are due?" },
+          {
+            label: "How many words are due?",
+            prompt: "How many words are due?",
+          },
           { label: "Teach me something new", prompt: "Teach me something new" },
         ].map(({ label, prompt }) => (
           <button

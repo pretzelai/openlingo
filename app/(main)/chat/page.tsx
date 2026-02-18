@@ -4,12 +4,24 @@ import { getTargetLanguage, getPreferredModel } from "@/lib/actions/preferences"
 
 export const metadata = { title: "Chat — LingoClaw" };
 
-export default async function ChatPage() {
+export default async function ChatPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ prompt?: string }>;
+}) {
   const session = await requireSession();
-  const [language, preferredModel] = await Promise.all([
+  const [language, preferredModel, params] = await Promise.all([
     getTargetLanguage(session.user.id),
     getPreferredModel(session.user.id),
+    searchParams,
   ]);
 
-  return <ChatView key="new" language={language ?? undefined} preferredModel={preferredModel} />;
+  return (
+    <ChatView
+      key={params.prompt ? `prompt-${params.prompt}` : "new"}
+      language={language ?? undefined}
+      preferredModel={preferredModel}
+      initialPrompt={params.prompt}
+    />
+  );
 }

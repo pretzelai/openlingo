@@ -18,6 +18,7 @@ interface ChatViewProps {
   preferredModel: string;
   conversationId?: string;
   initialMessages?: UIMessage[];
+  initialPrompt?: string;
 }
 
 export function ChatView({
@@ -25,6 +26,7 @@ export function ChatView({
   preferredModel,
   conversationId,
   initialMessages,
+  initialPrompt,
 }: ChatViewProps) {
   const effectiveLanguage = language ?? "en";
   const router = useRouter();
@@ -108,6 +110,15 @@ export function ChatView({
       sendMessage({ text: "I am a new user, I need onboarding" });
     }
   }, [language, initialMessages, sendMessage]);
+
+  // Auto-send initial prompt (e.g. from "New Unit" / "New Article" buttons)
+  const promptSent = useRef(false);
+  useEffect(() => {
+    if (initialPrompt && !promptSent.current && !initialMessages?.length && language) {
+      promptSent.current = true;
+      sendMessage({ text: initialPrompt });
+    }
+  }, [initialPrompt, initialMessages, language, sendMessage]);
 
   // Focus input on mount
   useEffect(() => {

@@ -4,6 +4,9 @@ import { db } from "@/lib/db";
 import { article } from "@/lib/db/schema";
 import { eq, desc } from "drizzle-orm";
 
+const NEW_ARTICLE_PROMPT =
+  "I want to create a new translated article, ask me all relevant questions so you can make it";
+
 export const metadata = { title: "Read — LingoClaw" };
 
 export default async function ReadPage() {
@@ -50,21 +53,21 @@ export default async function ReadPage() {
         Read Articles
       </h1>
 
+      <div className="mb-6 flex gap-2 justify-center">
+        <Link
+          href={`/chat?prompt=${encodeURIComponent(NEW_ARTICLE_PROMPT)}`}
+          className="rounded-xl border-2 border-lingo-border bg-white px-4 py-2.5 text-sm font-bold text-lingo-text shadow-[0_2px_0_0] shadow-lingo-border transition-all hover:border-lingo-blue hover:bg-lingo-blue/5 active:translate-y-[1px] active:shadow-none"
+        >
+          + New Article
+        </Link>
+      </div>
+
       {articles.length === 0 ? (
         <div className="rounded-xl border-2 border-dashed border-lingo-border p-8 text-center">
           <span className="text-4xl mb-3 block">📖</span>
           <h2 className="text-lg font-bold text-lingo-text mb-1">
             No articles yet
           </h2>
-          <p className="text-sm text-lingo-text-light mb-4">
-            Ask the AI in chat to read and translate an article for you!
-          </p>
-          <Link
-            href="/chat"
-            className="inline-block rounded-xl bg-lingo-green px-6 py-2.5 text-sm font-bold text-white shadow-[0_4px_0_0] shadow-lingo-green-dark active:translate-y-[2px] active:shadow-[0_2px_0_0] active:shadow-lingo-green-dark transition-all"
-          >
-            Go to Chat
-          </Link>
         </div>
       ) : (
         <div className="space-y-3">

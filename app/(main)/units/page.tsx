@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import {
@@ -9,6 +10,9 @@ import { getNativeLanguage } from "@/lib/actions/profile";
 import { ContinueLearning } from "./continue-learning";
 import { CourseBrowser } from "./course-browser";
 
+const NEW_UNIT_PROMPT =
+  "I want to create a new personalised unit, ask me all relevant questions so you can make it";
+
 export const metadata = { title: "Learn — LingoClaw" };
 
 export default async function LearnPage() {
@@ -18,7 +22,9 @@ export default async function LearnPage() {
   const nativeLanguage = userId ? await getNativeLanguage(userId) : null;
 
   const [courses, filters, enrolled] = await Promise.all([
-    listCoursesWithLessonCounts(nativeLanguage ? { sourceLanguage: nativeLanguage } : undefined),
+    listCoursesWithLessonCounts(
+      nativeLanguage ? { sourceLanguage: nativeLanguage } : undefined,
+    ),
     getAvailableFilters(),
     userId ? getUserEnrolledCourses(userId) : Promise.resolve([]),
   ]);
@@ -37,6 +43,14 @@ export default async function LearnPage() {
     <div className="mx-auto max-w-2xl">
       <div className="mb-6 text-center">
         <h1 className="text-2xl font-black text-lingo-text">Learn</h1>
+      </div>
+      <div className="mb-6 flex gap-2 justify-center">
+        <Link
+          href={`/chat?prompt=${encodeURIComponent(NEW_UNIT_PROMPT)}`}
+          className="rounded-xl border-2 border-lingo-border bg-white px-4 py-2.5 text-sm font-bold text-lingo-text shadow-[0_2px_0_0] shadow-lingo-border transition-all hover:border-lingo-green hover:bg-lingo-green/5 active:translate-y-[1px] active:shadow-none"
+        >
+          + New Unit
+        </Link>
       </div>
       <ContinueLearning courses={enrolled} />
       {courses.length === 0 ? (

@@ -24,7 +24,7 @@ export function SettingsView({
 }: {
   prompts: PromptWithOverride[];
   initialMemory: string;
-  targetLanguage: string;
+  targetLanguage: string | null;
   nativeLanguage: string | null;
 }) {
   const [savingTarget, startSaveTarget] = useTransition();
@@ -42,7 +42,7 @@ export function SettingsView({
         <div className="flex items-center justify-between">
           <span className="text-sm font-bold text-lingo-text-light">Learning Language</span>
           <select
-            value={targetLanguage}
+            value={targetLanguage ?? ""}
             disabled={savingTarget}
             onChange={(e) => {
               const value = e.target.value;
@@ -51,6 +51,7 @@ export function SettingsView({
             }}
             className="rounded-lg border-2 border-lingo-border bg-lingo-card px-3 py-1.5 text-sm font-bold text-lingo-text disabled:opacity-50"
           >
+            {!targetLanguage && <option value="">Select a language</option>}
             {TARGET_LANGUAGES.map((code) => (
               <option key={code} value={code}>
                 {getLanguageName(code)}

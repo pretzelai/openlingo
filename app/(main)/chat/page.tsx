@@ -11,5 +11,5 @@ export default async function ChatPage() {
     getPreferredModel(session.user.id),
   ]);
 
-  return <ChatView key="new" language={language} preferredModel={preferredModel} />;
+  return <ChatView key="new" language={language ?? undefined} preferredModel={preferredModel} />;
 }

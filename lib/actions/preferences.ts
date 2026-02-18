@@ -8,7 +8,7 @@ import { revalidatePath } from "next/cache";
 import { supportedLanguages } from "@/lib/languages";
 import { AVAILABLE_MODELS } from "@/lib/ai/models";
 
-export async function getTargetLanguage(userId?: string): Promise<string> {
+export async function getTargetLanguage(userId?: string): Promise<string | null> {
   const uid = userId ?? (await requireSession()).user.id;
 
   const [row] = await db
@@ -17,7 +17,7 @@ export async function getTargetLanguage(userId?: string): Promise<string> {
     .where(eq(userPreferences.userId, uid))
     .limit(1);
 
-  return row?.targetLanguage ?? "de";
+  return row?.targetLanguage ?? null;
 }
 
 export async function updateTargetLanguage(language: string) {
@@ -48,7 +48,7 @@ export async function getPreferredModel(userId?: string): Promise<string> {
     .where(eq(userPreferences.userId, uid))
     .limit(1);
 
-  return row?.preferredModel ?? "gemini-3-flash-preview";
+  return row?.preferredModel ?? "claude-sonnet-4-6";
 }
 
 export async function updatePreferredModel(model: string) {

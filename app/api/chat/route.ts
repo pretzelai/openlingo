@@ -10,13 +10,13 @@ import { db } from "@/lib/db";
 import { userMemory } from "@/lib/db/schema";
 import { and, eq } from "drizzle-orm";
 
-const DEFAULT_CHAT_MODEL = "gemini-3-flash-preview";
+const DEFAULT_CHAT_MODEL = "claude-sonnet-4-6";
 
 export async function POST(req: Request) {
   const session = await requireSession();
   const { messages, language: lang, model: requestedModel } = await req.json();
 
-  const language: string = lang || (await getTargetLanguage(session.user.id));
+  const language: string = lang || (await getTargetLanguage(session.user.id)) || "en";
   const modelId = AVAILABLE_MODELS.some((m) => m.id === requestedModel)
     ? requestedModel
     : DEFAULT_CHAT_MODEL;

@@ -14,7 +14,7 @@ import { AVAILABLE_MODELS } from "@/lib/ai/models";
 import type { Exercise } from "@/lib/content/types";
 
 interface ChatViewProps {
-  language: string;
+  language?: string;
   preferredModel: string;
   conversationId?: string;
   initialMessages?: UIMessage[];
@@ -26,6 +26,7 @@ export function ChatView({
   conversationId,
   initialMessages,
 }: ChatViewProps) {
+  const effectiveLanguage = language ?? "en";
   const router = useRouter();
   const containerRef = useRef<HTMLDivElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
@@ -43,8 +44,8 @@ export function ChatView({
   const convIdRef = useRef<string | null>(conversationId ?? null);
 
   const transport = useMemo(
-    () => new DefaultChatTransport({ body: { language, model } }),
-    [language, model],
+    () => new DefaultChatTransport({ body: { language: effectiveLanguage, model } }),
+    [effectiveLanguage, model],
   );
 
   const { messages, sendMessage, status } = useChat({
@@ -64,7 +65,7 @@ export function ChatView({
               "New chat"
             ).slice(0, 50)
           : "New chat";
-        const newId = await createConversation(language, title, allMessages);
+        const newId = await createConversation(effectiveLanguage, title, allMessages);
         convIdRef.current = newId;
         window.history.replaceState(null, "", `/chat/${newId}`);
         router.refresh();
@@ -98,6 +99,15 @@ export function ChatView({
       scrollToBottom();
     }
   }, [messages, isAtBottom, scrollToBottom]);
+
+  // Auto-send onboarding message for new users (no target language set)
+  const onboardingSent = useRef(false);
+  useEffect(() => {
+    if (!language && !onboardingSent.current && !initialMessages?.length) {
+      onboardingSent.current = true;
+      sendMessage({ text: "I am a new user, I need onboarding" });
+    }
+  }, [language, initialMessages, sendMessage]);
 
   // Focus input on mount
   useEffect(() => {
@@ -136,7 +146,7 @@ export function ChatView({
     // Record SRS practice (fire-and-forget) — skip for flashcard-review
     // since it handles its own SRS update via reviewCard
     if (exercise.type !== "flashcard-review") {
-      recordChatExerciseResult(exercise, correct, language).catch(() => {});
+      recordChatExerciseResult(exercise, correct, effectiveLanguage).catch(() => {});
     }
 
     sendMessage({
@@ -164,7 +174,7 @@ export function ChatView({
           <div className="mx-auto flex min-w-0 max-w-3xl flex-col gap-4 px-2 py-4 md:gap-6 md:px-4">
             {messages.length === 0 && (
               <Greeting
-                language={language}
+                language={effectiveLanguage}
                 onSend={(text) => sendMessage({ text })}
               />
             )}
@@ -173,7 +183,7 @@ export function ChatView({
               <ChatMessage
                 key={message.id}
                 message={message}
-                language={language}
+                language={effectiveLanguage}
                 isLoading={
                   status === "streaming" && messages.length - 1 === index
                 }

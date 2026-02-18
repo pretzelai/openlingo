@@ -34,8 +34,6 @@ export async function getUserProgress(courseId: string) {
             id: lessonCompletion.id,
             unitId: lessonCompletion.unitId,
             lessonIndex: lessonCompletion.lessonIndex,
-            xpEarned: lessonCompletion.xpEarned,
-            heartsLost: lessonCompletion.heartsLost,
             perfectScore: lessonCompletion.perfectScore,
             completedAt: lessonCompletion.completedAt,
           })
@@ -114,22 +112,6 @@ export async function getUserStatsData() {
       .values({ userId })
       .returning();
     return newStats;
-  }
-
-  // Compute heart regeneration
-  const now = new Date();
-  const lastRegen = new Date(stats.heartsLastRegenAt);
-  const minutesPassed = Math.floor((now.getTime() - lastRegen.getTime()) / (1000 * 60));
-  const heartsToRegen = Math.floor(minutesPassed / 30);
-
-  if (heartsToRegen > 0 && stats.hearts < stats.maxHearts) {
-    const newHearts = Math.min(stats.maxHearts, stats.hearts + heartsToRegen);
-    const [updated] = await db
-      .update(userStats)
-      .set({ hearts: newHearts, heartsLastRegenAt: now })
-      .where(eq(userStats.userId, userId))
-      .returning();
-    return updated;
   }
 
   return stats;

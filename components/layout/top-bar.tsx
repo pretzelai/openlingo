@@ -5,10 +5,8 @@ import { signOut, useSession } from "@/lib/auth-client";
 
 interface TopBarProps {
   stats?: {
-    xp: number;
-    hearts: number;
-    maxHearts: number;
     currentStreak: number;
+    wordsLearned: number;
   } | null;
 }
 
@@ -27,22 +25,19 @@ export function TopBar({ stats }: TopBarProps) {
         <span className="text-xl font-black text-lingo-green">LingoClaw</span>
       </div>
 
-      {/* Gamification stats */}
+      {/* Stats */}
       {stats && (
         <div className="flex items-center gap-4 ml-4">
+          <div className="flex items-center gap-1">
+            <span className={`text-base ${stats.wordsLearned > 0 ? "" : "grayscale opacity-40"}`}>📚</span>
+            <span className={`text-sm font-bold ${stats.wordsLearned > 0 ? "text-lingo-blue" : "text-lingo-gray-dark"}`}>
+              {stats.wordsLearned}
+            </span>
+          </div>
           <div className="flex items-center gap-1">
             <span className={`text-base ${stats.currentStreak > 0 ? "" : "grayscale opacity-40"}`}>🔥</span>
             <span className={`text-sm font-bold ${stats.currentStreak > 0 ? "text-lingo-orange" : "text-lingo-gray-dark"}`}>
               {stats.currentStreak}
-            </span>
-          </div>
-          <div className="flex items-center gap-1">
-            <span className="text-sm font-bold text-lingo-yellow">{stats.xp} XP</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <span className="text-base text-lingo-red">&#10084;</span>
-            <span className={`text-sm font-bold ${stats.hearts > 0 ? "text-lingo-red" : "text-lingo-gray-dark"}`}>
-              {stats.hearts}
             </span>
           </div>
         </div>

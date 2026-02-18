@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth-server";
 import { getUserStatsData } from "@/lib/actions/progress";
+import { getSrsStats } from "@/lib/actions/srs";
 import { Sidebar } from "@/components/layout/sidebar";
 import { TopBar } from "@/components/layout/top-bar";
 import { MobileNav } from "@/components/layout/mobile-nav";
@@ -15,7 +16,14 @@ export default async function MainLayout({
 
   let stats = null;
   try {
-    stats = await getUserStatsData();
+    const [userStatsData, srsStats] = await Promise.all([
+      getUserStatsData(),
+      getSrsStats(),
+    ]);
+    stats = {
+      currentStreak: userStatsData.currentStreak,
+      wordsLearned: srsStats.total,
+    };
   } catch {
     // User may not have stats yet
   }

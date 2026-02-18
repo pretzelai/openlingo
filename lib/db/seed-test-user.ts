@@ -51,9 +51,6 @@ export async function seedTestUser() {
     .insert(userStats)
     .values({
       userId: TEST_USER_ID,
-      xp: 250,
-      level: 3,
-      hearts: 5,
       currentStreak: 5,
       longestStreak: 5,
       lastPracticeDate: new Date().toISOString().split("T")[0],
@@ -96,7 +93,6 @@ export async function seedTestUser() {
     for (let li = 0; li < lessons.length; li++) {
       const lesson = lessons[li];
       const perfect = Math.random() > 0.3;
-      const heartsLost = perfect ? 0 : Math.floor(Math.random() * 3) + 1;
 
       await db
         .insert(lessonCompletion)
@@ -105,9 +101,6 @@ export async function seedTestUser() {
           userId: TEST_USER_ID,
           unitId: u.id,
           lessonIndex: li,
-          xpEarned:
-            lesson.xpReward + (perfect ? Math.floor(lesson.xpReward * 0.5) : 0),
-          heartsLost,
           perfectScore: perfect,
         })
         .onConflictDoNothing();

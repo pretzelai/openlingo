@@ -70,11 +70,6 @@ export const userStats = pgTable("user_stats", {
   userId: text("user_id")
     .primaryKey()
     .references(() => user.id, { onDelete: "cascade" }),
-  xp: integer("xp").notNull().default(0),
-  level: integer("level").notNull().default(1),
-  hearts: integer("hearts").notNull().default(5),
-  maxHearts: integer("max_hearts").notNull().default(5),
-  heartsLastRegenAt: timestamp("hearts_last_regen_at").notNull().defaultNow(),
   currentStreak: integer("current_streak").notNull().default(0),
   longestStreak: integer("longest_streak").notNull().default(0),
   lastPracticeDate: date("last_practice_date"),
@@ -118,8 +113,6 @@ export const lessonCompletion = pgTable("lesson_completion", {
     .notNull()
     .references(() => unit.id, { onDelete: "cascade" }),
   lessonIndex: integer("lesson_index").notNull(),
-  xpEarned: integer("xp_earned").notNull().default(0),
-  heartsLost: integer("hearts_lost").notNull().default(0),
   perfectScore: boolean("perfect_score").notNull().default(false),
   completedAt: timestamp("completed_at").notNull().defaultNow(),
 });
@@ -178,7 +171,6 @@ export const dailyActivity = pgTable(
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
     date: date("date").notNull(),
-    xpEarned: integer("xp_earned").notNull().default(0),
     lessonsCompleted: integer("lessons_completed").notNull().default(0),
   },
   (table) => [
@@ -309,7 +301,7 @@ export const unit = pgTable("unit", {
   description: text("description").notNull(),
   icon: text("icon").notNull(),
   color: text("color").notNull(),
-  exercises: jsonb("exercises").notNull(), // Array of { title, xpReward, exercises[] }
+  exercises: jsonb("exercises").notNull(),
   createdBy: text("created_by").references(() => user.id, {
     onDelete: "set null",
   }),

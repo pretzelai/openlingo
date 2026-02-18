@@ -16,7 +16,7 @@ interface UseLessonReturn {
   currentExercise: Exercise;
   results: ExerciseResult[];
   isComplete: boolean;
-  heartsLost: number;
+  mistakeCount: number;
   recordResult: (correct: boolean, userAnswer: string) => void;
   advance: () => void;
 }
@@ -25,7 +25,7 @@ export function useLesson(exercises: Exercise[]): UseLessonReturn {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [results, setResults] = useState<ExerciseResult[]>([]);
   const [isComplete, setIsComplete] = useState(false);
-  const [heartsLost, setHeartsLost] = useState(0);
+  const [mistakeCount, setMistakeCount] = useState(0);
 
   const currentExercise = exercises[currentIndex];
 
@@ -40,7 +40,7 @@ export function useLesson(exercises: Exercise[]): UseLessonReturn {
           userAnswer,
         },
       ]);
-      if (!correct) setHeartsLost((h) => h + 1);
+      if (!correct) setMistakeCount((m) => m + 1);
     },
     [currentIndex, exercises]
   );
@@ -59,7 +59,7 @@ export function useLesson(exercises: Exercise[]): UseLessonReturn {
     currentExercise,
     results,
     isComplete,
-    heartsLost,
+    mistakeCount,
     recordResult,
     advance,
   };

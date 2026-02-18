@@ -49,10 +49,6 @@ export async function getProfileData() {
   return {
     user: session.user,
     stats: stats ?? {
-      xp: 0,
-      level: 1,
-      hearts: 5,
-      maxHearts: 5,
       currentStreak: 0,
       longestStreak: 0,
       totalLessonsCompleted: 0,

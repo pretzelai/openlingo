@@ -14,7 +14,6 @@ import {
 } from "@/lib/db/schema";
 import { eq, and, sql } from "drizzle-orm";
 import { requireSession } from "@/lib/auth-server";
-import { getLevelForXp } from "@/lib/game/levels";
 import { computeStreak } from "@/lib/game/streaks";
 import type { UnitLesson, Exercise } from "@/lib/content/types";
 import { recordWordPractice } from "@/lib/actions/srs";
@@ -23,23 +22,20 @@ import { extractSrsWords } from "@/lib/srs-words";
 interface CompleteLessonInput {
   unitId: string;
   lessonIndex: number;
-  xpReward: number;
   results: {
     exerciseIndex: number;
     exerciseType: string;
     correct: boolean;
     userAnswer: string;
   }[];
-  heartsLost: number;
+  mistakeCount: number;
 }
 
 export async function completeLesson(input: CompleteLessonInput) {
   const session = await requireSession();
   const userId = session.user.id;
 
-  const perfectScore = input.heartsLost === 0;
-  const bonusXp = perfectScore ? Math.floor(input.xpReward * 0.5) : 0;
-  const xpEarned = input.xpReward + bonusXp;
+  const perfectScore = input.mistakeCount === 0;
 
   // Create lesson completion
   const [completion] = await db
@@ -48,8 +44,6 @@ export async function completeLesson(input: CompleteLessonInput) {
       userId,
       unitId: input.unitId,
       lessonIndex: input.lessonIndex,
-      xpEarned,
-      heartsLost: input.heartsLost,
       perfectScore,
     })
     .returning();
@@ -88,7 +82,6 @@ export async function completeLesson(input: CompleteLessonInput) {
           for (const result of input.results) {
             const exercise = lesson.exercises[result.exerciseIndex] as Exercise | undefined;
             if (!exercise) continue;
-            // flashcard-review handles its own SRS via reviewCard in the component
             if (exercise.type === "flashcard-review") continue;
             const words = extractSrsWords(exercise);
             for (const w of words) {
@@ -108,10 +101,7 @@ export async function completeLesson(input: CompleteLessonInput) {
     .from(userStats)
     .where(eq(userStats.userId, userId));
 
-  const newXp = (stats?.xp ?? 0) + xpEarned;
-  const newLevel = getLevelForXp(newXp);
   const totalCompleted = (stats?.totalLessonsCompleted ?? 0) + 1;
-  const newHearts = Math.max(0, (stats?.hearts ?? 5) - input.heartsLost);
 
   const { newStreak } = computeStreak(
     stats?.currentStreak ?? 0,
@@ -124,9 +114,6 @@ export async function completeLesson(input: CompleteLessonInput) {
     await db
       .update(userStats)
       .set({
-        xp: newXp,
-        level: newLevel,
-        hearts: newHearts,
         currentStreak: newStreak,
         longestStreak,
         lastPracticeDate: today,
@@ -136,9 +123,6 @@ export async function completeLesson(input: CompleteLessonInput) {
   } else {
     await db.insert(userStats).values({
       userId,
-      xp: newXp,
-      level: newLevel,
-      hearts: newHearts,
       currentStreak: newStreak,
       longestStreak,
       lastPracticeDate: today,
@@ -158,14 +142,13 @@ export async function completeLesson(input: CompleteLessonInput) {
     await db
       .update(dailyActivity)
       .set({
-        xpEarned: existingActivity.xpEarned + xpEarned,
         lessonsCompleted: existingActivity.lessonsCompleted + 1,
       })
       .where(eq(dailyActivity.id, existingActivity.id));
   } else {
     await db
       .insert(dailyActivity)
-      .values({ userId, date: today, xpEarned, lessonsCompleted: 1 });
+      .values({ userId, date: today, lessonsCompleted: 1 });
   }
 
   // Advance enrollment progress
@@ -175,12 +158,10 @@ export async function completeLesson(input: CompleteLessonInput) {
   await checkAndAwardAchievements(userId, {
     totalLessonsCompleted: totalCompleted,
     streak: newStreak,
-    totalXp: newXp,
-    level: newLevel,
     perfectScore,
   });
 
-  return { xpEarned, perfectScore, heartsLost: input.heartsLost };
+  return { perfectScore };
 }
 
 async function advanceEnrollment(
@@ -256,8 +237,6 @@ async function checkAndAwardAchievements(
   stats: {
     totalLessonsCompleted: number;
     streak: number;
-    totalXp: number;
-    level: number;
     perfectScore: boolean;
   }
 ) {
@@ -292,12 +271,6 @@ async function checkAndAwardAchievements(
         break;
       case "streak":
         earned = stats.streak >= req.value;
-        break;
-      case "total_xp":
-        earned = stats.totalXp >= req.value;
-        break;
-      case "level":
-        earned = stats.level >= req.value;
         break;
       case "perfect_lessons":
         earned = (perfectCount?.count ?? 0) >= req.value;

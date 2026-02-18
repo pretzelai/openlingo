@@ -7,7 +7,10 @@ const TOOL_LABELS: Record<string, string> = {
   readMemory: "Reading memory",
   addMemory: "Saving to memory",
   rewriteAllMemory: "Rewriting memory",
+  presentExercise: "Presenting exercise",
   createUnit: "Creating learning unit",
+  addWordsToSrs: "Adding words to SRS",
+  switchLanguage: "Switching language",
   readArticle: "Reading article",
 };
 

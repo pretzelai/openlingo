@@ -42,9 +42,7 @@ export function LessonView({
   const [isPending, startTransition] = useTransition();
   const [showComplete, setShowComplete] = useState(false);
   const [lessonResult, setLessonResult] = useState<{
-    xpEarned: number;
     perfectScore: boolean;
-    heartsLost: number;
   } | null>(null);
 
   const {
@@ -53,7 +51,7 @@ export function LessonView({
     currentExercise,
     results,
     isComplete,
-    heartsLost,
+    mistakeCount,
     recordResult,
     advance,
   } = useLesson(lesson.exercises);
@@ -75,14 +73,13 @@ export function LessonView({
         const result = await completeLesson({
           unitId,
           lessonIndex,
-          xpReward: lesson.xpReward,
           results: results.map((r) => ({
             exerciseIndex: r.exerciseIndex,
             exerciseType: r.exerciseType,
             correct: r.correct,
             userAnswer: r.userAnswer,
           })),
-          heartsLost,
+          mistakeCount,
         });
         setLessonResult(result);
         setShowComplete(true);
@@ -93,9 +90,7 @@ export function LessonView({
   if (showComplete && lessonResult) {
     return (
       <LessonCompleteModal
-        xpEarned={lessonResult.xpEarned}
         perfectScore={lessonResult.perfectScore}
-        heartsLost={lessonResult.heartsLost}
         onContinue={() => router.push(`/units/${courseId}?unit=${unitId}`)}
       />
     );

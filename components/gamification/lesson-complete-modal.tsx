@@ -3,16 +3,12 @@
 import { Button } from "@/components/ui/button";
 
 interface LessonCompleteModalProps {
-  xpEarned: number;
   perfectScore: boolean;
-  heartsLost: number;
   onContinue: () => void;
 }
 
 export function LessonCompleteModal({
-  xpEarned,
   perfectScore,
-  heartsLost,
   onContinue,
 }: LessonCompleteModalProps) {
   return (
@@ -31,30 +27,11 @@ export function LessonCompleteModal({
         </p>
       )}
 
-      <div className="flex justify-center gap-8 my-8">
-        <div className="text-center">
-          <div className="text-4xl font-black text-lingo-yellow animate-xp-count">
-            +{xpEarned}
-          </div>
-          <div className="text-sm font-bold text-lingo-text-light mt-1">
-            XP earned
-          </div>
-        </div>
-        {heartsLost > 0 && (
-          <div className="text-center">
-            <div className="text-4xl font-black text-lingo-red">
-              -{heartsLost}
-            </div>
-            <div className="text-sm font-bold text-lingo-text-light mt-1">
-              Hearts lost
-            </div>
-          </div>
-        )}
+      <div className="mt-8">
+        <Button onClick={onContinue} className="w-full max-w-xs mx-auto">
+          Continue
+        </Button>
       </div>
-
-      <Button onClick={onContinue} className="w-full max-w-xs mx-auto">
-        Continue
-      </Button>
     </div>
   );
 }

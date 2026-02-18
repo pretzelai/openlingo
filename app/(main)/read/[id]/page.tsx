@@ -59,6 +59,8 @@ export default function ArticleReaderPage({
   const [generatingAudio, setGeneratingAudio] = useState(false);
   const [showAudioPlayer, setShowAudioPlayer] = useState(false);
   const [showReadingMode, setShowReadingMode] = useState(false);
+  const [currentAudioTime, setCurrentAudioTime] = useState(0);
+  const [isAudioPlaying, setIsAudioPlaying] = useState(false);
 
   // Fetch article
   useEffect(() => {
@@ -415,6 +417,9 @@ export default function ArticleReaderPage({
         <TranslatedText
           blocks={blocks}
           targetLanguage={article.targetLanguage}
+          timestamps={timestamps}
+          currentAudioTime={showAudioPlayer ? currentAudioTime : undefined}
+          isAudioPlaying={isAudioPlaying}
         />
       )}
 
@@ -430,9 +435,14 @@ export default function ArticleReaderPage({
         <div className="fixed bottom-0 left-0 right-0 z-40 md:bottom-4 md:left-auto md:right-4 md:w-96">
           <AudioPlayer
             audioUrl={audioUrl}
-            onClose={() => setShowAudioPlayer(false)}
+            onClose={() => {
+              setShowAudioPlayer(false);
+              setIsAudioPlaying(false);
+            }}
             hasTimestamps={!!timestamps && timestamps.length > 0}
             onReadingModeClick={() => setShowReadingMode(true)}
+            onTimeUpdate={setCurrentAudioTime}
+            onPlayingChange={setIsAudioPlaying}
           />
         </div>
       )}

@@ -7,6 +7,8 @@ interface AudioPlayerProps {
   onClose?: () => void;
   hasTimestamps?: boolean;
   onReadingModeClick?: () => void;
+  onTimeUpdate?: (time: number) => void;
+  onPlayingChange?: (playing: boolean) => void;
 }
 
 const PLAYBACK_SPEEDS = [0.75, 1, 1.25, 1.5];
@@ -16,6 +18,8 @@ export function AudioPlayer({
   onClose,
   hasTimestamps,
   onReadingModeClick,
+  onTimeUpdate,
+  onPlayingChange,
 }: AudioPlayerProps) {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -26,9 +30,15 @@ export function AudioPlayer({
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
-    const updateTime = () => setCurrentTime(audio.currentTime);
+    const updateTime = () => {
+      setCurrentTime(audio.currentTime);
+      onTimeUpdate?.(audio.currentTime);
+    };
     const updateDuration = () => setDuration(audio.duration);
-    const handleEnded = () => setIsPlaying(false);
+    const handleEnded = () => {
+      setIsPlaying(false);
+      onPlayingChange?.(false);
+    };
     audio.addEventListener("timeupdate", updateTime);
     audio.addEventListener("loadedmetadata", updateDuration);
     audio.addEventListener("ended", handleEnded);
@@ -37,7 +47,7 @@ export function AudioPlayer({
       audio.removeEventListener("loadedmetadata", updateDuration);
       audio.removeEventListener("ended", handleEnded);
     };
-  }, []);
+  }, [onTimeUpdate, onPlayingChange]);
 
   const togglePlay = () => {
     const audio = audioRef.current;
@@ -45,6 +55,7 @@ export function AudioPlayer({
     if (isPlaying) audio.pause();
     else audio.play();
     setIsPlaying(!isPlaying);
+    onPlayingChange?.(!isPlaying);
   };
 
   const seek = (seconds: number) => {

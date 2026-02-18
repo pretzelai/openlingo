@@ -372,6 +372,9 @@ export const article = pgTable("article", {
   totalParagraphs: integer("total_paragraphs").notNull().default(0),
   errorMessage: text("error_message"),
   wordCount: integer("word_count"),
+  audioUrl: text("audio_url"),
+  audioDurationSeconds: integer("audio_duration_seconds"),
+  audioTimestamps: text("audio_timestamps"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 

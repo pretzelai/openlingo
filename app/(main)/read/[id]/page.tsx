@@ -1,9 +1,12 @@
 "use client";
 
-import { useState, useEffect, use } from "react";
+import { useState, useEffect, use, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { TranslatedText } from "@/components/article/translated-text";
+import { AudioPlayer } from "@/components/article/audio-player";
+import { ReadingMode } from "@/components/article/reading-mode";
 import type { TranslationBlock } from "@/lib/article/types";
+import type { WordTimestamp } from "@/lib/audio/align-timestamps";
 
 interface ArticleData {
   id: string;
@@ -19,8 +22,26 @@ interface ArticleData {
   totalParagraphs: number;
   errorMessage: string | null;
   wordCount: number | null;
+  audioUrl: string | null;
+  audioDurationSeconds: number | null;
+  audioTimestamps: string | null;
   createdAt: string;
 }
+
+const langCodeMap: Record<string, string> = {
+  german: "de",
+  french: "fr",
+  spanish: "es",
+  italian: "it",
+  portuguese: "pt",
+  russian: "ru",
+  arabic: "ar",
+  hindi: "hi",
+  korean: "ko",
+  mandarin: "zh",
+  japanese: "ja",
+  english: "en",
+};
 
 export default function ArticleReaderPage({
   params,
@@ -33,6 +54,11 @@ export default function ArticleReaderPage({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const [timestamps, setTimestamps] = useState<WordTimestamp[] | null>(null);
+  const [generatingAudio, setGeneratingAudio] = useState(false);
+  const [showAudioPlayer, setShowAudioPlayer] = useState(false);
+  const [showReadingMode, setShowReadingMode] = useState(false);
 
   // Fetch article
   useEffect(() => {
@@ -49,6 +75,79 @@ export default function ArticleReaderPage({
         setError(err.message);
         setLoading(false);
       });
+  }, [id]);
+
+  // Detect "generating" state from article data
+  useEffect(() => {
+    if (article?.audioUrl === "generating") {
+      setGeneratingAudio(true);
+    }
+  }, [article?.audioUrl]);
+
+  // Fetch audio URL if article has real audio (not "generating")
+  useEffect(() => {
+    if (!article?.audioUrl || article.audioUrl === "generating") return;
+    fetch(`/api/articles/${id}/audio`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data?.audioUrl) {
+          setAudioUrl(data.audioUrl);
+          setShowAudioPlayer(true);
+          setGeneratingAudio(false);
+        }
+      })
+      .catch(() => {});
+  }, [id, article?.audioUrl]);
+
+  // Fetch timestamps if article has them
+  useEffect(() => {
+    if (!article?.audioTimestamps) return;
+    fetch(`/api/articles/${id}/timestamps`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data?.timestamps) setTimestamps(data.timestamps);
+      })
+      .catch(() => {});
+  }, [id, article?.audioTimestamps]);
+
+  // Poll while audio is generating
+  useEffect(() => {
+    if (!generatingAudio) return;
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch(`/api/articles/${id}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data.audioUrl && data.audioUrl !== "generating") {
+          setArticle(data);
+          setGeneratingAudio(false);
+          clearInterval(interval);
+        } else if (!data.audioUrl) {
+          // Generation failed, audioUrl was reset to null
+          setArticle(data);
+          setGeneratingAudio(false);
+          clearInterval(interval);
+        }
+      } catch {
+        // ignore
+      }
+    }, 2000);
+    return () => clearInterval(interval);
+  }, [id, generatingAudio]);
+
+  const handleGenerateAudio = useCallback(async () => {
+    setGeneratingAudio(true);
+    try {
+      const res = await fetch(`/api/articles/${id}/audio`, { method: "POST" });
+      if (!res.ok) {
+        setGeneratingAudio(false);
+        return;
+      }
+      // POST returns immediately with { status: "generating" }
+      // Polling effect above will pick up when it's done
+    } catch {
+      setGeneratingAudio(false);
+    }
   }, [id]);
 
   // Poll for status if in progress
@@ -199,15 +298,73 @@ export default function ArticleReaderPage({
           </a>
         </div>
 
-        {/* Delete button */}
-        <button
-          type="button"
-          onClick={handleDelete}
-          disabled={deleting}
-          className="text-xs text-lingo-red font-medium hover:underline disabled:opacity-50"
-        >
-          {deleting ? "Deleting..." : "Delete article"}
-        </button>
+        {/* Actions */}
+        <div className="flex items-center gap-3">
+          {/* Generate Audio button */}
+          {article.status === "completed" && !article.audioUrl && !generatingAudio && (
+            <button
+              type="button"
+              onClick={handleGenerateAudio}
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-lingo-blue hover:underline"
+            >
+              <svg
+                className="h-3.5 w-3.5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M15.536 8.464a5 5 0 010 7.072M17.95 6.05a8 8 0 010 11.9M6 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h2l4-4v14l-4-4z"
+                />
+              </svg>
+              Generate audio
+            </button>
+          )}
+
+          {/* Generating audio indicator */}
+          {generatingAudio && (
+            <span className="inline-flex items-center gap-1.5 text-xs font-bold text-lingo-blue">
+              <span className="h-3 w-3 animate-spin rounded-full border-2 border-lingo-blue/30 border-t-lingo-blue" />
+              Generating audio...
+            </span>
+          )}
+
+          {/* Listen button (when audio exists but player is hidden) */}
+          {audioUrl && !showAudioPlayer && (
+            <button
+              type="button"
+              onClick={() => setShowAudioPlayer(true)}
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-lingo-blue hover:underline"
+            >
+              <svg
+                className="h-3.5 w-3.5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M15.536 8.464a5 5 0 010 7.072M17.95 6.05a8 8 0 010 11.9M6 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h2l4-4v14l-4-4z"
+                />
+              </svg>
+              Listen
+            </button>
+          )}
+
+          <button
+            type="button"
+            onClick={handleDelete}
+            disabled={deleting}
+            className="text-xs text-lingo-red font-medium hover:underline disabled:opacity-50"
+          >
+            {deleting ? "Deleting..." : "Delete article"}
+          </button>
+        </div>
       </div>
 
       {/* Translation progress banner */}
@@ -266,6 +423,31 @@ export default function ArticleReaderPage({
         <div className="text-center py-12 text-lingo-text-light">
           No content available yet.
         </div>
+      )}
+
+      {/* Audio player (fixed at bottom) */}
+      {showAudioPlayer && audioUrl && (
+        <div className="fixed bottom-0 left-0 right-0 z-40 md:bottom-4 md:left-auto md:right-4 md:w-96">
+          <AudioPlayer
+            audioUrl={audioUrl}
+            onClose={() => setShowAudioPlayer(false)}
+            hasTimestamps={!!timestamps && timestamps.length > 0}
+            onReadingModeClick={() => setShowReadingMode(true)}
+          />
+        </div>
+      )}
+
+      {/* Reading mode overlay */}
+      {showReadingMode && audioUrl && timestamps && timestamps.length > 0 && (
+        <ReadingMode
+          audioUrl={audioUrl}
+          timestamps={timestamps}
+          language={
+            langCodeMap[article.targetLanguage.toLowerCase()] ||
+            article.targetLanguage.toLowerCase()
+          }
+          onClose={() => setShowReadingMode(false)}
+        />
       )}
     </div>
   );

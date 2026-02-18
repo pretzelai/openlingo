@@ -389,19 +389,13 @@ export function createTools(userId: string, language?: string) {
         }
 
         if (native_language) {
-          const [existing] = await db
-            .select()
-            .from(userStats)
-            .where(eq(userStats.userId, userId));
-
-          if (existing) {
-            await db
-              .update(userStats)
-              .set({ nativeLanguage: native_language })
-              .where(eq(userStats.userId, userId));
-          } else {
-            await db.insert(userStats).values({ userId, nativeLanguage: native_language });
-          }
+          await db
+            .insert(userPreferences)
+            .values({ userId, nativeLanguage: native_language, updatedAt: new Date() })
+            .onConflictDoUpdate({
+              target: userPreferences.userId,
+              set: { nativeLanguage: native_language, updatedAt: new Date() },
+            });
           changes.push(`native language to ${langCodeToName[native_language] || native_language}`);
         }
 

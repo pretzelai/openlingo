@@ -368,14 +368,16 @@ function Greeting({
       </p>
       <div className="mt-6 flex flex-wrap justify-center gap-2">
         {[
-          "Let's practice!",
-          "How many words are due?",
-          "Teach me something new",
-        ].map((label) => (
+          { label: "Make a new learning unit", prompt: "I want to create a new personalised unit, ask me all relevant questions so you can make it" },
+          { label: "Translate an article", prompt: "I want to create a new translated article, ask me all relevant questions so you can make it" },
+          { label: "Let's practice!", prompt: "Let's practice!" },
+          { label: "How many words are due?", prompt: "How many words are due?" },
+          { label: "Teach me something new", prompt: "Teach me something new" },
+        ].map(({ label, prompt }) => (
           <button
             key={label}
             type="button"
-            onClick={() => onSend(label)}
+            onClick={() => onSend(prompt)}
             className="rounded-full border-2 border-lingo-border bg-white px-4 py-2 text-xs font-medium text-lingo-text transition-colors hover:border-lingo-blue hover:bg-lingo-blue/5"
           >
             {label}

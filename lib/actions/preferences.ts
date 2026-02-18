@@ -7,6 +7,7 @@ import { requireSession } from "@/lib/auth-server";
 import { revalidatePath } from "next/cache";
 import { supportedLanguages } from "@/lib/languages";
 import { AVAILABLE_MODELS } from "@/lib/ai/models";
+import { DEFAULT_AI_MODEL } from "../constants";
 
 export async function getTargetLanguage(userId?: string): Promise<string | null> {
   const uid = userId ?? (await requireSession()).user.id;
@@ -48,7 +49,7 @@ export async function getPreferredModel(userId?: string): Promise<string> {
     .where(eq(userPreferences.userId, uid))
     .limit(1);
 
-  return row?.preferredModel ?? "claude-sonnet-4-6";
+  return row?.preferredModel ?? DEFAULT_AI_MODEL;
 }
 
 export async function updatePreferredModel(model: string) {

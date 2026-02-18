@@ -74,13 +74,13 @@ export const userStats = pgTable("user_stats", {
   longestStreak: integer("longest_streak").notNull().default(0),
   lastPracticeDate: date("last_practice_date"),
   totalLessonsCompleted: integer("total_lessons_completed").notNull().default(0),
-  nativeLanguage: text("native_language"),
 });
 
 export const userPreferences = pgTable("user_preferences", {
   userId: text("user_id")
     .primaryKey()
     .references(() => user.id, { onDelete: "cascade" }),
+  nativeLanguage: text("native_language"),
   targetLanguage: text("target_language"),
   preferredModel: text("preferred_model"),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),

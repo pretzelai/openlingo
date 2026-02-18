@@ -3,6 +3,7 @@ import {
   user,
   account,
   userStats,
+  userPreferences,
   userCourseEnrollment,
   lessonCompletion,
   unit,
@@ -55,6 +56,13 @@ export async function seedTestUser() {
       longestStreak: 5,
       lastPracticeDate: new Date().toISOString().split("T")[0],
       totalLessonsCompleted: 8,
+    })
+    .onConflictDoNothing();
+
+  await db
+    .insert(userPreferences)
+    .values({
+      userId: TEST_USER_ID,
       nativeLanguage: "en",
     })
     .onConflictDoNothing();

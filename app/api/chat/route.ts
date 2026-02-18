@@ -9,8 +9,9 @@ import { EXERCISE_SYNTAX } from "@/lib/content/exercise-syntax";
 import { db } from "@/lib/db";
 import { userMemory } from "@/lib/db/schema";
 import { and, eq } from "drizzle-orm";
+import { DEFAULT_AI_MODEL } from "@/lib/constants";
 
-const DEFAULT_CHAT_MODEL = "claude-sonnet-4-6";
+const DEFAULT_CHAT_MODEL = DEFAULT_AI_MODEL;
 
 export async function POST(req: Request) {
   const session = await requireSession();

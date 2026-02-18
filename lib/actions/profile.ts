@@ -3,6 +3,7 @@
 import { db } from "@/lib/db";
 import {
   userStats,
+  userPreferences,
   lessonCompletion,
 } from "@/lib/db/schema";
 import { eq, desc } from "drizzle-orm";
@@ -32,7 +33,6 @@ export async function getProfileData() {
       currentStreak: 0,
       longestStreak: 0,
       totalLessonsCompleted: 0,
-      nativeLanguage: null as string | null,
     },
     recentCompletions,
   };
@@ -42,29 +42,23 @@ export async function updateNativeLanguage(language: string) {
   const session = await requireSession();
   const userId = session.user.id;
 
-  const [existing] = await db
-    .select()
-    .from(userStats)
-    .where(eq(userStats.userId, userId));
-
-  if (existing) {
-    await db
-      .update(userStats)
-      .set({ nativeLanguage: language })
-      .where(eq(userStats.userId, userId));
-  } else {
-    await db.insert(userStats).values({ userId, nativeLanguage: language });
-  }
+  await db
+    .insert(userPreferences)
+    .values({ userId, nativeLanguage: language, updatedAt: new Date() })
+    .onConflictDoUpdate({
+      target: userPreferences.userId,
+      set: { nativeLanguage: language, updatedAt: new Date() },
+    });
 
   revalidatePath(DEFAULT_PATH);
   revalidatePath("/prompts");
 }
 
 export async function getNativeLanguage(userId: string): Promise<string | null> {
-  const [stats] = await db
-    .select({ nativeLanguage: userStats.nativeLanguage })
-    .from(userStats)
-    .where(eq(userStats.userId, userId));
+  const [prefs] = await db
+    .select({ nativeLanguage: userPreferences.nativeLanguage })
+    .from(userPreferences)
+    .where(eq(userPreferences.userId, userId));
 
-  return stats?.nativeLanguage ?? null;
+  return prefs?.nativeLanguage ?? null;
 }

@@ -39,6 +39,13 @@ describe("checkSimilarity", () => {
       expect(checkSimilarity("naive", "naïve").isCorrect).toBe(true);
     });
 
+    test("ignores punctuation (period, comma, etc.)", () => {
+      expect(checkSimilarity("Hello world", "Hello, world!").isCorrect).toBe(true);
+      expect(checkSimilarity("Hello, world!", "Hello world").isCorrect).toBe(true);
+      expect(checkSimilarity("Yes", "Yes!").similarity).toBe(1);
+      expect(checkSimilarity("Como estas?", "¿Cómo estás?").isCorrect).toBe(true);
+    });
+
     test("trims whitespace", () => {
       const r = checkSimilarity("  hello  ", "hello");
       expect(r.isCorrect).toBe(true);

@@ -2,7 +2,7 @@
  * String similarity checking with normalization and character-level diff.
  *
  * Normalization: lowercases, strips diacritics (ä→a, é→e, ñ→n, …),
- * and treats ß as "ss" — so "Straße" ≈ "strasse".
+ * strips punctuation (.,;:!?¿¡), and treats ß as "ss" — so "Straße" ≈ "strasse".
  *
  * The correctedMarkdown bolds every character in the correct answer
  * that the user got wrong or missed.
@@ -42,7 +42,8 @@ function normalizeWithMapping(s: string): NormalizedMapping {
       const base = s[i]
         .toLowerCase()
         .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "");
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[.,;:!?¿¡]/g, "");
       for (let k = 0; k < base.length; k++) {
         normalized += base[k];
         origIndices.push(i);
@@ -58,7 +59,8 @@ function normalize(s: string): string {
     .toLowerCase()
     .replace(/ß/g, "ss")
     .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "");
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[.,;:!?¿¡]/g, "");
 }
 
 // ---------------------------------------------------------------------------

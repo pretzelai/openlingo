@@ -4,7 +4,7 @@ import { getNativeLanguage } from "@/lib/actions/profile";
 import { requireSession } from "@/lib/auth-server";
 import { SettingsView } from "./settings-view";
 
-export const metadata = { title: "Settings — LingoClaw" };
+export const metadata = { title: "Settings — ClaudeLingo" };
 
 export default async function SettingsPage() {
   const session = await requireSession();

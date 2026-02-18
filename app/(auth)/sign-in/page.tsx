@@ -1,6 +1,6 @@
 import { SignInForm } from "@/components/auth/sign-in-form";
 
-export const metadata = { title: "Sign In — LingoClaw" };
+export const metadata = { title: "Sign In — ClaudeLingo" };
 
 export default function SignInPage() {
   return (

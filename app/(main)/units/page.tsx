@@ -13,7 +13,7 @@ import { CourseBrowser } from "./course-browser";
 const NEW_UNIT_PROMPT =
   "I want to create a new personalised unit, ask me all relevant questions so you can make it";
 
-export const metadata = { title: "Learn — LingoClaw" };
+export const metadata = { title: "Learn — ClaudeLingo" };
 
 export default async function LearnPage() {
   const session = await auth.api.getSession({ headers: await headers() });

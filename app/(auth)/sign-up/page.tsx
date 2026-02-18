@@ -1,6 +1,6 @@
 import { SignUpForm } from "@/components/auth/sign-up-form";
 
-export const metadata = { title: "Sign Up — LingoClaw" };
+export const metadata = { title: "Sign Up — ClaudeLingo" };
 
 export default function SignUpPage() {
   return (

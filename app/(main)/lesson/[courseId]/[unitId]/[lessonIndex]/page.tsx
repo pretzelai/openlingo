@@ -9,11 +9,11 @@ interface PageProps {
 export async function generateMetadata({ params }: PageProps) {
   const { courseId, unitId, lessonIndex } = await params;
   const course = await getCourseWithContent(courseId);
-  if (!course) return { title: "Lesson — LingoClaw" };
+  if (!course) return { title: "Lesson — ClaudeLingo" };
 
   const unit = course.units.find((u) => u.id === unitId);
   const lesson = unit?.lessons[parseInt(lessonIndex)];
-  return { title: `${lesson?.title ?? "Lesson"} — LingoClaw` };
+  return { title: `${lesson?.title ?? "Lesson"} — ClaudeLingo` };
 }
 
 export default async function LessonPage({ params }: PageProps) {

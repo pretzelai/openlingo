@@ -4,7 +4,7 @@ import { loadLanguageRaw } from "@/lib/words";
 import { WordExplorer } from "./word-explorer";
 import { redirect } from "next/navigation";
 
-export const metadata = { title: "Words — LingoClaw" };
+export const metadata = { title: "Words — ClaudeLingo" };
 
 export default async function WordsPage() {
   const language = await getTargetLanguage();
@@ -18,7 +18,12 @@ export default async function WordsPage() {
 
   return (
     <div className="mx-auto max-w-2xl">
-      <WordExplorer words={words} srsCards={srsCards} srsStats={stats} language={language} />
+      <WordExplorer
+        words={words}
+        srsCards={srsCards}
+        srsStats={stats}
+        language={language}
+      />
     </div>
   );
 }

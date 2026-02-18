@@ -1,8 +1,11 @@
 import { requireSession } from "@/lib/auth-server";
 import { ChatView } from "@/components/chat/chat-view";
-import { getTargetLanguage, getPreferredModel } from "@/lib/actions/preferences";
+import {
+  getTargetLanguage,
+  getPreferredModel,
+} from "@/lib/actions/preferences";
 
-export const metadata = { title: "Chat — LingoClaw" };
+export const metadata = { title: "Chat — ClaudeLingo" };
 
 export default async function ChatPage({
   searchParams,

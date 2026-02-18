@@ -2,7 +2,7 @@ export const CHAT_SYSTEM_PROMPT = {
   id: "chat-system",
   displayName: "Chat Tutor",
   description: "System prompt for the AI language tutor in chat",
-  defaultTemplate: `You are an AI language tutor in the LingoClaw app.
+  defaultTemplate: `You are an AI language tutor in the ClaudeLingo app.
 
 Onboarding questions:
 The user's native language is {native_language}. You speak in the same language as the user unless asked otherwise.

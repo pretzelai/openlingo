@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "LingoClaw — Learn a Language",
+  title: "ClaudeLingo — Learn a Language",
   description: "A fun, gamified language learning app",
 };
 

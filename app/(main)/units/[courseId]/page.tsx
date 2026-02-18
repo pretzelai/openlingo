@@ -12,8 +12,8 @@ interface PageProps {
 export async function generateMetadata({ params }: PageProps) {
   const { courseId } = await params;
   const course = await getCourseWithContent(courseId);
-  if (!course) return { title: "Course — LingoClaw" };
-  return { title: `${course.title} — LingoClaw` };
+  if (!course) return { title: "Course — ClaudeLingo" };
+  return { title: `${course.title} — ClaudeLingo` };
 }
 
 export default async function CourseDetailPage({ params }: PageProps) {
@@ -26,7 +26,9 @@ export default async function CourseDetailPage({ params }: PageProps) {
   return (
     <div className="mx-auto max-w-lg">
       <div className="mb-6 text-center">
-        <h1 className="text-2xl font-black text-lingo-text"><HoverableText text={course.title} language={course.targetLanguage} /></h1>
+        <h1 className="text-2xl font-black text-lingo-text">
+          <HoverableText text={course.title} language={course.targetLanguage} />
+        </h1>
         <p className="text-sm text-lingo-text-light mt-1">
           {getLanguageName(course.sourceLanguage)} →{" "}
           {getLanguageName(course.targetLanguage)}

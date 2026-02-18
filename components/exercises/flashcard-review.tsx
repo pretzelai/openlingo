@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Markdown from "react-markdown";
+import remarkBreaks from "remark-breaks";
 import { reviewCard } from "@/lib/actions/srs";
 import type { FlashcardReviewExercise } from "@/lib/content/types";
 import type { Quality } from "@/lib/srs";
@@ -55,7 +56,7 @@ export function FlashcardReview({
         }`}
       >
         <div className="prose prose-lg font-black text-lingo-text [&>p]:m-0">
-          <Markdown breaks>{exercise.front.replace(/\\n/g, "\n")}</Markdown>
+          <Markdown remarkPlugins={[remarkBreaks]}>{exercise.front.replace(/\\n/g, "\n")}</Markdown>
         </div>
 
         {!revealed && (
@@ -67,7 +68,7 @@ export function FlashcardReview({
         {revealed && (
           <div className="mt-4 pt-4 border-t-2 border-lingo-border">
             <div className="prose font-bold text-lingo-text-light [&>p]:m-0">
-              <Markdown breaks>{exercise.back.replace(/\\n/g, "\n")}</Markdown>
+              <Markdown remarkPlugins={[remarkBreaks]}>{exercise.back.replace(/\\n/g, "\n")}</Markdown>
             </div>
           </div>
         )}

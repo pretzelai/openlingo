@@ -156,7 +156,13 @@ export function createTools(userId: string, language?: string) {
           .describe("CEFR difficulty level"),
       }),
       execute: async ({ markdown, level }) => {
-        const lang = language ?? "de";
+        // Read fresh from DB — the user may have switched languages mid-conversation
+        const [prefRow] = await db
+          .select({ targetLanguage: userPreferences.targetLanguage })
+          .from(userPreferences)
+          .where(eq(userPreferences.userId, userId))
+          .limit(1);
+        const lang = prefRow?.targetLanguage ?? language ?? "de";
 
         const cleaned = markdown
           .replace(/^```(?:markdown|md)?\n/m, "")

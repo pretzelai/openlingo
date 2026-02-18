@@ -9,16 +9,20 @@ import { ChatMessage } from "./chat-message";
 import { ThinkingMessage } from "./thinking-message";
 import { createConversation, saveMessages } from "@/lib/actions/chat";
 import { recordChatExerciseResult } from "@/lib/actions/srs";
+import { updatePreferredModel } from "@/lib/actions/preferences";
+import { AVAILABLE_MODELS } from "@/lib/ai/models";
 import type { Exercise } from "@/lib/content/types";
 
 interface ChatViewProps {
   language: string;
+  preferredModel: string;
   conversationId?: string;
   initialMessages?: UIMessage[];
 }
 
 export function ChatView({
   language,
+  preferredModel,
   conversationId,
   initialMessages,
 }: ChatViewProps) {
@@ -27,6 +31,7 @@ export function ChatView({
   const endRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const [input, setInput] = useState("");
+  const [model, setModel] = useState(preferredModel);
   const [isAtBottom, setIsAtBottom] = useState(true);
   const [completedExercises, setCompletedExercises] = useState<
     Record<string, { correct: boolean; answer: string }>
@@ -38,8 +43,8 @@ export function ChatView({
   const convIdRef = useRef<string | null>(conversationId ?? null);
 
   const transport = useMemo(
-    () => new DefaultChatTransport({ body: { language } }),
-    [language],
+    () => new DefaultChatTransport({ body: { language, model } }),
+    [language, model],
   );
 
   const { messages, sendMessage, status } = useChat({
@@ -213,6 +218,23 @@ export function ChatView({
 
       {/* Input area */}
       <div className="sticky bottom-0 z-10 bg-lingo-bg px-2 pb-3 pt-1 md:px-4 md:pb-4">
+        <div className="mb-1.5 flex justify-end">
+          <select
+            value={model}
+            onChange={(e) => {
+              const value = e.target.value;
+              setModel(value);
+              updatePreferredModel(value);
+            }}
+            className="rounded-lg border border-lingo-border bg-white px-2 py-1 text-xs text-lingo-text-light"
+          >
+            {AVAILABLE_MODELS.map((m) => (
+              <option key={m.id} value={m.id}>
+                {m.label}
+              </option>
+            ))}
+          </select>
+        </div>
         <form
           onSubmit={(e) => {
             e.preventDefault();

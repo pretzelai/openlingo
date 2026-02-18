@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { generateText } from "ai";
-import { getUserModel } from "@/lib/ai";
+import { getModel } from "@/lib/ai";
 import { requireSession } from "@/lib/auth-server";
 
 export async function POST(request: NextRequest) {
-  const session = await requireSession();
+  await requireSession();
   const body = await request.json();
   const { prompt } = body;
 
@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const { text } = await generateText({
-      model: await getUserModel(session.user.id),
+      model: getModel("gemini-2.5-flash-lite"),
       prompt,
     });
 

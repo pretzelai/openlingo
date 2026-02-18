@@ -1,5 +1,5 @@
 import { streamText, convertToModelMessages, stepCountIs } from "ai";
-import { getUserModel, createTools } from "@/lib/ai";
+import { getModel, AVAILABLE_MODELS, createTools } from "@/lib/ai";
 import { requireSession } from "@/lib/auth-server";
 import { langCodeToName, interpolateTemplate, SRS_REFERENCE } from "@/lib/prompts";
 import { getUserPromptTemplate } from "@/lib/actions/prompts";
@@ -9,11 +9,16 @@ import { db } from "@/lib/db";
 import { userMemory } from "@/lib/db/schema";
 import { and, eq } from "drizzle-orm";
 
+const DEFAULT_CHAT_MODEL = "gemini-3-flash-preview";
+
 export async function POST(req: Request) {
   const session = await requireSession();
-  const { messages, language: lang } = await req.json();
+  const { messages, language: lang, model: requestedModel } = await req.json();
 
   const language: string = lang || (await getTargetLanguage(session.user.id));
+  const modelId = AVAILABLE_MODELS.some((m) => m.id === requestedModel)
+    ? requestedModel
+    : DEFAULT_CHAT_MODEL;
   const langName = langCodeToName[language] || language;
   const tools = createTools(session.user.id, language);
 
@@ -43,7 +48,7 @@ export async function POST(req: Request) {
   });
 
   const result = streamText({
-    model: await getUserModel(session.user.id),
+    model: getModel(modelId),
     system: systemPrompt,
     messages: await convertToModelMessages(messages),
     tools,

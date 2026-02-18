@@ -15,6 +15,6 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const result = await lookupWord(word, language, session.user.id);
+  const result = await lookupWord(word, language);
   return NextResponse.json(result);
 }

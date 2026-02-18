@@ -4,16 +4,14 @@ import { StreakFlame } from "@/components/gamification/streak-flame";
 import { AchievementCard } from "@/components/gamification/achievement-card";
 import { NativeLanguagePicker } from "./native-language-picker";
 import { TargetLanguagePicker } from "./target-language-picker";
-import { ModelPicker } from "./model-picker";
-import { getTargetLanguage, getPreferredModel } from "@/lib/actions/preferences";
+import { getTargetLanguage } from "@/lib/actions/preferences";
 
 export const metadata = { title: "Profile — LingoClaw" };
 
 export default async function ProfilePage() {
-  const [{ user, stats, achievements }, targetLanguage, preferredModel] = await Promise.all([
+  const [{ user, stats, achievements }, targetLanguage] = await Promise.all([
     getProfileData(),
     getTargetLanguage(),
-    getPreferredModel(),
   ]);
 
   return (
@@ -33,7 +31,6 @@ export default async function ProfilePage() {
         <h3 className="font-bold text-lingo-text mb-3">Settings</h3>
         <TargetLanguagePicker currentLanguage={targetLanguage} />
         <NativeLanguagePicker currentLanguage={stats.nativeLanguage ?? null} />
-        <ModelPicker currentModel={preferredModel} />
       </Card>
 
       {/* Stats Grid */}

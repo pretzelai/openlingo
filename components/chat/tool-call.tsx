@@ -8,6 +8,7 @@ const TOOL_LABELS: Record<string, string> = {
   addMemory: "Saving to memory",
   rewriteAllMemory: "Rewriting memory",
   createUnit: "Creating learning unit",
+  readArticle: "Reading article",
 };
 
 const STATE_LABELS: Record<string, string> = {

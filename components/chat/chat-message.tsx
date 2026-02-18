@@ -3,6 +3,7 @@
 import type { UIMessage } from "@ai-sdk/react";
 import { ChatExercise } from "./chat-exercise";
 import { ChatUnitCard } from "./unit-card";
+import { ArticleCard } from "./article-card";
 import { ToolCall } from "./tool-call";
 import { HoverableMarkdown } from "@/components/word/hoverable-markdown";
 
@@ -137,6 +138,22 @@ export function ChatMessage({
                       lessonCount={output.lessonCount as number}
                       exerciseCount={output.exerciseCount as number}
                       lessonTitles={output.lessonTitles as string[]}
+                    />
+                  );
+                }
+              }
+
+              // Article translation tool: render article card
+              if (toolName === "readArticle") {
+                const output = toolPart.output as Record<string, unknown> | undefined;
+                if (output?.success) {
+                  return (
+                    <ArticleCard
+                      key={toolPart.toolCallId}
+                      articleId={output.articleId as string}
+                      initialStatus={output.status as string}
+                      initialTitle={output.title as string | undefined}
+                      url={(toolPart.input as Record<string, unknown>)?.url as string || ""}
                     />
                   );
                 }

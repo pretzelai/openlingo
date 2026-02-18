@@ -351,6 +351,30 @@ export const chatConversation = pgTable("chat_conversation", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
+// ─── Articles (translated reading) ───
+
+export const article = pgTable("article", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  sourceUrl: text("source_url").notNull(),
+  title: text("title"),
+  sourceLanguage: text("source_language"),
+  targetLanguage: text("target_language").notNull(),
+  cefrLevel: text("cefr_level").notNull(),
+  originalContent: text("original_content"),
+  translatedContent: text("translated_content"),
+  status: text("status").notNull().default("pending"),
+  translationProgress: integer("translation_progress").notNull().default(0),
+  totalParagraphs: integer("total_paragraphs").notNull().default(0),
+  errorMessage: text("error_message"),
+  wordCount: integer("word_count"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 // ─── Relations ───
 
 export const courseRelations = relations(course, ({ many }) => ({

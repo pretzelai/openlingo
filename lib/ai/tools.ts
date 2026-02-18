@@ -11,16 +11,18 @@ import {
   userPreferences,
   dictionaryWord,
   srsCard,
+  article,
 } from "@/lib/db/schema";
 import { and, eq, gte, lte, sql } from "drizzle-orm";
 import { parseExercise } from "@/lib/content/parser";
 import { langCodeToName } from "@/lib/prompts";
 import { supportedLanguages } from "@/lib/languages";
 import { parseUnitFromMarkdown } from "@/lib/content/loader";
+import { processTranslation } from "@/lib/article/process";
 
 const ALLOWED_TABLE = /\bsrs_card\b/i;
 const FORBIDDEN_TABLES =
-  /\b(user|session|account|verification|user_stats|user_preferences|user_course_enrollment|lesson_completion|exercise_attempt|achievement_definition|user_achievement|daily_activity|dictionary_word|word_cache|user_memory|course|unit|audio_cache|chat_conversation)\b/i;
+  /\b(user|session|account|verification|user_stats|user_preferences|user_course_enrollment|lesson_completion|exercise_attempt|achievement_definition|user_achievement|daily_activity|dictionary_word|word_cache|user_memory|course|unit|audio_cache|chat_conversation|article)\b/i;
 
 export function createTools(userId: string, language?: string) {
   return {
@@ -364,6 +366,89 @@ export function createTools(userId: string, language?: string) {
           language: langCode,
           languageName: name,
           message: `Switched target language to ${name}. All pages will now use ${name}.`,
+        };
+      },
+    }),
+
+    readArticle: tool({
+      description:
+        "Read a web article and translate it to the user's target language at a CEFR level. Creates a saved article the user can read later. Returns immediately with article ID — translation happens in background.",
+      inputSchema: z.object({
+        url: z.string().url().describe("The URL of the article to translate"),
+        cefrLevel: z
+          .enum(["A1", "A2", "B1", "B2", "C1", "C2"])
+          .default("B1")
+          .describe("CEFR difficulty level for the translation"),
+      }),
+      execute: async ({ url, cefrLevel }) => {
+        const lang = language ?? "de";
+        const langName = langCodeToName[lang] || lang;
+
+        // Check for existing article with same URL + language + level
+        const [existing] = await db
+          .select()
+          .from(article)
+          .where(
+            and(
+              eq(article.userId, userId),
+              eq(article.sourceUrl, url),
+              eq(article.targetLanguage, langName),
+              eq(article.cefrLevel, cefrLevel),
+            ),
+          )
+          .limit(1);
+
+        if (existing?.status === "completed") {
+          return {
+            success: true,
+            articleId: existing.id,
+            status: "completed",
+            title: existing.title,
+            url: `/read/${existing.id}`,
+            message: "This article was already translated!",
+          };
+        }
+
+        if (
+          existing &&
+          (existing.status === "fetching" || existing.status === "translating")
+        ) {
+          return {
+            success: true,
+            articleId: existing.id,
+            status: existing.status,
+            url: `/read/${existing.id}`,
+            message: "This article is already being translated.",
+          };
+        }
+
+        // Create new article record
+        const articleId = crypto.randomUUID();
+        await db.insert(article).values({
+          id: articleId,
+          userId,
+          sourceUrl: url,
+          targetLanguage: langName,
+          cefrLevel,
+          status: "fetching",
+        });
+
+        // Start background translation (fire-and-forget)
+        processTranslation(articleId, url, langName, cefrLevel).catch(
+          (error) => {
+            console.error(
+              `[${articleId}] Background processing error:`,
+              error,
+            );
+          },
+        );
+
+        return {
+          success: true,
+          articleId,
+          status: "fetching",
+          url: `/read/${articleId}`,
+          message: `Started translating article to ${langName} at ${cefrLevel} level. The user can check progress at /read/${articleId}.`,
         };
       },
     }),

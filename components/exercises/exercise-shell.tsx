@@ -99,14 +99,14 @@ export function ExerciseShell({
               <span className="font-bold text-lingo-red">Incorrect</span>
             </div>
             {correctAnswer && (
-              <p className="mt-1 text-sm text-lingo-text">
+              <div className="mt-1 text-sm text-lingo-text">
                 Correct answer:{" "}
                 {correctedMarkdown ? (
                   <Markdown>{correctedMarkdown}</Markdown>
                 ) : (
                   <strong>{language ? <HoverableText text={correctAnswer} language={language} /> : correctAnswer}</strong>
                 )}
-              </p>
+              </div>
             )}
           </div>
           <Button variant="danger" onClick={onContinue} className="w-full">

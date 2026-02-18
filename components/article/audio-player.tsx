@@ -41,10 +41,16 @@ export function AudioPlayer({
     };
     audio.addEventListener("timeupdate", updateTime);
     audio.addEventListener("loadedmetadata", updateDuration);
+    audio.addEventListener("durationchange", updateDuration);
     audio.addEventListener("ended", handleEnded);
+    // If metadata is already loaded, grab duration immediately
+    if (audio.duration && isFinite(audio.duration)) {
+      setDuration(audio.duration);
+    }
     return () => {
       audio.removeEventListener("timeupdate", updateTime);
       audio.removeEventListener("loadedmetadata", updateDuration);
+      audio.removeEventListener("durationchange", updateDuration);
       audio.removeEventListener("ended", handleEnded);
     };
   }, [onTimeUpdate, onPlayingChange]);
@@ -128,7 +134,15 @@ export function AudioPlayer({
         <div className="flex items-center gap-2">
           {hasTimestamps && onReadingModeClick ? (
             <button
-              onClick={onReadingModeClick}
+              onClick={() => {
+                const audio = audioRef.current;
+                if (audio && isPlaying) {
+                  audio.pause();
+                  setIsPlaying(false);
+                  onPlayingChange?.(false);
+                }
+                onReadingModeClick?.();
+              }}
               className="p-2 text-lingo-text-light hover:text-lingo-blue transition-colors"
               title="Reading Mode"
             >

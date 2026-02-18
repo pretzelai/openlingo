@@ -1,0 +1,16 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: lingo-postgres
+    restart: unless-stopped
+    ports:
+      - "5437:5432"
+    environment:
+      POSTGRES_USER: lingo
+      POSTGRES_PASSWORD: lingo_local_dev
+      POSTGRES_DB: lingo
+    volumes:
+      - lingo_pgdata:/var/lib/postgresql/data
+
+volumes:
+  lingo_pgdata:

@@ -1,5 +1,5 @@
 {
-  "name": "lingowithpretzel",
+  "name": "pretzelai-lingo",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -13,7 +13,9 @@
     "db:studio": "bun --env-file=.env.local drizzle-kit studio",
     "db:seed": "bun run scripts/seed.ts",
     "db:nuke": "bun run scripts/nuke-db.ts && bun --env-file=.env.local drizzle-kit push --force",
-    "db:reset": "bun run db:nuke && bun run db:seed"
+    "db:reset": "bun run db:nuke && bun run db:seed",
+    "db:up": "docker compose up -d",
+    "db:down": "docker compose down"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^3.0.44",

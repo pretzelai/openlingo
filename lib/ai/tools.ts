@@ -33,10 +33,12 @@ export function createTools(userId: string, language?: string) {
           .select()
           .from(userMemory)
           .where(
-            and(eq(userMemory.userId, userId), eq(userMemory.key, "memory"))
+            and(eq(userMemory.userId, userId), eq(userMemory.key, "memory")),
           )
           .limit(1);
-        return row ? { found: true, value: row.value } : { found: false, value: "" };
+        return row
+          ? { found: true, value: row.value }
+          : { found: false, value: "" };
       },
     }),
 
@@ -51,7 +53,7 @@ export function createTools(userId: string, language?: string) {
           .select()
           .from(userMemory)
           .where(
-            and(eq(userMemory.userId, userId), eq(userMemory.key, "memory"))
+            and(eq(userMemory.userId, userId), eq(userMemory.key, "memory")),
           )
           .limit(1);
 
@@ -99,7 +101,9 @@ export function createTools(userId: string, language?: string) {
           return { error: "Query must reference the srs_card table." };
         }
         if (FORBIDDEN_TABLES.test(query)) {
-          return { error: "Access denied: only the srs_card table is accessible." };
+          return {
+            error: "Access denied: only the srs_card table is accessible.",
+          };
         }
 
         try {
@@ -119,7 +123,11 @@ export function createTools(userId: string, language?: string) {
       description:
         "Present an interactive exercise to the user. Pass the exercise as a markdown block (starting with the [type] tag) using the exercise syntax from the system prompt. The tool parses and renders it as an interactive widget. Present ONE exercise at a time and wait for the user to complete it before presenting another.",
       inputSchema: z.object({
-        markdown: z.string().describe("Exercise markdown block starting with [type-tag], e.g. '[multiple-choice]\\ntext: \"What does gato mean?\"\\n- \"Cat\" (correct)\\n- \"Dog\"'"),
+        markdown: z
+          .string()
+          .describe(
+            'Exercise markdown block starting with [type-tag], e.g. \'[multiple-choice]\\ntext: "What does gato mean?"\\n- "Cat" (correct)\\n- "Dog"\'',
+          ),
       }),
       execute: async ({ markdown }) => {
         try {
@@ -138,7 +146,7 @@ export function createTools(userId: string, language?: string) {
         markdown: z
           .string()
           .describe(
-            "Complete unit markdown with YAML frontmatter (title, description, icon, color) and ## Lesson sections containing exercises"
+            "Complete unit markdown with YAML frontmatter (title, description, icon, color) and ## Lesson sections containing exercises",
           ),
         level: z
           .enum(["A1", "A2", "B1", "B2", "C1", "C2"])
@@ -192,14 +200,11 @@ export function createTools(userId: string, language?: string) {
           .values({ userId, courseId })
           .onConflictDoNothing();
 
-        await db
-          .insert(userStats)
-          .values({ userId })
-          .onConflictDoNothing();
+        await db.insert(userStats).values({ userId }).onConflictDoNothing();
 
         const exerciseCount = parsedUnit.lessons.reduce(
           (sum, l) => sum + l.exercises.length,
-          0
+          0,
         );
 
         return {
@@ -222,9 +227,7 @@ export function createTools(userId: string, language?: string) {
       description:
         "Bulk-add words from the dictionary to the user's SRS deck. Filters by language (required), and optionally by CEFR level and/or word frequency range. Only adds words marked as useful for flashcards that aren't already in the user's deck.",
       inputSchema: z.object({
-        language: z
-          .string()
-          .describe("Language code, e.g. 'de', 'fr', 'es'"),
+        language: z.string().describe("Language code, e.g. 'de', 'fr', 'es'"),
         cefrLevel: z
           .enum(["A1", "A2", "B1", "B2", "C1", "C2"])
           .optional()
@@ -247,7 +250,13 @@ export function createTools(userId: string, language?: string) {
           .default(500)
           .describe("Max words to add (default 500, max 5000)"),
       }),
-      execute: async ({ language: lang, cefrLevel, minFrequency, maxFrequency, limit: maxWords }) => {
+      execute: async ({
+        language: lang,
+        cefrLevel,
+        minFrequency,
+        maxFrequency,
+        limit: maxWords,
+      }) => {
         const conditions = [
           eq(dictionaryWord.language, lang),
           eq(dictionaryWord.usefulForFlashcard, true),
@@ -279,7 +288,11 @@ export function createTools(userId: string, language?: string) {
           .limit(maxWords);
 
         if (words.length === 0) {
-          return { success: true, added: 0, message: "No matching words found in dictionary." };
+          return {
+            success: true,
+            added: 0,
+            message: "No matching words found in dictionary.",
+          };
         }
 
         const BATCH_SIZE = 500;
@@ -300,7 +313,7 @@ export function createTools(userId: string, language?: string) {
                 exampleEnglish: w.exampleEnglish,
                 status: "new" as const,
                 nextReviewAt: null,
-              }))
+              })),
             )
             .onConflictDoNothing();
         }
@@ -320,7 +333,7 @@ export function createTools(userId: string, language?: string) {
         language: z
           .string()
           .describe(
-            "Language code (e.g. 'fr', 'es', 'de', 'it', 'pt', 'ru', 'ar', 'hi', 'ko', 'zh', 'ja')"
+            "Language code (e.g. 'fr', 'es', 'de', 'it', 'pt', 'ru', 'ar', 'hi', 'ko', 'zh', 'ja')",
           ),
       }),
       execute: async ({ language: langCode }) => {

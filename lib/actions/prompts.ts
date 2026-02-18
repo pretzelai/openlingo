@@ -24,12 +24,12 @@ export async function getPrompts(): Promise<PromptWithOverride[]> {
     .where(
       and(
         eq(userMemory.userId, session.user.id),
-        like(userMemory.key, "prompt:%")
-      )
+        like(userMemory.key, "prompt:%"),
+      ),
     );
 
   const overrideMap = new Map(
-    overrides.map((o) => [o.key.replace("prompt:", ""), o.value])
+    overrides.map((o) => [o.key.replace("prompt:", ""), o.value]),
   );
 
   return PROMPT_DEFINITIONS.map((def) => ({
@@ -66,8 +66,8 @@ export async function resetPrompt(id: string) {
     .where(
       and(
         eq(userMemory.userId, session.user.id),
-        eq(userMemory.key, `prompt:${id}`)
-      )
+        eq(userMemory.key, `prompt:${id}`),
+      ),
     );
 }
 
@@ -78,7 +78,7 @@ export async function getMemory(): Promise<string> {
     .select()
     .from(userMemory)
     .where(
-      and(eq(userMemory.userId, session.user.id), eq(userMemory.key, "memory"))
+      and(eq(userMemory.userId, session.user.id), eq(userMemory.key, "memory")),
     )
     .limit(1);
 
@@ -100,7 +100,7 @@ export async function saveMemory(value: string) {
 /** Non-action helper: get user's prompt template with fallback to default */
 export async function getUserPromptTemplate(
   userId: string,
-  promptId: string
+  promptId: string,
 ): Promise<string> {
   const def = PROMPTS_BY_ID[promptId];
   if (!def) throw new Error(`Unknown prompt ID: ${promptId}`);
@@ -111,8 +111,8 @@ export async function getUserPromptTemplate(
     .where(
       and(
         eq(userMemory.userId, userId),
-        eq(userMemory.key, `prompt:${promptId}`)
-      )
+        eq(userMemory.key, `prompt:${promptId}`),
+      ),
     )
     .limit(1);
 

@@ -4,13 +4,17 @@ import { db } from "@/lib/db";
 import { audioCache } from "@/lib/db/schema";
 import { and, eq } from "drizzle-orm";
 import { uploadAudio, getPublicUrl } from "@/lib/r2";
-import { getDefaultTemplate, interpolateTemplate, langCodeToName } from "@/lib/prompts";
+import {
+  getDefaultTemplate,
+  interpolateTemplate,
+  langCodeToName,
+} from "@/lib/prompts";
 
 const openai = new OpenAI();
 
 export async function generateSpeech(
   text: string,
-  language: string
+  language: string,
 ): Promise<string> {
   const normalized = text.toLowerCase();
 
@@ -19,7 +23,7 @@ export async function generateSpeech(
     .select()
     .from(audioCache)
     .where(
-      and(eq(audioCache.text, normalized), eq(audioCache.language, language))
+      and(eq(audioCache.text, normalized), eq(audioCache.language, language)),
     )
     .limit(1);
 

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { generateText } from "ai";
-import { getModel } from "@/lib/ai";
+import { getModel } from "@/lib/ai/models";
 import { requireSession } from "@/lib/auth-server";
 
 export async function POST(request: NextRequest) {

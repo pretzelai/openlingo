@@ -6,6 +6,7 @@ import { userStats, userPreferences } from "./db/schema";
 import { DEFAULT_NATIVE_LANGUAGE } from "./constants";
 
 export const auth = betterAuth({
+  baseURL: process.env.BETTER_AUTH_BASE_URL,
   database: drizzleAdapter(db, {
     provider: "pg",
     schema,

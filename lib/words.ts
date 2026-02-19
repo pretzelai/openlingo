@@ -1,6 +1,6 @@
 import { generateObject } from "ai";
 import { z } from "zod";
-import { getModel } from "@/lib/ai";
+import { getModel } from "@/lib/ai/models";
 import { db } from "@/lib/db";
 import { dictionaryWord, wordCache } from "@/lib/db/schema";
 import { and, eq } from "drizzle-orm";

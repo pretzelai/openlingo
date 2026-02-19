@@ -29,13 +29,13 @@ color: "#4CAF50"
 
 // Exercise 2: Reinforce with fill-in-the-blank
 [fill-in-the-blank]
-sentence: "Steve Jobs nace en una \_\_\_ de California."
+sentence: "Steve Jobs nace en una ___ de California."
 blank: "ciudad"
 srsWords: "ciudad"
 
 // Exercise 3: Multiple choice to reinforce
 [multiple-choice]
-text: "Steve es el \_\_\_ adoptado de Paul y Clara Jobs."
+text: "Steve es el ___ adoptado de Paul y Clara Jobs."
 choices:
 
 - "hijo" (correct)
@@ -66,7 +66,7 @@ color: "#FF9800"
 
 // Exercise 2: Fill in the blank
 [fill-in-the-blank]
-sentence: "Steve y su \_\_\_ Wozniak crean Apple en un garaje."
+sentence: "Steve y su ___ Wozniak crean Apple en un garaje."
 blank: "amigo"
 srsWords: "amigo"
 
@@ -99,7 +99,7 @@ color: "#2196F3"
 
 // Exercise 2: Multiple choice
 [multiple-choice]
-text: "Apple vende computadoras en todo el \_\_\_."
+text: "Apple vende computadoras en todo el ___."
 choices:
 
 - "mundo" (correct)
@@ -111,7 +111,7 @@ choices:
 
 // Exercise 3: Fill in the blank
 [fill-in-the-blank]
-sentence: "Apple es una \_\_\_ muy grande. Steve gana mucho dinero."
+sentence: "Apple es una ___ muy grande. Steve gana mucho dinero."
 blank: "empresa"
 srsWords: "empresa"
 
@@ -144,7 +144,7 @@ srsWords: "salir" "triste"
 
 // Exercise 3: Multiple choice
 [multiple-choice]
-text: "Steve crea una empresa nueva de películas. Después \_\_\_ a Apple."
+text: "Steve crea una empresa nueva de películas. Después ___ a Apple."
 choices:
 
 - "vuelve" (correct)
@@ -175,13 +175,13 @@ color: "#607D8B"
 
 // Exercise 2: Fill in the blank
 [fill-in-the-blank]
-sentence: "Steve está muy \_\_\_. No puede trabajar más."
+sentence: "Steve está muy ___. No puede trabajar más."
 blank: "enfermo"
 srsWords: "enfermo"
 
 // Exercise 3: Multiple choice
 [multiple-choice]
-text: "Steve Jobs muere en 2011. El mundo lo recuerda como un hombre \_\_\_."
+text: "Steve Jobs muere en 2011. El mundo lo recuerda como un hombre ___."
 choices:
 
 - "grande" (correct)

@@ -28,7 +28,7 @@ color: "#4CAF50"
   random_order: true
 
 [multiple-choice]
-text: "Steve Jobs war ein \_\_\_. Seine Familie hat in einer Stadt in Kalifornien gelebt."
+text: "Steve Jobs war ein ___. Seine Familie hat in einer Stadt in Kalifornien gelebt."
 choices:
 
 - "Kind" (correct)
@@ -39,7 +39,7 @@ choices:
   srsWords: "Kind"
 
 [fill-in-the-blank]
-sentence: "Steve Jobs war in San Francisco geboren. Seine \_\_\_ hat ihn adoptiert."
+sentence: "Steve Jobs war in San Francisco geboren. Seine ___ hat ihn adoptiert."
 blank: "Familie"
 srsWords: "Familie"
 
@@ -62,12 +62,12 @@ color: "#FF9800"
   random_order: true
 
 [fill-in-the-blank]
-sentence: "Steve war jung und hat gern mit dem \_\_\_ gespielt."
+sentence: "Steve war jung und hat gern mit dem ___ gespielt."
 blank: "Computer"
 srsWords: "Computer"
 
 [multiple-choice]
-text: "Steve hat einen Freund in der Schule gefunden. Er und sein \_\_\_ haben Technik geliebt."
+text: "Steve hat einen Freund in der Schule gefunden. Er und sein ___ haben Technik geliebt."
 choices:
 
 - "Freund" (correct)
@@ -96,7 +96,7 @@ color: "#2196F3"
   random_order: true
 
 [multiple-choice]
-text: "Steve und sein Freund haben eine \_\_\_ gegründet. Der Name war Apple."
+text: "Steve und sein Freund haben eine ___ gegründet. Der Name war Apple."
 choices:
 
 - "Firma" (correct)
@@ -131,12 +131,12 @@ color: "#9C27B0"
   random_order: true
 
 [fill-in-the-blank]
-sentence: "Steve war sehr \_\_\_. Er hat seine Firma verloren."
+sentence: "Steve war sehr ___. Er hat seine Firma verloren."
 blank: "traurig"
 srsWords: "traurig"
 
 [multiple-choice]
-text: "Aber Steve ist zurückgekommen! Er hat \_\_\_ Ideen für Apple gehabt."
+text: "Aber Steve ist zurückgekommen! Er hat ___ Ideen für Apple gehabt."
 choices:
 
 - "neue" (correct)
@@ -165,12 +165,12 @@ color: "#607D8B"
   random_order: true
 
 [fill-in-the-blank]
-sentence: "Steve Jobs war \_\_\_. Er hatte Krebs."
+sentence: "Steve Jobs war ___. Er hatte Krebs."
 blank: "krank"
 srsWords: "krank"
 
 [multiple-choice]
-text: "Steve Jobs ist 2011 gestorben. Aber die \_\_\_ an ihn lebt weiter. Er war sehr wichtig für die Welt."
+text: "Steve Jobs ist 2011 gestorben. Aber die ___ an ihn lebt weiter. Er war sehr wichtig für die Welt."
 choices:
 
 - "Erinnerung" (correct)

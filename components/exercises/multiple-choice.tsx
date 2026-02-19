@@ -33,8 +33,10 @@ export function MultipleChoice({ exercise, onResult, onContinue, language, autop
   const { status, checkAnswer } = useExercise();
   const { play, stop, loading: audioLoading } = useAudio();
 
+  const ttsText = exercise.text.replace("___", exercise.choices[exercise.correctIndex]);
+
   useEffect(() => {
-    if (autoplayAudio && !exercise.noAudio?.includes("text")) play(exercise.text, language);
+    if (autoplayAudio && !exercise.noAudio?.includes("text")) play(ttsText, language);
     return stop;
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -88,7 +90,7 @@ export function MultipleChoice({ exercise, onResult, onContinue, language, autop
           <HoverableText text={exercise.text} language={language} noAudio={exercise.noAudio?.includes("text")} />
         </h2>
         {!exercise.noAudio?.includes("text") && (
-          <ReplayButton onPlay={() => play(exercise.text, language)} />
+          <ReplayButton onPlay={() => play(ttsText, language)} />
         )}
       </div>
       <AudioSpinner loading={audioLoading} />

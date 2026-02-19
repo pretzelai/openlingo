@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { chatConversation } from "@/lib/db/schema";
 import { and, eq, desc } from "drizzle-orm";
 import { requireSession } from "@/lib/auth-server";
+import { revalidatePath } from "next/cache";
 
 export async function listConversations() {
   const session = await requireSession();
@@ -54,6 +55,7 @@ export async function createConversation(
     })
     .returning({ id: chatConversation.id });
 
+  revalidatePath("/chat", "layout");
   return row.id;
 }
 
@@ -82,4 +84,6 @@ export async function deleteConversation(id: string) {
         eq(chatConversation.userId, session.user.id)
       )
     );
+
+  revalidatePath("/chat", "layout");
 }

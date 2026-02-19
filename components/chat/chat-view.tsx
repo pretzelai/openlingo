@@ -76,8 +76,7 @@ export function ChatView({
           allMessages,
         );
         convIdRef.current = newId;
-        window.history.replaceState(null, "", `/chat/${newId}`);
-        router.refresh();
+        router.replace(`/chat/${newId}`);
       }
     },
   });

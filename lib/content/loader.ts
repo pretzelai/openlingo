@@ -32,7 +32,6 @@ export interface LoadedCourse {
 }
 
 export interface LoadedUnit {
-  id: string;
   parsed: ParsedUnit;
   markdown: string;
 }
@@ -74,8 +73,7 @@ export function loadContentDir(): { courses: LoadedCourse[]; units: LoadedUnit[]
     } else {
       try {
         const parsed = parseUnitMarkdown(raw);
-        const id = entry.replace(/\.md$/, "");
-        units.push({ id, parsed, markdown: raw });
+        units.push({ parsed, markdown: raw });
       } catch {
         // skip malformed
       }

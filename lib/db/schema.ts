@@ -265,7 +265,7 @@ export const course = pgTable("course", {
 });
 
 export const unit = pgTable("unit", {
-  id: text("id").primaryKey(),
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
   courseId: text("course_id").references(() => course.id, {
     onDelete: "set null",
   }),

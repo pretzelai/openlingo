@@ -28,7 +28,6 @@ export async function seedCoursesFromFilesystem() {
     await db
       .insert(unit)
       .values({
-        id: u.id,
         courseId: p.courseId,
         title: p.title,
         description: p.description,

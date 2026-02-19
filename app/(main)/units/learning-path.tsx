@@ -9,6 +9,7 @@ import { LessonNode } from "@/components/learning-path/lesson-node";
 import { PathConnector } from "@/components/learning-path/path-connector";
 import { Button } from "@/components/ui/button";
 import { getLanguageName } from "@/lib/languages";
+import { getUnitColor } from "@/lib/colors";
 
 interface LearningPathProps {
   course: Course;
@@ -83,7 +84,7 @@ export function LearningPath({
   if (selectedUnitId === null) {
     return (
       <div className="grid gap-4">
-        {course.units.map((unit) => {
+        {course.units.map((unit, unitIndex) => {
           const completedLessons = unit.lessons.filter((_, li) =>
             isLessonCompleted(completions, unit.id, li)
           ).length;
@@ -94,7 +95,7 @@ export function LearningPath({
               title={unit.title}
               description={unit.description}
               icon={unit.icon}
-              color={unit.color}
+              color={getUnitColor(unitIndex)}
               totalLessons={unit.lessons.length}
               completedLessons={completedLessons}
               languageLabel={languageLabel}
@@ -108,9 +109,11 @@ export function LearningPath({
   }
 
   // Lesson path view for selected unit
-  const unit = course.units.find((u) => u.id === selectedUnitId);
+  const unitIndex = course.units.findIndex((u) => u.id === selectedUnitId);
+  const unit = unitIndex >= 0 ? course.units[unitIndex] : undefined;
   if (!unit) return null;
 
+  const unitColor = getUnitColor(unitIndex);
   const completedLessons = unit.lessons.filter((_, li) =>
     isLessonCompleted(completions, unit.id, li)
   ).length;
@@ -129,7 +132,7 @@ export function LearningPath({
         title={unit.title}
         description={unit.description}
         icon={unit.icon}
-        color={unit.color}
+        color={unitColor}
         totalLessons={unit.lessons.length}
         completedLessons={completedLessons}
         languageLabel={languageLabel}
@@ -152,7 +155,7 @@ export function LearningPath({
             <div key={lessonIndex}>
               {lessonIndex > 0 && (
                 <PathConnector
-                  color={unit.color}
+                  color={unitColor}
                   completed={completed}
                 />
               )}
@@ -160,7 +163,7 @@ export function LearningPath({
                 title={lesson.title}
                 state={state}
                 href={`/lesson/${course.id}/${unit.id}/${lessonIndex}`}
-                color={unit.color}
+                color={unitColor}
                 index={lessonIndex}
                 language={course.targetLanguage}
               />

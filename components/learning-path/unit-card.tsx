@@ -64,8 +64,8 @@ export function UnitCard({
   }
 
   return (
-    <div className="mb-8">
-      <div className="flex items-center gap-3 mb-4 px-2">
+    <div className="mb-8 rounded-2xl border-2 border-lingo-gray bg-white p-4">
+      <div className="flex items-center gap-3 mb-4">
         <div
           className="flex h-12 w-12 items-center justify-center rounded-xl text-2xl"
           style={{ backgroundColor: color + "20" }}

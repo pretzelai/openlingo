@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { getUnitColor } from "@/lib/colors";
 
 interface ChatUnitCardProps {
   courseId: string;
@@ -14,32 +15,18 @@ interface ChatUnitCardProps {
   lessonTitles: string[];
 }
 
-const COLOR_MAP: Record<string, string> = {
-  blue: "bg-blue-500/10 text-blue-600 ring-blue-500/20",
-  green: "bg-green-500/10 text-green-600 ring-green-500/20",
-  purple: "bg-purple-500/10 text-purple-600 ring-purple-500/20",
-  red: "bg-red-500/10 text-red-600 ring-red-500/20",
-  orange: "bg-orange-500/10 text-orange-600 ring-orange-500/20",
-  yellow: "bg-yellow-500/10 text-yellow-600 ring-yellow-500/20",
-  pink: "bg-pink-500/10 text-pink-600 ring-pink-500/20",
-  teal: "bg-teal-500/10 text-teal-600 ring-teal-500/20",
-  cyan: "bg-cyan-500/10 text-cyan-600 ring-cyan-500/20",
-  indigo: "bg-indigo-500/10 text-indigo-600 ring-indigo-500/20",
-};
-
 export function ChatUnitCard({
   courseId,
   title,
   description,
   icon,
-  color,
   level,
   lessonCount,
   exerciseCount,
   lessonTitles,
 }: ChatUnitCardProps) {
   const router = useRouter();
-  const colorClasses = COLOR_MAP[color] ?? COLOR_MAP.blue;
+  const color = getUnitColor(0);
 
   return (
     <div className="w-full overflow-hidden rounded-xl border-2 border-lingo-border bg-white">
@@ -52,7 +39,12 @@ export function ChatUnitCard({
               {title}
             </h3>
             <span
-              className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ring-1 ${colorClasses}`}
+              className="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ring-1"
+              style={{
+                backgroundColor: color + "1a",
+                color,
+                boxShadow: `inset 0 0 0 1px ${color}33`,
+              }}
             >
               {level}
             </span>
@@ -105,7 +97,10 @@ export function ChatUnitCard({
               key={i}
               className="flex items-center gap-2 text-xs text-lingo-text"
             >
-              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-lingo-gray text-[10px] font-bold text-lingo-text-light">
+              <span
+                className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold text-white"
+                style={{ backgroundColor: getUnitColor(i) }}
+              >
                 {i + 1}
               </span>
               {lessonTitle}

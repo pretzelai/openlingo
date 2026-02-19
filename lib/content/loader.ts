@@ -37,10 +37,10 @@ export interface LoadedUnit {
 }
 
 /**
- * Scan content directory. Courses are `*-course.md`, units are `*-unit-*.md`.
+ * Scan content directory. Files ending in `-course.md` are courses, everything
+ * else is treated as a unit.
  *
  * Course ID is derived from filename: `testing-course.md` → `testing`.
- * Unit ID is derived from filename: `testing-unit-0.md` → `testing-unit-0`.
  */
 export function loadContentDir(): { courses: LoadedCourse[]; units: LoadedUnit[] } {
   if (!fs.existsSync(CONTENT_DIR)) return { courses: [], units: [] };

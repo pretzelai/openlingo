@@ -144,7 +144,11 @@ CREATE TABLE "unit" (
 	"description" text NOT NULL,
 	"icon" text NOT NULL,
 	"color" text NOT NULL,
-	"exercises" jsonb NOT NULL,
+	"markdown" text NOT NULL,
+	"target_language" text NOT NULL,
+	"source_language" text,
+	"level" text,
+	"visibility" text,
 	"created_by" text,
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp DEFAULT now() NOT NULL

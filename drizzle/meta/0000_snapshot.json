@@ -1,5 +1,5 @@
 {
-  "id": "14f1f104-e780-43c2-acc1-23477c5da4e6",
+  "id": "3d62a88d-7e74-4561-a757-ada62b652321",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -1065,11 +1065,35 @@
           "primaryKey": false,
           "notNull": true
         },
-        "exercises": {
-          "name": "exercises",
-          "type": "jsonb",
+        "markdown": {
+          "name": "markdown",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
+        },
+        "target_language": {
+          "name": "target_language",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "source_language": {
+          "name": "source_language",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "level": {
+          "name": "level",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "visibility": {
+          "name": "visibility",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
         },
         "created_by": {
           "name": "created_by",

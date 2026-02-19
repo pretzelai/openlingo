@@ -5,7 +5,7 @@ import {
   userCourseEnrollment,
   lessonCompletion,
 } from "@/lib/db/schema";
-import { eq, and, sql, isNull, count, countDistinct } from "drizzle-orm";
+import { eq, and, or, sql, isNull, count, countDistinct } from "drizzle-orm";
 import type {
   Course,
   CourseListItem,
@@ -224,7 +224,12 @@ export async function getStandaloneUnits(
   const units = await db
     .select()
     .from(unit)
-    .where(and(isNull(unit.courseId), eq(unit.createdBy, userId)));
+    .where(
+      and(
+        isNull(unit.courseId),
+        or(eq(unit.createdBy, userId), eq(unit.visibility, "public"))
+      )
+    );
 
   return units.map((u) => ({
     id: u.id,

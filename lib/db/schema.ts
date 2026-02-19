@@ -277,6 +277,7 @@ export const unit = pgTable("unit", {
   targetLanguage: text("target_language").notNull(),
   sourceLanguage: text("source_language"),
   level: text("level"),
+  visibility: text("visibility"),
   createdBy: text("created_by").references(() => user.id, {
     onDelete: "set null",
   }),

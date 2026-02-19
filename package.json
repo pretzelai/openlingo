@@ -9,7 +9,7 @@
     "lint": "eslint",
     "db:generate": "bun --env-file=.env.local drizzle-kit generate",
     "db:migrate": "bun --env-file=.env.local drizzle-kit migrate",
-    "db:push": "bun --env-file=.env.local drizzle-kit push",
+    "db:push": "bun --env-file=.env.local drizzle-kit push --force",
     "db:studio": "bun --env-file=.env.local drizzle-kit studio",
     "db:seed": "bun run scripts/seed.ts",
     "db:nuke": "bun run scripts/nuke-db.ts && bun --env-file=.env.local drizzle-kit push --force",

@@ -2,7 +2,7 @@ import { db } from "./index";
 import { course, unit } from "./schema";
 import { getAllCourses, getAllUnits } from "../content/registry";
 
-export async function seedCoursesFromFilesystem() {
+export async function seedContentFromFilesystem() {
   const courses = getAllCourses();
   const units = getAllUnits();
 
@@ -37,6 +37,7 @@ export async function seedCoursesFromFilesystem() {
         targetLanguage: p.targetLanguage,
         sourceLanguage: p.sourceLanguage,
         level: p.level,
+        visibility: "public",
       })
       .onConflictDoNothing();
 

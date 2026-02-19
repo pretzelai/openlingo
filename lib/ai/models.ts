@@ -22,15 +22,15 @@ export const AVAILABLE_MODELS: {
   label: string;
   provider: string;
 }[] = [
-  { id: "gemini-3-flash-preview", label: "Gemini 3 Flash", provider: "google" },
-  { id: "gemini-3-pro-preview", label: "Gemini 3 Pro", provider: "google" },
-  {
-    id: "gemini-2.5-flash-lite",
-    label: "Gemini 2.5 Flash Lite",
-    provider: "google",
-  },
-  { id: "gpt-4o", label: "GPT-4o", provider: "openai" },
-  { id: "gpt-4o-mini", label: "GPT-4o Mini", provider: "openai" },
+  // { id: "gemini-3-flash-preview", label: "Gemini 3 Flash", provider: "google" },
+  // { id: "gemini-3-pro-preview", label: "Gemini 3 Pro", provider: "google" },
+  // {
+  //   id: "gemini-2.5-flash-lite",
+  //   label: "Gemini 2.5 Flash Lite",
+  //   provider: "google",
+  // },
+  // { id: "gpt-4o", label: "GPT-4o", provider: "openai" },
+  // { id: "gpt-4o-mini", label: "GPT-4o Mini", provider: "openai" },
   {
     id: "claude-sonnet-4-6",
     label: "Claude Sonnet 4.6",

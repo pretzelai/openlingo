@@ -33,6 +33,7 @@
     "next": "16.1.6",
     "openai": "^6.21.0",
     "postgres": "^3.4.8",
+    "posthog-js": "^1.351.3",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-markdown": "^10.1.0",

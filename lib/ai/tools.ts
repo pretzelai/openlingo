@@ -208,6 +208,8 @@ export function createTools(userId: string, language?: string) {
           0,
         );
 
+        revalidatePath("/units", "page");
+
         return {
           success: true,
           unitId,
@@ -481,6 +483,8 @@ export function createTools(userId: string, language?: string) {
             );
           },
         );
+
+        revalidatePath("/read", "page");
 
         return {
           success: true,

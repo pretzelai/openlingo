@@ -273,7 +273,10 @@ export const unit = pgTable("unit", {
   description: text("description").notNull(),
   icon: text("icon").notNull(),
   color: text("color").notNull(),
-  exercises: jsonb("exercises").notNull(),
+  markdown: text("markdown").notNull(),
+  targetLanguage: text("target_language").notNull(),
+  sourceLanguage: text("source_language"),
+  level: text("level"),
   createdBy: text("created_by").references(() => user.id, {
     onDelete: "set null",
   }),

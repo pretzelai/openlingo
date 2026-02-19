@@ -4,6 +4,56 @@
  */
 export const EXERCISE_SYNTAX = `# Exercise Syntax Reference
 
+## Unit Frontmatter
+
+Every unit starts with YAML frontmatter containing ALL metadata. The frontmatter is the single source of truth:
+
+\`\`\`
+---
+unitTitle: "Unit Title"
+description: "Short English description of what this unit teaches"
+icon: "📘"
+color: "#4CAF50"
+targetLanguage: "de"
+sourceLanguage: "en"
+level: "B1"
+---
+\`\`\`
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| unitTitle | yes | Unit title (in the target language) |
+| description | yes | Short English description |
+| icon | yes | Single emoji |
+| color | yes | Hex color code |
+| targetLanguage | yes | ISO 639-1 language code being learned (e.g. "de", "fr", "es") |
+| sourceLanguage | yes | ISO 639-1 native language code (e.g. "en") |
+| level | yes | CEFR level: A1, A2, B1, B2, C1, C2 |
+
+## Lesson Sections
+
+After the unit frontmatter, each lesson is defined by a \`---\` delimited metadata block:
+
+\`\`\`
+---
+lessonTitle: "Greetings"
+description: "Learn basic greeting phrases"
+icon: "👋"
+color: "#FF9600"
+---
+
+[exercise blocks here...]
+\`\`\`
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| lessonTitle | yes | Lesson title |
+| description | no | Short description of the lesson |
+| icon | no | Single emoji |
+| color | no | Hex color code |
+
+## Exercise Blocks
+
 Exercises are written in markdown files. Each exercise block starts with a type tag
 \`[type-name]\` and fields are written as \`key: value\`. The parser splits on type tags
 automatically — no \`---\` separators needed (though they're accepted and ignored).

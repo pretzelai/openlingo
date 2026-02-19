@@ -6,9 +6,10 @@
  */
 
 import { db } from "../lib/db";
-import { unit, course } from "../lib/db/schema";
+import { unit } from "../lib/db/schema";
 import { generateSpeech } from "../lib/tts";
-import type { Exercise, UnitLesson } from "../lib/content/types";
+import { getUnitLessons } from "../lib/content/loader";
+import type { Exercise } from "../lib/content/types";
 
 function extractTexts(
   exercise: Exercise,
@@ -73,26 +74,17 @@ async function main() {
   console.log("Loading courses and units from DB...");
 
   const units = await db
-    .select({ exercises: unit.exercises, courseId: unit.courseId })
+    .select({ id: unit.id, markdown: unit.markdown, targetLanguage: unit.targetLanguage })
     .from(unit);
-
-  const courses = await db
-    .select({ id: course.id, targetLanguage: course.targetLanguage })
-    .from(course);
-
-  const courseLanguageMap = new Map(
-    courses.map((c) => [c.id, c.targetLanguage])
-  );
 
   // Collect all unique (text, language) pairs
   const seen = new Set<string>();
   const pairs: { text: string; language: string }[] = [];
 
   for (const u of units) {
-    const language = u.courseId ? courseLanguageMap.get(u.courseId) : null;
-    if (!language) continue;
+    const language = u.targetLanguage;
 
-    const lessons = u.exercises as UnitLesson[];
+    const lessons = getUnitLessons(u.markdown);
     for (const lesson of lessons) {
       for (const exercise of lesson.exercises) {
         const texts = extractTexts(exercise, language);

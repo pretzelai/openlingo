@@ -97,6 +97,29 @@ export async function enrollInCourse(courseId: string) {
   return enrollment;
 }
 
+export async function getUnitProgress(unitId: string) {
+  const session = await requireSession();
+  const userId = session.user.id;
+
+  const completions = await db
+    .select({
+      id: lessonCompletion.id,
+      unitId: lessonCompletion.unitId,
+      lessonIndex: lessonCompletion.lessonIndex,
+      perfectScore: lessonCompletion.perfectScore,
+      completedAt: lessonCompletion.completedAt,
+    })
+    .from(lessonCompletion)
+    .where(
+      and(
+        eq(lessonCompletion.userId, userId),
+        eq(lessonCompletion.unitId, unitId)
+      )
+    );
+
+  return { completions };
+}
+
 export async function getUserStatsData() {
   const session = await requireSession();
   const userId = session.user.id;

@@ -5,9 +5,11 @@ import {
   listCoursesWithLessonCounts,
   getAvailableFilters,
   getUserEnrolledCourses,
+  getStandaloneUnits,
 } from "@/lib/db/queries/courses";
 import { getNativeLanguage } from "@/lib/actions/profile";
 import { ContinueLearning } from "./continue-learning";
+import { StandaloneUnits } from "./standalone-units";
 import { CourseBrowser } from "./course-browser";
 
 const NEW_UNIT_PROMPT = "I want to create a new personalised unit";
@@ -20,12 +22,13 @@ export default async function LearnPage() {
 
   const nativeLanguage = userId ? await getNativeLanguage(userId) : null;
 
-  const [courses, filters, enrolled] = await Promise.all([
+  const [courses, filters, enrolled, standaloneUnits] = await Promise.all([
     listCoursesWithLessonCounts(
       nativeLanguage ? { sourceLanguage: nativeLanguage } : undefined,
     ),
     getAvailableFilters(),
     userId ? getUserEnrolledCourses(userId) : Promise.resolve([]),
+    userId ? getStandaloneUnits(userId) : Promise.resolve([]),
   ]);
 
   if (courses.length === 0 && !nativeLanguage) {
@@ -52,6 +55,7 @@ export default async function LearnPage() {
         </Link>
       </div>
       <ContinueLearning courses={enrolled} />
+      <StandaloneUnits units={standaloneUnits} />
       {courses.length === 0 ? (
         <div className="text-center py-12">
           <p className="text-lg text-lingo-text-light mb-2">

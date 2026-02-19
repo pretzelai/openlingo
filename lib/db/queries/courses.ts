@@ -5,13 +5,15 @@ import {
   userCourseEnrollment,
   lessonCompletion,
 } from "@/lib/db/schema";
-import { eq, and, sql, count, countDistinct } from "drizzle-orm";
+import { eq, and, sql, isNull, count, countDistinct } from "drizzle-orm";
 import type {
   Course,
   CourseListItem,
   EnrolledCourseInfo,
-  UnitLesson,
+  StandaloneUnitInfo,
+  UnitWithContent,
 } from "@/lib/content/types";
+import { getUnitLessons } from "@/lib/content/loader";
 
 interface CourseFilters {
   sourceLanguage?: string;
@@ -65,14 +67,14 @@ export async function listCoursesWithLessonCounts(
 
   const courseIds = courses.map((c) => c.id);
   const units = await db
-    .select({ id: unit.id, courseId: unit.courseId, exercises: unit.exercises })
+    .select({ id: unit.id, courseId: unit.courseId, markdown: unit.markdown })
     .from(unit)
     .where(sql`${unit.courseId} IN ${courseIds}`);
 
   const lessonCountByCourse = new Map<string, number>();
   for (const u of units) {
     if (!u.courseId) continue;
-    const lessons = u.exercises as UnitLesson[];
+    const lessons = getUnitLessons(u.markdown);
     const prev = lessonCountByCourse.get(u.courseId) ?? 0;
     lessonCountByCourse.set(u.courseId, prev + lessons.length);
   }
@@ -110,7 +112,7 @@ export async function getCourseWithContent(
       description: u.description,
       icon: u.icon,
       color: u.color,
-      lessons: u.exercises as UnitLesson[],
+      lessons: getUnitLessons(u.markdown),
     })),
   };
 }
@@ -182,16 +184,16 @@ export async function getUserEnrolledCourses(
     completionCounts.map((c) => [c.courseId, Number(c.count)])
   );
 
-  // Get lesson counts from JSONB
+  // Get lesson counts from markdown
   const allUnits = await db
-    .select({ courseId: unit.courseId, exercises: unit.exercises })
+    .select({ id: unit.id, courseId: unit.courseId, markdown: unit.markdown })
     .from(unit)
     .where(sql`${unit.courseId} IN ${courseIds}`);
 
   const lessonCountMap = new Map<string, number>();
   for (const u of allUnits) {
     if (!u.courseId) continue;
-    const lessons = u.exercises as UnitLesson[];
+    const lessons = getUnitLessons(u.markdown);
     lessonCountMap.set(u.courseId, (lessonCountMap.get(u.courseId) ?? 0) + lessons.length);
   }
 
@@ -214,4 +216,45 @@ export async function getUserEnrolledCourses(
       completedLessons: completionMap.get(c.id) ?? 0,
     };
   });
+}
+
+export async function getStandaloneUnits(
+  userId: string
+): Promise<StandaloneUnitInfo[]> {
+  const units = await db
+    .select()
+    .from(unit)
+    .where(and(isNull(unit.courseId), eq(unit.createdBy, userId)));
+
+  return units.map((u) => ({
+    id: u.id,
+    title: u.title,
+    description: u.description,
+    icon: u.icon,
+    color: u.color,
+    targetLanguage: u.targetLanguage,
+    sourceLanguage: u.sourceLanguage,
+    level: u.level,
+    lessonCount: getUnitLessons(u.markdown).length,
+  }));
+}
+
+export async function getUnitWithContent(
+  unitId: string
+): Promise<UnitWithContent | null> {
+  const [u] = await db.select().from(unit).where(eq(unit.id, unitId));
+  if (!u) return null;
+
+  return {
+    id: u.id,
+    title: u.title,
+    description: u.description,
+    icon: u.icon,
+    color: u.color,
+    targetLanguage: u.targetLanguage,
+    sourceLanguage: u.sourceLanguage,
+    level: u.level,
+    courseId: u.courseId,
+    lessons: getUnitLessons(u.markdown),
+  };
 }

@@ -8,12 +8,12 @@ import {
   exerciseAttempt,
   dailyActivity,
   unit,
-  course,
 } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { requireSession } from "@/lib/auth-server";
 import { computeStreak } from "@/lib/game/streaks";
-import type { UnitLesson, Exercise } from "@/lib/content/types";
+import type { Exercise } from "@/lib/content/types";
+import { getUnitLessons } from "@/lib/content/loader";
 import { recordWordPractice } from "@/lib/actions/srs";
 import { extractSrsWords } from "@/lib/srs-words";
 
@@ -63,28 +63,21 @@ export async function completeLesson(input: CompleteLessonInput) {
   // Record SRS word practice
   try {
     const [unitRow] = await db
-      .select({ exercises: unit.exercises, courseId: unit.courseId })
+      .select({ markdown: unit.markdown, targetLanguage: unit.targetLanguage })
       .from(unit)
       .where(eq(unit.id, input.unitId));
 
-    if (unitRow?.courseId) {
-      const [courseRow] = await db
-        .select({ targetLanguage: course.targetLanguage })
-        .from(course)
-        .where(eq(course.id, unitRow.courseId));
-
-      if (courseRow) {
-        const lessons = unitRow.exercises as UnitLesson[];
-        const lesson = lessons[input.lessonIndex];
-        if (lesson) {
-          for (const result of input.results) {
-            const exercise = lesson.exercises[result.exerciseIndex] as Exercise | undefined;
-            if (!exercise) continue;
-            if (exercise.type === "flashcard-review") continue;
-            const words = extractSrsWords(exercise);
-            for (const w of words) {
-              await recordWordPractice(userId, w, courseRow.targetLanguage, "", result.correct);
-            }
+    if (unitRow) {
+      const lessons = getUnitLessons(unitRow.markdown);
+      const lesson = lessons[input.lessonIndex];
+      if (lesson) {
+        for (const result of input.results) {
+          const exercise = lesson.exercises[result.exerciseIndex] as Exercise | undefined;
+          if (!exercise) continue;
+          if (exercise.type === "flashcard-review") continue;
+          const words = extractSrsWords(exercise);
+          for (const w of words) {
+            await recordWordPractice(userId, w, unitRow.targetLanguage, "", result.correct);
           }
         }
       }
@@ -169,7 +162,7 @@ async function advanceEnrollment(
   if (!unitRow || !unitRow.courseId) return;
 
   const courseId = unitRow.courseId;
-  const lessons = unitRow.exercises as UnitLesson[];
+  const lessons = getUnitLessons(unitRow.markdown);
 
   // Get enrollment
   const [enrollment] = await db

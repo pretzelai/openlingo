@@ -16,21 +16,43 @@ export interface Unit {
   lessons: UnitLesson[];
 }
 
-/** A single lesson inside the unit's JSONB exercises array */
+/**
+ * All metadata extracted from unit markdown frontmatter.
+ * The markdown is the single source of truth — DB columns mirror these for fast queries.
+ */
+export interface ParsedUnitMeta {
+  title: string;
+  description: string;
+  icon: string;
+  color: string;
+  targetLanguage: string | null;
+  sourceLanguage: string | null;
+  level: string | null;
+  courseId: string | null;
+}
+
+/** Full result of parsing unit markdown: metadata + lessons. */
+export interface ParsedUnit extends ParsedUnitMeta {
+  lessons: UnitLesson[];
+}
+
+/** A single lesson inside a unit. */
 export interface UnitLesson {
   title: string;
-  xpReward: number;
+  description?: string;
+  icon?: string;
+  color?: string;
   exercises: Exercise[];
 }
 
-/**
- * @deprecated Use UnitLesson instead. Kept for loader compatibility.
- */
-export interface Lesson {
-  title: string;
-  order: number;
-  xpReward: number;
-  exercises: Exercise[];
+/** Parsed course metadata from a course markdown file. */
+export interface ParsedCourse {
+  id: string | null;
+  courseTitle: string;
+  description: string;
+  sourceLanguage: string;
+  targetLanguage: string;
+  level: string;
 }
 
 export type Exercise =
@@ -136,4 +158,29 @@ export interface EnrolledCourseInfo extends CourseListItem {
   currentUnitId: string | null;
   currentLessonIndex: number;
   completedLessons: number;
+}
+
+export interface StandaloneUnitInfo {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+  color: string;
+  targetLanguage: string;
+  sourceLanguage: string | null;
+  level: string | null;
+  lessonCount: number;
+}
+
+export interface UnitWithContent {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+  color: string;
+  targetLanguage: string;
+  sourceLanguage: string | null;
+  level: string | null;
+  courseId: string | null;
+  lessons: UnitLesson[];
 }

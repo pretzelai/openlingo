@@ -4,9 +4,7 @@ import { revalidatePath } from "next/cache";
 import { db, client } from "@/lib/db";
 import {
   userMemory,
-  course,
   unit,
-  userCourseEnrollment,
   userStats,
   userPreferences,
   dictionaryWord,
@@ -17,7 +15,7 @@ import { and, eq, gte, lte, sql } from "drizzle-orm";
 import { parseExercise } from "@/lib/content/parser";
 import { langCodeToName } from "@/lib/prompts";
 import { supportedLanguages } from "@/lib/languages";
-import { parseUnitFromMarkdown } from "@/lib/content/loader";
+import { parseUnitMarkdown } from "@/lib/content/loader";
 import { processTranslation } from "@/lib/article/process";
 
 const ALLOWED_TABLE = /\bsrs_card\b/i;
@@ -143,26 +141,29 @@ export function createTools(userId: string, language?: string) {
 
     createUnit: tool({
       description:
-        "Create a learning unit from exercise markdown. You (the AI) should generate the full markdown content including YAML frontmatter and ## Lesson sections following the exercise syntax from the system prompt, then pass it here. This tool parses, validates, and inserts into the DB.",
+        "Create a learning unit from exercise markdown. The markdown MUST include ALL metadata in YAML frontmatter: title, description, icon, color, targetLanguage, sourceLanguage, and level. Then ## Lesson sections with exercises. This tool parses, validates, and inserts into the DB.",
       inputSchema: z.object({
         markdown: z
           .string()
           .describe(
-            "Complete unit markdown with YAML frontmatter (title, description, icon, color) and ## Lesson sections containing exercises",
+            "Complete unit markdown with YAML frontmatter (title, description, icon, color, targetLanguage, sourceLanguage, level) and ## Lesson sections containing exercises",
           ),
-        level: z
-          .enum(["A1", "A2", "B1", "B2", "C1", "C2"])
-          .default("B1")
-          .describe("CEFR difficulty level"),
+        courseId: z
+          .string()
+          .uuid()
+          .optional()
+          .describe(
+            "Optional course UUID to assign this unit to. Overrides courseId from frontmatter if provided.",
+          ),
       }),
-      execute: async ({ markdown, level }) => {
+      execute: async ({ markdown, courseId: courseIdParam }) => {
         // Read fresh from DB — the user may have switched languages mid-conversation
         const [prefRow] = await db
           .select({ targetLanguage: userPreferences.targetLanguage })
           .from(userPreferences)
           .where(eq(userPreferences.userId, userId))
           .limit(1);
-        const lang = prefRow?.targetLanguage ?? language ?? "de";
+        const fallbackLang = prefRow?.targetLanguage ?? language ?? "de";
 
         const cleaned = markdown
           .replace(/^```(?:markdown|md)?\n/m, "")
@@ -172,7 +173,7 @@ export function createTools(userId: string, language?: string) {
         let parsedUnit;
         const unitId = crypto.randomUUID();
         try {
-          parsedUnit = parseUnitFromMarkdown(cleaned, unitId);
+          parsedUnit = parseUnitMarkdown(cleaned);
         } catch (err) {
           return {
             success: false,
@@ -180,17 +181,11 @@ export function createTools(userId: string, language?: string) {
           };
         }
 
-        const courseId = crypto.randomUUID();
+        // targetLanguage is required — fall back to user preference if missing from frontmatter
+        const targetLanguage = parsedUnit.targetLanguage ?? fallbackLang;
 
-        await db.insert(course).values({
-          id: courseId,
-          title: parsedUnit.title,
-          sourceLanguage: "en",
-          targetLanguage: lang,
-          level,
-          published: false,
-          createdBy: userId,
-        });
+        // Tool param overrides frontmatter courseId
+        const courseId = courseIdParam ?? parsedUnit.courseId;
 
         await db.insert(unit).values({
           id: unitId,
@@ -199,14 +194,12 @@ export function createTools(userId: string, language?: string) {
           description: parsedUnit.description,
           icon: parsedUnit.icon,
           color: parsedUnit.color,
-          exercises: parsedUnit.lessons,
+          markdown: cleaned,
+          targetLanguage,
+          sourceLanguage: parsedUnit.sourceLanguage,
+          level: parsedUnit.level,
           createdBy: userId,
         });
-
-        await db
-          .insert(userCourseEnrollment)
-          .values({ userId, courseId })
-          .onConflictDoNothing();
 
         await db.insert(userStats).values({ userId }).onConflictDoNothing();
 
@@ -217,16 +210,16 @@ export function createTools(userId: string, language?: string) {
 
         return {
           success: true,
-          courseId,
           unitId,
           title: parsedUnit.title,
           description: parsedUnit.description,
           icon: parsedUnit.icon,
           color: parsedUnit.color,
-          level,
+          level: parsedUnit.level,
           lessonCount: parsedUnit.lessons.length,
           exerciseCount,
           lessonTitles: parsedUnit.lessons.map((l) => l.title),
+          url: `/unit/${unitId}`,
         };
       },
     }),

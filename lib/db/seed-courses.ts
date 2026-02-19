@@ -1,10 +1,10 @@
 import { db } from "./index";
 import { course, unit } from "./schema";
-import { getAllCourses } from "../content/registry";
-import type { UnitLesson } from "../content/types";
+import { getAllCourses, getAllUnits } from "../content/registry";
 
 export async function seedCoursesFromFilesystem() {
   const courses = getAllCourses();
+  const units = getAllUnits();
 
   for (const c of courses) {
     await db
@@ -17,35 +17,34 @@ export async function seedCoursesFromFilesystem() {
         level: c.level,
       })
       .onConflictDoNothing();
-
-    for (let ui = 0; ui < c.units.length; ui++) {
-      const u = c.units[ui];
-      const unitId = `${c.id}-unit-${ui}`;
-
-      // Convert lessons into the JSONB exercises array
-      const exercises: UnitLesson[] = u.lessons.map((l) => ({
-        title: l.title,
-        xpReward: l.xpReward,
-        exercises: l.exercises,
-      }));
-
-      await db
-        .insert(unit)
-        .values({
-          id: unitId,
-          courseId: c.id,
-          title: u.title,
-          description: u.description,
-          icon: u.icon,
-          color: u.color,
-          exercises,
-        })
-        .onConflictDoNothing();
-    }
-
-    const totalLessons = c.units.reduce((sum, u) => sum + u.lessons.length, 0);
-    console.log(
-      `Seeded course "${c.id}": ${c.units.length} units, ${totalLessons} lessons`
-    );
   }
+
+  let seededCount = 0;
+  for (const u of units) {
+    const p = u.parsed;
+    // targetLanguage is required on the DB column — skip units without it
+    if (!p.targetLanguage) continue;
+
+    await db
+      .insert(unit)
+      .values({
+        id: u.id,
+        courseId: p.courseId,
+        title: p.title,
+        description: p.description,
+        icon: p.icon,
+        color: p.color,
+        markdown: u.markdown,
+        targetLanguage: p.targetLanguage,
+        sourceLanguage: p.sourceLanguage,
+        level: p.level,
+      })
+      .onConflictDoNothing();
+
+    seededCount++;
+  }
+
+  console.log(
+    `Seeded ${courses.length} course(s), ${seededCount} unit(s)`
+  );
 }

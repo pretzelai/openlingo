@@ -1,7 +1,21 @@
 ---
-title: "Free Text"
-order: 1
-xpReward: 10
+unitTitle: "Free Text"
+description: "Test the free-text exercise type"
+icon: "✍️"
+color: "#8B5CF6"
+targetLanguage: "de"
+sourceLanguage: "en"
+level: "B1"
+courseId: "32d59a82-257e-40e5-8fb9-61cb1d0d2cc3"
+---
+
+---
+
+lessonTitle: "Free Text"
+description: "Practice writing in German"
+icon: "✍️"
+color: "#8B5CF6"
+
 ---
 
 [free-text]

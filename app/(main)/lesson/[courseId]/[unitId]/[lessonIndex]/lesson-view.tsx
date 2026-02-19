@@ -20,7 +20,7 @@ import { LessonCompleteModal } from "@/components/gamification/lesson-complete-m
 import { completeLesson } from "@/lib/actions/lesson";
 
 interface LessonViewProps {
-  courseId: string;
+  courseId?: string | null;
   unitId: string;
   lessonIndex: number;
   lesson: UnitLesson;
@@ -44,6 +44,10 @@ export function LessonView({
   const [lessonResult, setLessonResult] = useState<{
     perfectScore: boolean;
   } | null>(null);
+
+  const backUrl = courseId
+    ? `/units/${courseId}?unit=${unitId}`
+    : `/unit/${unitId}`;
 
   const {
     currentIndex,
@@ -91,7 +95,7 @@ export function LessonView({
     return (
       <LessonCompleteModal
         perfectScore={lessonResult.perfectScore}
-        onContinue={() => router.push(`/units/${courseId}?unit=${unitId}`)}
+        onContinue={() => router.push(backUrl)}
       />
     );
   }
@@ -101,7 +105,7 @@ export function LessonView({
       {/* Header */}
       <div className="mb-6 flex items-center gap-4">
         <button
-          onClick={() => router.push(`/units/${courseId}?unit=${unitId}`)}
+          onClick={() => router.push(backUrl)}
           className="text-lingo-text-light hover:text-lingo-text"
         >
           <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

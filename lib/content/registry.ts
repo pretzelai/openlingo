@@ -1,38 +1,22 @@
-import fs from "fs";
-import path from "path";
-import { loadCourse } from "./loader";
-import type { Course } from "./types";
+import { loadContentDir, type LoadedCourse, type LoadedUnit } from "./loader";
 
-let courseCache: Map<string, Course> | null = null;
+export type { LoadedCourse, LoadedUnit };
 
-export function getAllCourses(): Course[] {
-  if (courseCache) return Array.from(courseCache.values());
+let cache: { courses: LoadedCourse[]; units: LoadedUnit[] } | null = null;
 
-  courseCache = new Map();
-  const contentDir = path.join(process.cwd(), "content");
-
-  if (!fs.existsSync(contentDir)) return [];
-
-  const dirs = fs
-    .readdirSync(contentDir)
-    .filter((f) => fs.statSync(path.join(contentDir, f)).isDirectory());
-
-  for (const dir of dirs) {
-    const courseFile = path.join(contentDir, dir, "course.md");
-    if (fs.existsSync(courseFile)) {
-      const course = loadCourse(dir);
-      courseCache.set(course.id, course);
-    }
-  }
-
-  return Array.from(courseCache.values());
+function ensureLoaded() {
+  if (!cache) cache = loadContentDir();
+  return cache;
 }
 
-export function getCourse(courseId: string): Course | undefined {
-  getAllCourses();
-  return courseCache?.get(courseId);
+export function getAllCourses(): LoadedCourse[] {
+  return ensureLoaded().courses;
+}
+
+export function getAllUnits(): LoadedUnit[] {
+  return ensureLoaded().units;
 }
 
 export function invalidateCache() {
-  courseCache = null;
+  cache = null;
 }

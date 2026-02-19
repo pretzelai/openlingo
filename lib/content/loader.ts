@@ -1,128 +1,86 @@
 import fs from "fs";
 import path from "path";
-import matter from "gray-matter";
-import { parseExercise, parseExercisesFromMarkdown } from "./parser";
-import type {
-  Course,
-  Unit,
-  UnitLesson,
-  Exercise,
-} from "./types";
+import { parseUnitMarkdown } from "./unit-parser";
+import { parseCourseMarkdown } from "./course-parser";
+import type { ParsedUnit, ParsedCourse, UnitLesson } from "./types";
+
+export { parseUnitMarkdown } from "./unit-parser";
+export { parseCourseMarkdown } from "./course-parser";
 
 const CONTENT_DIR = path.join(process.cwd(), "content");
 
-export function loadCourse(courseDir: string): Course {
-  const coursePath = path.join(CONTENT_DIR, courseDir);
-  const courseFile = fs.readFileSync(
-    path.join(coursePath, "course.md"),
-    "utf-8"
-  );
-  const { data: courseMeta } = matter(courseFile);
+// ---------------------------------------------------------------------------
+// Convenience helpers (used by read paths that store markdown in DB)
+// ---------------------------------------------------------------------------
 
-  const entries = fs.readdirSync(coursePath);
-  const unitEntries = entries
-    .filter((f) => {
-      if (!f.startsWith("unit-")) return false;
-      const fullPath = path.join(coursePath, f);
-      const isDir = fs.statSync(fullPath).isDirectory();
-      return isDir || f.endsWith(".md");
-    })
-    .sort((a, b) => a.replace(/\.md$/, "").localeCompare(b.replace(/\.md$/, "")));
+/** Parse raw unit markdown into UnitLesson[]. */
+export function getUnitLessons(markdown: string): UnitLesson[] {
+  return parseUnitMarkdown(markdown).lessons;
+}
 
-  const courseId = courseMeta.id as string;
-  const units = unitEntries.map((entry, index) => {
-    const fullPath = path.join(coursePath, entry);
-    const unitId = `${courseId}-unit-${index}`;
-    if (fs.statSync(fullPath).isDirectory()) {
-      return loadUnit(fullPath, unitId);
+// ---------------------------------------------------------------------------
+// Content directory scanner
+// ---------------------------------------------------------------------------
+
+export interface LoadedCourse {
+  id: string;
+  title: string;
+  sourceLanguage: string;
+  targetLanguage: string;
+  level: string;
+  description: string;
+}
+
+export interface LoadedUnit {
+  id: string;
+  parsed: ParsedUnit;
+  markdown: string;
+}
+
+/**
+ * Scan content directory. Courses are `*-course.md`, units are `*-unit-*.md`.
+ *
+ * Course ID is derived from filename: `testing-course.md` → `testing`.
+ * Unit ID is derived from filename: `testing-unit-0.md` → `testing-unit-0`.
+ */
+export function loadContentDir(): { courses: LoadedCourse[]; units: LoadedUnit[] } {
+  if (!fs.existsSync(CONTENT_DIR)) return { courses: [], units: [] };
+
+  const entries = fs.readdirSync(CONTENT_DIR).filter((f) => f.endsWith(".md")).sort();
+  const courses: LoadedCourse[] = [];
+  const units: LoadedUnit[] = [];
+
+  for (const entry of entries) {
+    const fullPath = path.join(CONTENT_DIR, entry);
+    if (!fs.statSync(fullPath).isFile()) continue;
+
+    const raw = fs.readFileSync(fullPath, "utf-8");
+
+    if (entry.endsWith("-course.md")) {
+      try {
+        const parsed = parseCourseMarkdown(raw);
+        const id = parsed.id ?? entry.replace(/-course\.md$/, "");
+        courses.push({
+          id,
+          title: parsed.courseTitle,
+          sourceLanguage: parsed.sourceLanguage,
+          targetLanguage: parsed.targetLanguage,
+          level: parsed.level,
+          description: parsed.description,
+        });
+      } catch {
+        // skip malformed
+      }
+    } else {
+      try {
+        const parsed = parseUnitMarkdown(raw);
+        const id = entry.replace(/\.md$/, "");
+        units.push({ id, parsed, markdown: raw });
+      } catch {
+        // skip malformed
+      }
     }
-    return loadUnitFromFile(fullPath, unitId);
-  });
+  }
 
-  return {
-    id: courseMeta.id,
-    title: courseMeta.title,
-    sourceLanguage: courseMeta.sourceLanguage,
-    targetLanguage: courseMeta.targetLanguage,
-    level: courseMeta.level,
-    units,
-  };
-}
-
-function loadUnit(unitPath: string, unitId: string): Unit {
-  const unitFile = fs.readFileSync(path.join(unitPath, "unit.md"), "utf-8");
-  const { data: unitMeta } = matter(unitFile);
-
-  const lessonFiles = fs
-    .readdirSync(unitPath)
-    .filter((f) => f.startsWith("lesson-") && f.endsWith(".md"))
-    .sort();
-
-  const lessons: UnitLesson[] = lessonFiles.map((file) => {
-    const l = loadLessonRaw(path.join(unitPath, file));
-    return { title: l.title, xpReward: l.xpReward, exercises: l.exercises };
-  });
-
-  return {
-    id: unitId,
-    title: unitMeta.title,
-    description: unitMeta.description,
-    icon: unitMeta.icon,
-    color: unitMeta.color,
-    lessons,
-  };
-}
-
-export function parseUnitFromMarkdown(raw: string, unitId: string): Unit {
-  const { data: unitMeta, content } = matter(raw);
-
-  const sections = content
-    .split(/^(?=## )/m)
-    .filter((s) => s.trim().startsWith("## "));
-
-  const lessons: UnitLesson[] = sections.map((section) => {
-    const lines = section.split("\n");
-    const title = lines[0].replace(/^##\s+/, "").trim();
-    const body = lines.slice(1).join("\n").trim();
-
-    let xpReward = 10;
-    let exerciseContent = body;
-
-    const xpMatch = body.match(/^xpReward:\s*(\d+)\s*\n?/);
-    if (xpMatch) {
-      xpReward = parseInt(xpMatch[1], 10);
-      exerciseContent = body.slice(xpMatch[0].length).trim();
-    }
-
-    const exercises = parseExercisesFromMarkdown(exerciseContent);
-
-    return { title, xpReward, exercises };
-  });
-
-  return {
-    id: unitId,
-    title: unitMeta.title,
-    description: unitMeta.description,
-    icon: unitMeta.icon,
-    color: unitMeta.color,
-    lessons,
-  };
-}
-
-function loadUnitFromFile(filePath: string, unitId: string): Unit {
-  const raw = fs.readFileSync(filePath, "utf-8");
-  return parseUnitFromMarkdown(raw, unitId);
-}
-
-function loadLessonRaw(lessonPath: string): { title: string; xpReward: number; exercises: Exercise[] } {
-  const raw = fs.readFileSync(lessonPath, "utf-8");
-  const { data: meta, content } = matter(raw);
-
-  const exercises = parseExercisesFromMarkdown(content);
-
-  return {
-    title: meta.title,
-    xpReward: meta.xpReward,
-    exercises,
-  };
+  return { courses, units };
 }

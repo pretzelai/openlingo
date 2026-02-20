@@ -10,9 +10,7 @@ export default async function LandingPage() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-lingo-bg px-4">
       <div className="max-w-lg text-center">
-        <h1 className="text-6xl font-black text-lingo-green mb-4">
-          ClaudeLingo
-        </h1>
+        <h1 className="text-6xl font-black text-lingo-green mb-4">OpenLingo</h1>
         <p className="text-xl text-lingo-text-light mb-2">
           The free, fun, and effective way to learn a new language!
         </p>

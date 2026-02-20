@@ -5,7 +5,7 @@ import {
   getPreferredModel,
 } from "@/lib/actions/preferences";
 
-export const metadata = { title: "Chat — ClaudeLingo" };
+export const metadata = { title: "Chat — OpenLingo" };
 
 export default async function ChatPage({
   searchParams,

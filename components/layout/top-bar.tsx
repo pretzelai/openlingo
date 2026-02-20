@@ -22,7 +22,7 @@ export function TopBar({ stats }: TopBarProps) {
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b-2 border-lingo-border bg-white px-4 md:px-6">
       <div className="md:hidden">
-        <span className="text-xl font-black text-lingo-green">ClaudeLingo</span>
+        <span className="text-xl font-black text-lingo-green">OpenLingo</span>
       </div>
 
       {/* Stats */}

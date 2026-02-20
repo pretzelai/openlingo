@@ -12,8 +12,8 @@ interface PageProps {
 export async function generateMetadata({ params }: PageProps) {
   const { unitId } = await params;
   const unit = await getUnitWithContent(unitId);
-  if (!unit) return { title: "Unit — ClaudeLingo" };
-  return { title: `${unit.title} — ClaudeLingo` };
+  if (!unit) return { title: "Unit — OpenLingo" };
+  return { title: `${unit.title} — OpenLingo` };
 }
 
 export default async function StandaloneUnitPage({ params }: PageProps) {

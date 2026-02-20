@@ -18,7 +18,7 @@ export function Sidebar() {
     <aside className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0 border-r-2 border-lingo-border bg-white">
       <div className="flex h-16 items-center px-6">
         <Link href="/units" className="text-2xl font-black text-lingo-green">
-          ClaudeLingo
+          OpenLingo
         </Link>
       </div>
       <nav className="flex-1 px-3 py-4 space-y-1">

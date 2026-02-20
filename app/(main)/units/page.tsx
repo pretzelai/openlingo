@@ -24,8 +24,9 @@ export default async function LearnPage() {
   const [courses, filters, enrolled, standaloneUnits] = await Promise.all([
     listCoursesWithLessonCounts(
       nativeLanguage ? { sourceLanguage: nativeLanguage } : undefined,
+      userId,
     ),
-    getAvailableFilters(),
+    getAvailableFilters(userId),
     userId ? getUserEnrolledCourses(userId) : Promise.resolve([]),
     userId ? getStandaloneUnits(userId) : Promise.resolve([]),
   ]);

@@ -1,0 +1,1 @@
+ALTER TABLE "course" ADD COLUMN "visibility" text;

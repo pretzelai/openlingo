@@ -5,7 +5,15 @@ import {
   userCourseEnrollment,
   lessonCompletion,
 } from "@/lib/db/schema";
-import { eq, and, or, sql, isNull, count, countDistinct } from "drizzle-orm";
+import {
+  eq,
+  and,
+  or,
+  sql,
+  isNull,
+  count,
+  countDistinct,
+} from "drizzle-orm";
 import type {
   Course,
   CourseListItem,
@@ -22,9 +30,20 @@ interface CourseFilters {
 }
 
 export async function listCourses(
-  filters?: CourseFilters
+  filters?: CourseFilters,
+  userId?: string
 ): Promise<CourseListItem[]> {
   const conditions = [eq(course.published, true)];
+
+  // Course-level visibility: public OR owned by the current user
+  if (userId) {
+    conditions.push(
+      or(eq(course.visibility, "public"), eq(course.createdBy, userId))!
+    );
+  } else {
+    conditions.push(eq(course.visibility, "public"));
+  }
+
   if (filters?.sourceLanguage) {
     conditions.push(eq(course.sourceLanguage, filters.sourceLanguage));
   }
@@ -34,6 +53,14 @@ export async function listCourses(
   if (filters?.level) {
     conditions.push(eq(course.level, filters.level));
   }
+
+  // Only count visible units (public OR owned by the current user)
+  const unitJoinCondition = userId
+    ? and(
+        eq(unit.courseId, course.id),
+        or(eq(unit.visibility, "public"), eq(unit.createdBy, userId))
+      )
+    : and(eq(unit.courseId, course.id), eq(unit.visibility, "public"));
 
   const rows = await db
     .select({
@@ -45,7 +72,7 @@ export async function listCourses(
       unitCount: countDistinct(unit.id),
     })
     .from(course)
-    .leftJoin(unit, eq(unit.courseId, course.id))
+    .leftJoin(unit, unitJoinCondition)
     .where(and(...conditions))
     .groupBy(course.id)
     .orderBy(course.title);
@@ -60,16 +87,29 @@ export async function listCourses(
 
 // Separate query for accurate lesson counts
 export async function listCoursesWithLessonCounts(
-  filters?: CourseFilters
+  filters?: CourseFilters,
+  userId?: string
 ): Promise<CourseListItem[]> {
-  const courses = await listCourses(filters);
+  const courses = await listCourses(filters, userId);
   if (courses.length === 0) return courses;
 
   const courseIds = courses.map((c) => c.id);
+
+  // Only count lessons from visible units
+  const unitVisibilityCondition = userId
+    ? and(
+        sql`${unit.courseId} IN ${courseIds}`,
+        or(eq(unit.visibility, "public"), eq(unit.createdBy, userId))
+      )
+    : and(
+        sql`${unit.courseId} IN ${courseIds}`,
+        eq(unit.visibility, "public")
+      );
+
   const units = await db
     .select({ id: unit.id, courseId: unit.courseId, markdown: unit.markdown })
     .from(unit)
-    .where(sql`${unit.courseId} IN ${courseIds}`);
+    .where(unitVisibilityCondition);
 
   const lessonCountByCourse = new Map<string, number>();
   for (const u of units) {
@@ -86,19 +126,40 @@ export async function listCoursesWithLessonCounts(
 }
 
 export async function getCourseWithContent(
-  courseId: string
+  courseId: string,
+  userId?: string
 ): Promise<Course | null> {
+  // Course-level visibility: public OR owned by the current user
+  const courseConditions = [eq(course.id, courseId)];
+  if (userId) {
+    courseConditions.push(
+      or(eq(course.visibility, "public"), eq(course.createdBy, userId))!
+    );
+  } else {
+    courseConditions.push(eq(course.visibility, "public"));
+  }
+
   const [courseRow] = await db
     .select()
     .from(course)
-    .where(eq(course.id, courseId));
+    .where(and(...courseConditions));
 
   if (!courseRow) return null;
+
+  // Unit-level visibility: public OR owned by the current user
+  const unitConditions = [eq(unit.courseId, courseId)];
+  if (userId) {
+    unitConditions.push(
+      or(eq(unit.visibility, "public"), eq(unit.createdBy, userId))!
+    );
+  } else {
+    unitConditions.push(eq(unit.visibility, "public"));
+  }
 
   const units = await db
     .select()
     .from(unit)
-    .where(eq(unit.courseId, courseId));
+    .where(and(...unitConditions));
 
   return {
     id: courseRow.id,
@@ -117,7 +178,16 @@ export async function getCourseWithContent(
   };
 }
 
-export async function getAvailableFilters() {
+export async function getAvailableFilters(userId?: string) {
+  const conditions = [eq(course.published, true)];
+  if (userId) {
+    conditions.push(
+      or(eq(course.visibility, "public"), eq(course.createdBy, userId))!
+    );
+  } else {
+    conditions.push(eq(course.visibility, "public"));
+  }
+
   const rows = await db
     .select({
       sourceLanguage: course.sourceLanguage,
@@ -125,7 +195,7 @@ export async function getAvailableFilters() {
       level: course.level,
     })
     .from(course)
-    .where(eq(course.published, true));
+    .where(and(...conditions));
 
   const sourceLanguages = [...new Set(rows.map((r) => r.sourceLanguage))].sort();
   const targetLanguages = [...new Set(rows.map((r) => r.targetLanguage))].sort();
@@ -150,6 +220,12 @@ export async function getUserEnrolledCourses(
 
   const courseIds = enrollments.map((e) => e.courseId);
 
+  // Only count visible units (public OR owned by the user)
+  const unitJoinCondition = and(
+    eq(unit.courseId, course.id),
+    or(eq(unit.visibility, "public"), eq(unit.createdBy, userId))
+  );
+
   const courses = await db
     .select({
       id: course.id,
@@ -160,11 +236,11 @@ export async function getUserEnrolledCourses(
       unitCount: countDistinct(unit.id),
     })
     .from(course)
-    .leftJoin(unit, eq(unit.courseId, course.id))
+    .leftJoin(unit, unitJoinCondition)
     .where(sql`${course.id} IN ${courseIds}`)
     .groupBy(course.id);
 
-  // Count completed lessons per course via unit join
+  // Count completed lessons per course via unit join (only visible units)
   const completionCounts = await db
     .select({
       courseId: unit.courseId,
@@ -175,7 +251,8 @@ export async function getUserEnrolledCourses(
     .where(
       and(
         eq(lessonCompletion.userId, userId),
-        sql`${unit.courseId} IN ${courseIds}`
+        sql`${unit.courseId} IN ${courseIds}`,
+        or(eq(unit.visibility, "public"), eq(unit.createdBy, userId))
       )
     )
     .groupBy(unit.courseId);
@@ -184,11 +261,16 @@ export async function getUserEnrolledCourses(
     completionCounts.map((c) => [c.courseId, Number(c.count)])
   );
 
-  // Get lesson counts from markdown
+  // Get lesson counts from markdown (only visible units)
   const allUnits = await db
     .select({ id: unit.id, courseId: unit.courseId, markdown: unit.markdown })
     .from(unit)
-    .where(sql`${unit.courseId} IN ${courseIds}`);
+    .where(
+      and(
+        sql`${unit.courseId} IN ${courseIds}`,
+        or(eq(unit.visibility, "public"), eq(unit.createdBy, userId))
+      )
+    );
 
   const lessonCountMap = new Map<string, number>();
   for (const u of allUnits) {

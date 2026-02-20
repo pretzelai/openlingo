@@ -256,6 +256,7 @@ export const course = pgTable("course", {
   sourceLanguage: text("source_language").notNull(),
   targetLanguage: text("target_language").notNull(),
   level: text("level").notNull(),
+  visibility: text("visibility"),
   published: boolean("published").notNull().default(true),
   createdBy: text("created_by").references(() => user.id, {
     onDelete: "set null",

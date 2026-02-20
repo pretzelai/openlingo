@@ -4,6 +4,8 @@ import { getUserProgress } from "@/lib/actions/progress";
 import { LearningPath } from "../learning-path";
 import { HoverableText } from "@/components/word/hoverable-text";
 import { getLanguageName } from "@/lib/languages";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
 
 interface PageProps {
   params: Promise<{ courseId: string }>;
@@ -12,7 +14,9 @@ interface PageProps {
 
 export default async function CourseDetailPage({ params }: PageProps) {
   const { courseId } = await params;
-  const course = await getCourseWithContent(courseId);
+  const session = await auth.api.getSession({ headers: await headers() });
+  const userId = session?.user?.id;
+  const course = await getCourseWithContent(courseId, userId);
   if (!course) notFound();
 
   const progress = await getUserProgress(course.id);

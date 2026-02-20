@@ -1,6 +1,8 @@
 import { getCourseWithContent } from "@/lib/db/queries/courses";
 import { notFound } from "next/navigation";
 import { LessonView } from "./lesson-view";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
 
 interface PageProps {
   params: Promise<{ courseId: string; unitId: string; lessonIndex: string }>;
@@ -9,7 +11,9 @@ interface PageProps {
 
 export default async function LessonPage({ params }: PageProps) {
   const { courseId, unitId, lessonIndex } = await params;
-  const course = await getCourseWithContent(courseId);
+  const session = await auth.api.getSession({ headers: await headers() });
+  const userId = session?.user?.id;
+  const course = await getCourseWithContent(courseId, userId);
   if (!course) notFound();
 
   const li = parseInt(lessonIndex);

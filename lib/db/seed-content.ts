@@ -15,6 +15,7 @@ export async function seedContentFromFilesystem() {
         sourceLanguage: c.sourceLanguage,
         targetLanguage: c.targetLanguage,
         level: c.level,
+        visibility: "public",
       })
       .onConflictDoNothing();
   }

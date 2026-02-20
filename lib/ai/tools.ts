@@ -16,7 +16,6 @@ import { parseExercise } from "@/lib/content/parser";
 import { langCodeToName } from "@/lib/prompts";
 import { supportedLanguages } from "@/lib/languages";
 import { parseUnitMarkdown } from "@/lib/content/loader";
-import { processTranslation } from "@/lib/article/process";
 
 const ALLOWED_TABLE = /\bsrs_card\b/i;
 const FORBIDDEN_TABLES =
@@ -422,6 +421,8 @@ export function createTools(userId: string, language?: string) {
           ),
       }),
       execute: async ({ url, cefrLevel, targetLanguage }) => {
+        // Lazy-load article processing so /api/chat can boot without jsdom.
+        const { processTranslation } = await import("@/lib/article/process");
         const lang = targetLanguage || language || "de";
         const langName = langCodeToName[lang] || lang;
 

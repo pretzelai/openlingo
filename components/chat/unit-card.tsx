@@ -4,7 +4,9 @@ import { useRouter } from "next/navigation";
 import { getUnitColor } from "@/lib/colors";
 
 interface ChatUnitCardProps {
-  courseId: string;
+  courseId?: string;
+  unitId?: string;
+  url?: string;
   title: string;
   description: string;
   icon: string;
@@ -17,6 +19,8 @@ interface ChatUnitCardProps {
 
 export function ChatUnitCard({
   courseId,
+  unitId,
+  url,
   title,
   description,
   icon,
@@ -27,6 +31,9 @@ export function ChatUnitCard({
 }: ChatUnitCardProps) {
   const router = useRouter();
   const color = getUnitColor(0);
+  const destination = courseId
+    ? `/units/${courseId}`
+    : url || (unitId ? `/unit/${unitId}` : "/chat");
 
   return (
     <div className="w-full overflow-hidden rounded-xl border-2 border-lingo-border bg-white">
@@ -113,7 +120,7 @@ export function ChatUnitCard({
       <div className="border-t border-lingo-border/50 px-4 py-3">
         <button
           type="button"
-          onClick={() => router.push(`/units/${courseId}`)}
+          onClick={() => router.push(destination)}
           className="w-full rounded-xl bg-lingo-green py-2.5 text-sm font-bold text-white shadow-[0_4px_0_0] shadow-lingo-green-dark active:translate-y-[2px] active:shadow-[0_2px_0_0] active:shadow-lingo-green-dark transition-all"
         >
           Start Learning

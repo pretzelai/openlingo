@@ -129,7 +129,9 @@ export function ChatMessage({
                   return (
                     <ChatUnitCard
                       key={toolPart.toolCallId}
-                      courseId={output.courseId as string}
+                      courseId={output.courseId as string | undefined}
+                      unitId={output.unitId as string | undefined}
+                      url={output.url as string | undefined}
                       title={output.title as string}
                       description={output.description as string}
                       icon={output.icon as string}

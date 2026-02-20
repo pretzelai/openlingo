@@ -11,7 +11,7 @@ import {
   srsCard,
   article,
 } from "@/lib/db/schema";
-import { and, eq, gte, lte, sql } from "drizzle-orm";
+import { and, eq, gte, lte } from "drizzle-orm";
 import { parseExercise } from "@/lib/content/parser";
 import { langCodeToName } from "@/lib/prompts";
 import { supportedLanguages } from "@/lib/languages";
@@ -211,6 +211,7 @@ export function createTools(userId: string, language?: string) {
 
         return {
           success: true,
+          courseId: courseId ?? undefined,
           unitId,
           title: parsedUnit.title,
           description: parsedUnit.description,

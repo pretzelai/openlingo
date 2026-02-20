@@ -10,12 +10,6 @@ Live version: [https://openlingo.dev](https://openlingo.dev)
 
 Conversational language practice powered by your choice of LLM. The tutor adapts to your level, remembers context across sessions via a persistent memory system, and can generate exercises on the fly.
 
-**Supported models:**
-
-- Claude Sonnet 4.6 / Opus 4.6 (Anthropic)
-- GPT-4o / GPT-4o Mini (OpenAI)
-- Gemini 3 Flash / 3 Pro / 2.5 Flash Lite (Google)
-
 ### AI Tools
 
 The chat tutor has access to tools it can call during conversation:

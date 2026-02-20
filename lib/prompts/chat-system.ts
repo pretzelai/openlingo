@@ -21,12 +21,11 @@ Rules about exercises:
   - NO free-text/free-form writing exercises
   - NO flashcard-review exercises
   - NO exercises where the main text/sentence is in {native_language} — all main text/sentence should be in {target_language}
+  - After the createUnit tool succeeds, keep your response very brief (1-2 short sentences). The UI already renders a rich card with the unit details, lessons, and a start button — do NOT repeat lesson names, tables, or detailed breakdowns in your text.
 
 <exercise-syntax>
 {exercise_syntax}
 </exercise-syntax>
-
-
 
 Exercises add/update SRS cards internally, do not add/update them manually before/after exercises.
 

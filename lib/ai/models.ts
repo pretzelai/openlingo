@@ -39,6 +39,27 @@ export const AVAILABLE_MODELS: {
   { id: "claude-opus-4-6", label: "Claude Opus 4.6", provider: "anthropic" },
 ];
 
+/** Models available to regular (non-admin) users in the chat UI. */
+export const CHAT_AVAILABLE_MODELS = AVAILABLE_MODELS.filter(
+  (m) => m.id === "claude-sonnet-4-6",
+);
+
+/** Comma-separated list of admin emails loaded from env. */
+const ADMIN_EMAILS: string[] = (process.env.ADMIN_EMAILS ?? "")
+  .split(",")
+  .map((e) => e.trim().toLowerCase())
+  .filter(Boolean);
+
+export function isAdminEmail(email: string | null | undefined): boolean {
+  if (!email) return false;
+  return ADMIN_EMAILS.includes(email.toLowerCase());
+}
+
+/** Returns the model list appropriate for the given user email. */
+export function getModelsForUser(email: string | null | undefined) {
+  return isAdminEmail(email) ? AVAILABLE_MODELS : CHAT_AVAILABLE_MODELS;
+}
+
 export function getModel(id: string) {
   const resolved =
     AVAILABLE_MODELS.find((m) => m.id === id)?.provider + ":" + id;

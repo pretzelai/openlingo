@@ -1,5 +1,5 @@
 import { streamText, convertToModelMessages, stepCountIs } from "ai";
-import { getModel, AVAILABLE_MODELS, createTools } from "@/lib/ai";
+import { getModel, getModelsForUser, createTools } from "@/lib/ai";
 import { requireSession } from "@/lib/auth-server";
 import { langCodeToName, interpolateTemplate, SRS_REFERENCE } from "@/lib/prompts";
 import { getUserPromptTemplate } from "@/lib/actions/prompts";
@@ -18,7 +18,8 @@ export async function POST(req: Request) {
   const { messages, language: lang, model: requestedModel } = await req.json();
 
   const language: string = lang || (await getTargetLanguage(session.user.id)) || "en";
-  const modelId = AVAILABLE_MODELS.some((m) => m.id === requestedModel)
+  const userModels = getModelsForUser(session.user.email);
+  const modelId = userModels.some((m) => m.id === requestedModel)
     ? requestedModel
     : DEFAULT_CHAT_MODEL;
   const target_language = langCodeToName[language] || language;

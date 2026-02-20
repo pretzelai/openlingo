@@ -6,7 +6,7 @@ import { eq } from "drizzle-orm";
 import { requireSession } from "@/lib/auth-server";
 import { revalidatePath } from "next/cache";
 import { supportedLanguages } from "@/lib/languages";
-import { AVAILABLE_MODELS } from "@/lib/ai/models";
+import { getModelsForUser } from "@/lib/ai/models";
 import { DEFAULT_AI_MODEL } from "../constants";
 
 export async function getTargetLanguage(userId?: string): Promise<string | null> {
@@ -56,7 +56,8 @@ export async function updatePreferredModel(model: string) {
   const session = await requireSession();
   const userId = session.user.id;
 
-  const valid = AVAILABLE_MODELS.some((m) => m.id === model);
+  const userModels = getModelsForUser(session.user.email);
+  const valid = userModels.some((m) => m.id === model);
   if (!valid) {
     throw new Error(`Unsupported model: ${model}`);
   }

@@ -10,7 +10,7 @@ import { ThinkingMessage } from "./thinking-message";
 import { createConversation, saveMessages } from "@/lib/actions/chat";
 import { recordChatExerciseResult } from "@/lib/actions/srs";
 import { updatePreferredModel } from "@/lib/actions/preferences";
-import { AVAILABLE_MODELS } from "@/lib/ai/models";
+
 import type { Exercise } from "@/lib/content/types";
 import { useIsMobile } from "@/hooks/use-media-query";
 import { useMobileKeyboardOpen } from "@/hooks/use-mobile-keyboard-open";
@@ -18,6 +18,7 @@ import { useMobileKeyboardOpen } from "@/hooks/use-mobile-keyboard-open";
 interface ChatViewProps {
   language?: string;
   preferredModel: string;
+  availableModels: { id: string; label: string; provider: string }[];
   conversationId?: string;
   initialMessages?: UIMessage[];
   initialPrompt?: string;
@@ -26,6 +27,7 @@ interface ChatViewProps {
 export function ChatView({
   language,
   preferredModel,
+  availableModels,
   conversationId,
   initialMessages,
   initialPrompt,
@@ -284,7 +286,7 @@ export function ChatView({
             }}
             className="rounded-lg border border-lingo-border bg-white px-2 py-1 text-xs text-lingo-text-light"
           >
-            {AVAILABLE_MODELS.map((m) => (
+            {availableModels.map((m) => (
               <option key={m.id} value={m.id}>
                 {m.label}
               </option>

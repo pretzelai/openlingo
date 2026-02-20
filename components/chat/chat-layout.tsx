@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { deleteConversation } from "@/lib/actions/chat";
+import { useMobileKeyboardOpen } from "@/hooks/use-mobile-keyboard-open";
 
 type ConversationSummary = {
   id: string;
@@ -36,6 +37,7 @@ export function ChatLayout({ conversations, children }: ChatLayoutProps) {
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const isKeyboardOpen = useMobileKeyboardOpen();
 
   // Already sorted desc by updatedAt from the DB query
   const sorted = conversations;
@@ -140,7 +142,11 @@ export function ChatLayout({ conversations, children }: ChatLayoutProps) {
       {/* Main content */}
       <div className="flex min-w-0 flex-1 flex-col">
         {/* Mobile toggle */}
-        <div className="flex items-center px-2 py-1 md:hidden">
+        <div
+          className={`items-center px-2 py-1 md:hidden ${
+            isKeyboardOpen ? "hidden" : "flex"
+          }`}
+        >
           <button
             type="button"
             onClick={() => setSidebarOpen(true)}

@@ -12,6 +12,8 @@ import { recordChatExerciseResult } from "@/lib/actions/srs";
 import { updatePreferredModel } from "@/lib/actions/preferences";
 import { AVAILABLE_MODELS } from "@/lib/ai/models";
 import type { Exercise } from "@/lib/content/types";
+import { useIsMobile } from "@/hooks/use-media-query";
+import { useMobileKeyboardOpen } from "@/hooks/use-mobile-keyboard-open";
 
 interface ChatViewProps {
   language?: string;
@@ -36,6 +38,8 @@ export function ChatView({
   const [input, setInput] = useState("");
   const [model, setModel] = useState(preferredModel);
   const [isAtBottom, setIsAtBottom] = useState(true);
+  const isMobile = useIsMobile();
+  const isKeyboardOpen = useMobileKeyboardOpen();
   const [completedExercises, setCompletedExercises] = useState<
     Record<string, { correct: boolean; answer: string }>
   >({});
@@ -133,8 +137,10 @@ export function ChatView({
 
   // Focus input on mount
   useEffect(() => {
-    inputRef.current?.focus();
-  }, []);
+    if (!isMobile) {
+      inputRef.current?.focus();
+    }
+  }, [isMobile]);
 
   // Auto-resize textarea
   const adjustHeight = useCallback(() => {
@@ -239,7 +245,7 @@ export function ChatView({
         <button
           aria-label="Scroll to bottom"
           className={`absolute bottom-4 left-1/2 z-10 -translate-x-1/2 rounded-full border-2 border-lingo-border bg-white p-2 shadow-lg transition-all hover:bg-lingo-gray ${
-            isAtBottom
+            isAtBottom || isKeyboardOpen
               ? "pointer-events-none scale-0 opacity-0"
               : "pointer-events-auto scale-100 opacity-100"
           }`}
@@ -263,8 +269,12 @@ export function ChatView({
       </div>
 
       {/* Input area */}
-      <div className="sticky bottom-0 z-10 bg-lingo-bg px-2 pb-3 pt-1 md:px-4 md:pb-4">
-        <div className="mb-1.5 flex justify-end">
+      <div
+        className={`sticky bottom-0 z-10 bg-lingo-bg px-2 pb-3 pt-1 transition-all md:px-4 md:pb-4 ${
+          isKeyboardOpen ? "pb-2 pt-0.5" : ""
+        }`}
+      >
+        <div className={`mb-1.5 justify-end ${isKeyboardOpen ? "hidden" : "flex"}`}>
           <select
             value={model}
             onChange={(e) => {
@@ -295,7 +305,7 @@ export function ChatView({
             onKeyDown={handleKeyDown}
             placeholder="Send a message..."
             rows={1}
-            className="flex-1 resize-none border-none bg-transparent px-2 py-1.5 text-sm text-lingo-text placeholder:text-lingo-text-light/50 focus:outline-none"
+            className="flex-1 resize-none border-none bg-transparent px-2 py-1.5 text-base text-lingo-text placeholder:text-lingo-text-light/50 focus:outline-none md:text-sm"
             style={{ height: "44px", maxHeight: "200px" }}
           />
           {isLoading ? (

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useMobileKeyboardOpen } from "@/hooks/use-mobile-keyboard-open";
 
 const navItems = [
   { href: "/chat", label: "Chat", icon: "💬" },
@@ -13,6 +14,9 @@ const navItems = [
 
 export function MobileNav() {
   const pathname = usePathname();
+  const isKeyboardOpen = useMobileKeyboardOpen();
+
+  if (isKeyboardOpen) return null;
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-30 flex md:hidden border-t-2 border-lingo-border bg-white">

@@ -9,7 +9,7 @@ import {
   dailyActivity,
   unit,
 } from "@/lib/db/schema";
-import { eq, and } from "drizzle-orm";
+import { eq, and, sql } from "drizzle-orm";
 import { requireSession } from "@/lib/auth-server";
 import { computeStreak } from "@/lib/game/streaks";
 import type { Exercise } from "@/lib/content/types";
@@ -34,19 +34,34 @@ export async function completeLesson(input: CompleteLessonInput) {
   const userId = session.user.id;
 
   const perfectScore = input.mistakeCount === 0;
+  const today = new Date().toISOString().split("T")[0];
 
-  // Create lesson completion
-  const [completion] = await db
-    .insert(lessonCompletion)
-    .values({
-      userId,
-      unitId: input.unitId,
-      lessonIndex: input.lessonIndex,
-      perfectScore,
-    })
-    .returning();
+  // Create lesson completion + fetch unit row in parallel
+  const [completionResult, unitResult] = await Promise.all([
+    db
+      .insert(lessonCompletion)
+      .values({
+        userId,
+        unitId: input.unitId,
+        lessonIndex: input.lessonIndex,
+        perfectScore,
+      })
+      .returning(),
+    db
+      .select({
+        id: unit.id,
+        courseId: unit.courseId,
+        markdown: unit.markdown,
+        targetLanguage: unit.targetLanguage,
+      })
+      .from(unit)
+      .where(eq(unit.id, input.unitId)),
+  ]);
 
-  // Save exercise attempts
+  const completion = completionResult[0];
+  const unitRow = unitResult[0];
+
+  // Save exercise attempts (depends on completion.id)
   if (input.results.length > 0) {
     await db.insert(exerciseAttempt).values(
       input.results.map((r) => ({
@@ -60,14 +75,10 @@ export async function completeLesson(input: CompleteLessonInput) {
     );
   }
 
-  // Record SRS word practice
-  try {
-    const [unitRow] = await db
-      .select({ markdown: unit.markdown, targetLanguage: unit.targetLanguage })
-      .from(unit)
-      .where(eq(unit.id, input.unitId));
-
-    if (unitRow) {
+  // Collect all SRS word practice calls (to run in parallel instead of sequentially)
+  const srsPromises: Promise<void>[] = [];
+  if (unitRow) {
+    try {
       const lessons = getUnitLessons(unitRow.markdown);
       const lesson = lessons[input.lessonIndex];
       if (lesson) {
@@ -77,40 +88,78 @@ export async function completeLesson(input: CompleteLessonInput) {
           if (exercise.type === "flashcard-review") continue;
           const words = extractSrsWords(exercise);
           for (const w of words) {
-            await recordWordPractice(userId, w, unitRow.targetLanguage, "", result.correct);
+            srsPromises.push(
+              recordWordPractice(userId, w, unitRow.targetLanguage, "", result.correct)
+            );
           }
         }
       }
+    } catch {
+      // SRS extraction error — continue without SRS
     }
-  } catch {
-    // SRS update is best-effort — don't block lesson completion
   }
 
-  // Update user stats
+  // Run SRS updates, stats upsert, daily activity upsert, and enrollment advance in parallel
+  // These are all independent of each other
+  await Promise.all([
+    // SRS word practice — all words in parallel (best-effort)
+    Promise.all(srsPromises).catch(() => {}),
+
+    // Upsert user stats (single query instead of SELECT + conditional INSERT/UPDATE)
+    upsertUserStats(userId, today),
+
+    // Upsert daily activity (single query instead of SELECT + conditional INSERT/UPDATE)
+    db
+      .insert(dailyActivity)
+      .values({ userId, date: today, lessonsCompleted: 1 })
+      .onConflictDoUpdate({
+        target: [dailyActivity.userId, dailyActivity.date],
+        set: {
+          lessonsCompleted: sql`${dailyActivity.lessonsCompleted} + 1`,
+        },
+      }),
+
+    // Advance enrollment progress (pass unitRow to avoid duplicate fetch)
+    advanceEnrollment(userId, input.unitId, input.lessonIndex, unitRow),
+  ]);
+
+  return { perfectScore };
+}
+
+async function upsertUserStats(userId: string, today: string) {
+  // Fetch current stats to compute streak
   const [stats] = await db
     .select()
     .from(userStats)
     .where(eq(userStats.userId, userId));
 
-  const totalCompleted = (stats?.totalLessonsCompleted ?? 0) + 1;
-
-  const { newStreak } = computeStreak(
+  const { newStreak, shouldUpdate } = computeStreak(
     stats?.currentStreak ?? 0,
     stats?.lastPracticeDate ?? null
   );
+
+  // Always increment lesson count; only update streak fields if needed
+  const totalCompleted = (stats?.totalLessonsCompleted ?? 0) + 1;
   const longestStreak = Math.max(stats?.longestStreak ?? 0, newStreak);
-  const today = new Date().toISOString().split("T")[0];
 
   if (stats) {
-    await db
-      .update(userStats)
-      .set({
-        currentStreak: newStreak,
-        longestStreak,
-        lastPracticeDate: today,
-        totalLessonsCompleted: totalCompleted,
-      })
-      .where(eq(userStats.userId, userId));
+    if (shouldUpdate) {
+      await db
+        .update(userStats)
+        .set({
+          currentStreak: newStreak,
+          longestStreak,
+          lastPracticeDate: today,
+          totalLessonsCompleted: totalCompleted,
+        })
+        .where(eq(userStats.userId, userId));
+    } else {
+      // Already practiced today — only increment lesson count
+      await db
+        .update(userStats)
+        .set({ totalLessonsCompleted: totalCompleted })
+        .where(eq(userStats.userId, userId));
+    }
   } else {
     await db.insert(userStats).values({
       userId,
@@ -120,45 +169,14 @@ export async function completeLesson(input: CompleteLessonInput) {
       totalLessonsCompleted: totalCompleted,
     });
   }
-
-  // Update daily activity (upsert)
-  const [existingActivity] = await db
-    .select()
-    .from(dailyActivity)
-    .where(
-      and(eq(dailyActivity.userId, userId), eq(dailyActivity.date, today))
-    );
-
-  if (existingActivity) {
-    await db
-      .update(dailyActivity)
-      .set({
-        lessonsCompleted: existingActivity.lessonsCompleted + 1,
-      })
-      .where(eq(dailyActivity.id, existingActivity.id));
-  } else {
-    await db
-      .insert(dailyActivity)
-      .values({ userId, date: today, lessonsCompleted: 1 });
-  }
-
-  // Advance enrollment progress
-  await advanceEnrollment(userId, input.unitId, input.lessonIndex);
-
-  return { perfectScore };
 }
 
 async function advanceEnrollment(
   userId: string,
   unitId: string,
-  completedLessonIndex: number
+  completedLessonIndex: number,
+  unitRow: { id: string; courseId: string | null; markdown: string; targetLanguage: string } | undefined
 ) {
-  // Get the unit to find courseId and lesson count
-  const [unitRow] = await db
-    .select()
-    .from(unit)
-    .where(eq(unit.id, unitId));
-
   if (!unitRow || !unitRow.courseId) return;
 
   const courseId = unitRow.courseId;
@@ -198,7 +216,8 @@ async function advanceEnrollment(
     const courseUnits = await db
       .select({ id: unit.id })
       .from(unit)
-      .where(eq(unit.courseId, courseId));
+      .where(eq(unit.courseId, courseId))
+      .orderBy(unit.createdAt);
 
     const currentIdx = courseUnits.findIndex((u) => u.id === unitId);
     const nextUnit = courseUnits[currentIdx + 1];

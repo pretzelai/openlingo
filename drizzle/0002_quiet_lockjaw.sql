@@ -1,0 +1,1 @@
+CREATE INDEX "lesson_completion_user_unit" ON "lesson_completion" USING btree ("user_id","unit_id");

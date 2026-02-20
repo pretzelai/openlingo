@@ -15,6 +15,13 @@
       "when": 1771606941313,
       "tag": "0001_damp_runaways",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1771610810312,
+      "tag": "0002_quiet_lockjaw",
+      "breakpoints": true
     }
   ]
 }

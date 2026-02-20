@@ -9,6 +9,7 @@ import {
   real,
   uniqueIndex,
   primaryKey,
+  index,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
@@ -102,20 +103,26 @@ export const userCourseEnrollment = pgTable(
   (table) => [uniqueIndex("enrollment_unique").on(table.userId, table.courseId)]
 );
 
-export const lessonCompletion = pgTable("lesson_completion", {
-  id: text("id")
-    .primaryKey()
-    .$defaultFn(() => crypto.randomUUID()),
-  userId: text("user_id")
-    .notNull()
-    .references(() => user.id, { onDelete: "cascade" }),
-  unitId: text("unit_id")
-    .notNull()
-    .references(() => unit.id, { onDelete: "cascade" }),
-  lessonIndex: integer("lesson_index").notNull(),
-  perfectScore: boolean("perfect_score").notNull().default(false),
-  completedAt: timestamp("completed_at").notNull().defaultNow(),
-});
+export const lessonCompletion = pgTable(
+  "lesson_completion",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    unitId: text("unit_id")
+      .notNull()
+      .references(() => unit.id, { onDelete: "cascade" }),
+    lessonIndex: integer("lesson_index").notNull(),
+    perfectScore: boolean("perfect_score").notNull().default(false),
+    completedAt: timestamp("completed_at").notNull().defaultNow(),
+  },
+  (table) => [
+    index("lesson_completion_user_unit").on(table.userId, table.unitId),
+  ]
+);
 
 export const exerciseAttempt = pgTable("exercise_attempt", {
   id: text("id")

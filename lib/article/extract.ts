@@ -1,4 +1,4 @@
-import { JSDOM } from "jsdom";
+import { parseHTML } from "linkedom";
 import { Readability } from "@mozilla/readability";
 
 // Site-specific configurations
@@ -36,16 +36,54 @@ export function extractArticleContent(
   url: string,
 ): { title: string; content: string } | null {
   try {
-    const dom = new JSDOM(html, { url });
-    const reader = new Readability(dom.window.document);
+    const { document, window } = parseHTML(html);
+    // Keep URL context for parsers that use document.location/baseURI.
+    try {
+      window.location.href = url;
+    } catch {
+      // Ignore location assignment issues; extraction can still proceed.
+    }
+
+    const reader = new Readability(document);
     const article = reader.parse();
-    if (!article) return null;
-    const content = article.textContent || "";
-    return { title: article.title || "Untitled", content };
+    const parsedContent = article?.textContent?.trim() ?? "";
+    if (parsedContent.length >= 100) {
+      return { title: article?.title || "Untitled", content: parsedContent };
+    }
+
+    // Fallback for pages where Readability returns null/very short content.
+    const fallback = fallbackExtractPlainText(html);
+    if (!fallback || fallback.content.length < 100) return null;
+    return fallback;
   } catch (error) {
-    console.error("Readability extraction failed:", error);
-    return null;
+    console.error("Readability extraction failed, using fallback:", error);
+    const fallback = fallbackExtractPlainText(html);
+    return fallback && fallback.content.length >= 100 ? fallback : null;
   }
+}
+
+function fallbackExtractPlainText(
+  html: string,
+): { title: string; content: string } | null {
+  const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
+  const title = titleMatch?.[1]?.trim() || "Untitled";
+
+  const withoutNoise = html
+    .replace(/<script[\s\S]*?<\/script>/gi, " ")
+    .replace(/<style[\s\S]*?<\/style>/gi, " ")
+    .replace(/<noscript[\s\S]*?<\/noscript>/gi, " ");
+
+  const content = withoutNoise
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/gi, "'")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  if (!content) return null;
+  return { title, content };
 }
 
 const CHUNK_CONFIG = {

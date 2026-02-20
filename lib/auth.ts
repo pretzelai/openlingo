@@ -35,6 +35,16 @@ export const auth = betterAuth({
               nativeLanguage: DEFAULT_NATIVE_LANGUAGE,
             })
             .onConflictDoNothing();
+            
+          if (process.env.SLACK_WEBHOOK) {
+            fetch(process.env.SLACK_WEBHOOK, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                text: `New user signup: ${user.name} (${user.email})`,
+              }),
+            }).catch(() => {});
+          }
         },
       },
     },

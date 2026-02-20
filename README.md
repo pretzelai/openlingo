@@ -102,26 +102,7 @@ bun install
 cp example.env.local .env.local
 ```
 
-Edit `.env.local` with your API keys:
-
-```env
-DATABASE_URL=postgresql://lingo:lingo_local_dev@localhost:5437/lingo
-BETTER_AUTH_SECRET=change-this-in-production
-BETTER_AUTH_BASE_URL=http://localhost:3000
-
-# At least one AI provider key is required
-OPENAI_API_KEY=sk-proj-...
-ANTHROPIC_API_KEY=sk-ant-...
-GOOGLE_AI_API_KEY=...
-
-# Optional — Cloudflare R2 for audio caching
-R2_ACCOUNT_ID=
-R2_ACCESS_KEY_ID=
-R2_SECRET_ACCESS_KEY=
-R2_BUCKET_NAME=
-R2_PUBLIC_URL=
-R2_API_TOKEN=
-```
+Edit `.env.local` with your API keys
 
 ### 3. Start the database
 

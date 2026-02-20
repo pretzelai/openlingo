@@ -4,7 +4,6 @@ import { ChatView } from "@/components/chat/chat-view";
 import { getPreferredModel } from "@/lib/actions/preferences";
 import type { UIMessage } from "@ai-sdk/react";
 
-export const metadata = { title: "Chat — OpenLingo" };
 
 export default async function ChatConversationPage({
   params,

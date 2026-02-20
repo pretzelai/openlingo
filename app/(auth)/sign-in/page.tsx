@@ -1,6 +1,5 @@
 import { SignInForm } from "@/components/auth/sign-in-form";
 
-export const metadata = { title: "Sign In — OpenLingo" };
 
 export default function SignInPage() {
   return (

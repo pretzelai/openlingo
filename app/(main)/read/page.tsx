@@ -6,7 +6,6 @@ import { eq, desc } from "drizzle-orm";
 
 const NEW_ARTICLE_PROMPT = "I want to create a new translated article";
 
-export const metadata = { title: "Read — OpenLingo" };
 
 export default async function ReadPage() {
   const session = await requireSession();

@@ -9,12 +9,6 @@ interface PageProps {
   params: Promise<{ courseId: string }>;
 }
 
-export async function generateMetadata({ params }: PageProps) {
-  const { courseId } = await params;
-  const course = await getCourseWithContent(courseId);
-  if (!course) return { title: "Course — OpenLingo" };
-  return { title: `${course.title} — OpenLingo` };
-}
 
 export default async function CourseDetailPage({ params }: PageProps) {
   const { courseId } = await params;

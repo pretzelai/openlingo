@@ -6,7 +6,7 @@ async function getGitHubStars(): Promise<number | null> {
   try {
     const res = await fetch(
       "https://api.github.com/repos/pretzelai/openlingo",
-      { next: { revalidate: 3600 } }
+      { next: { revalidate: 3600 } },
     );
     if (!res.ok) return null;
     const data = await res.json();
@@ -17,23 +17,19 @@ async function getGitHubStars(): Promise<number | null> {
 }
 
 export default async function LandingPage() {
-  const [session, stars] = await Promise.all([
-    getSession(),
-    getGitHubStars(),
-  ]);
+  const [session, stars] = await Promise.all([getSession(), getGitHubStars()]);
 
   return (
     <div className="flex min-h-screen flex-col items-center bg-lingo-bg px-4 py-16">
       <div className="max-w-2xl w-full text-center">
         {/* Header */}
-        <h1 className="text-6xl font-black text-lingo-green mb-4">
-          OpenLingo
-        </h1>
+        <h1 className="text-6xl font-black text-lingo-green mb-4">OpenLingo</h1>
         <p className="text-xl text-lingo-text-light mb-2">
-          The free, fun, and effective way to learn a new language!
+          Connecting LLMs to language learning
         </p>
         <p className="text-base text-lingo-text-light mb-8">
-          Keep your streak and master a new language the fun way!
+          Create personalised units, read/listen to translated articles and
+          practice with AI
         </p>
 
         {/* CTA Buttons */}
@@ -108,10 +104,9 @@ export default async function LandingPage() {
             See it in action
           </h2>
           <div className="relative w-full aspect-video rounded-2xl overflow-hidden border-2 border-lingo-border bg-black/5">
-            {/* Replace YOUTUBE_VIDEO_ID with your actual video ID */}
             <iframe
               className="absolute inset-0 w-full h-full"
-              src="https://www.youtube.com/embed/YOUTUBE_VIDEO_ID"
+              src="https://www.youtube.com/embed/YEYLhulhFUc"
               title="OpenLingo Demo"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen

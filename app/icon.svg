@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#58CC02"/>
+      <stop offset="100%" stop-color="#46a302"/>
+    </linearGradient>
+  </defs>
+  <!-- Rounded square background -->
+  <rect width="512" height="512" rx="108" ry="108" fill="url(#bg)"/>
+  <!-- Speech bubble -->
+  <path d="M256 96c-99.4 0-180 65.8-180 147s80.6 147 180 147c20.6 0 40.4-2.9 59-8.3l68 34-14.4-57.6C403 331.4 436 299 436 243c0-81.2-80.6-147-180-147z" fill="white" opacity="0.95"/>
+  <!-- Globe lines inside bubble -->
+  <ellipse cx="256" cy="236" rx="72" ry="72" fill="none" stroke="#58CC02" stroke-width="10"/>
+  <ellipse cx="256" cy="236" rx="32" ry="72" fill="none" stroke="#58CC02" stroke-width="8"/>
+  <line x1="184" y1="236" x2="328" y2="236" stroke="#58CC02" stroke-width="8"/>
+  <line x1="196" y1="200" x2="316" y2="200" stroke="#58CC02" stroke-width="6"/>
+  <line x1="196" y1="272" x2="316" y2="272" stroke="#58CC02" stroke-width="6"/>
+</svg>

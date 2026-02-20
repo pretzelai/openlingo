@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "OpenLingo — Learn a Language",
+  title: "OpenLingo",
   description: "A fun, gamified language learning app",
 };
 

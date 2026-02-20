@@ -6,14 +6,6 @@ interface PageProps {
   params: Promise<{ unitId: string; lessonIndex: string }>;
 }
 
-export async function generateMetadata({ params }: PageProps) {
-  const { unitId, lessonIndex } = await params;
-  const unit = await getUnitWithContent(unitId);
-  if (!unit) return { title: "Lesson — OpenLingo" };
-
-  const lesson = unit.lessons[parseInt(lessonIndex)];
-  return { title: `${lesson?.title ?? "Lesson"} — OpenLingo` };
-}
 
 export default async function StandaloneLessonPage({ params }: PageProps) {
   const { unitId, lessonIndex } = await params;

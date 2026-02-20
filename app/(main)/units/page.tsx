@@ -14,7 +14,6 @@ import { CourseBrowser } from "./course-browser";
 
 const NEW_UNIT_PROMPT = "I want to create a new personalised unit";
 
-export const metadata = { title: "Learn — OpenLingo" };
 
 export default async function LearnPage() {
   const session = await auth.api.getSession({ headers: await headers() });

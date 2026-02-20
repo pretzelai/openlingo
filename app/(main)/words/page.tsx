@@ -4,7 +4,6 @@ import { loadLanguageRaw } from "@/lib/words";
 import { WordExplorer } from "./word-explorer";
 import { redirect } from "next/navigation";
 
-export const metadata = { title: "Words — OpenLingo" };
 
 export default async function WordsPage() {
   const language = await getTargetLanguage();

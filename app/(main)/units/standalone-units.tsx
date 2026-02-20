@@ -22,7 +22,7 @@ export function StandaloneUnits({ units }: StandaloneUnitsProps) {
             <Link
               key={unit.id}
               href={`/unit/${unit.id}`}
-              className="flex items-center gap-4 rounded-xl border-2 border-lingo-border bg-white p-4 shadow-[0_2px_0_0] shadow-lingo-border transition-all hover:border-lingo-green hover:bg-lingo-green/5 active:translate-y-[1px] active:shadow-none"
+              className="flex min-w-0 items-center gap-4 rounded-xl border-2 border-lingo-border bg-white p-4 shadow-[0_2px_0_0] shadow-lingo-border transition-all hover:border-lingo-green hover:bg-lingo-green/5 active:translate-y-[1px] active:shadow-none"
             >
               <div
                 className="flex h-12 w-12 items-center justify-center rounded-xl text-2xl"

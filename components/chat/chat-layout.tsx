@@ -119,7 +119,7 @@ export function ChatLayout({ conversations, children }: ChatLayoutProps) {
   );
 
   return (
-    <div className="-m-4 -mb-20 md:-m-8 md:-mb-8 relative flex h-[calc(100vh-4rem)]">
+    <div className="-m-4 md:-m-8 md:-mb-8 relative flex h-[calc(100dvh-9rem)] md:h-[calc(100vh-4rem)]">
       {/* Mobile overlay */}
       {sidebarOpen && (
         <div

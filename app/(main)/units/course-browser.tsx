@@ -38,12 +38,12 @@ export function CourseBrowser({ courses, filters }: CourseBrowserProps) {
       </h2>
 
       {hasFilters && (
-        <div className="mb-4 flex flex-wrap gap-2">
+        <div className="mb-4 flex min-w-0 flex-wrap gap-2">
           {filters.sourceLanguages.length > 1 && (
             <select
               value={sourceLanguage}
               onChange={(e) => setSourceLanguage(e.target.value)}
-              className="rounded-lg border-2 border-lingo-border bg-lingo-card px-3 py-2 text-sm font-bold text-lingo-text"
+              className="max-w-full min-w-0 rounded-lg border-2 border-lingo-border bg-lingo-card px-3 py-2 text-sm font-bold text-lingo-text"
             >
               <option value="">All source languages</option>
               {filters.sourceLanguages.map((lang) => (
@@ -57,7 +57,7 @@ export function CourseBrowser({ courses, filters }: CourseBrowserProps) {
             <select
               value={targetLanguage}
               onChange={(e) => setTargetLanguage(e.target.value)}
-              className="rounded-lg border-2 border-lingo-border bg-lingo-card px-3 py-2 text-sm font-bold text-lingo-text"
+              className="max-w-full min-w-0 rounded-lg border-2 border-lingo-border bg-lingo-card px-3 py-2 text-sm font-bold text-lingo-text"
             >
               <option value="">All target languages</option>
               {filters.targetLanguages.map((lang) => (
@@ -71,7 +71,7 @@ export function CourseBrowser({ courses, filters }: CourseBrowserProps) {
             <select
               value={level}
               onChange={(e) => setLevel(e.target.value)}
-              className="rounded-lg border-2 border-lingo-border bg-lingo-card px-3 py-2 text-sm font-bold text-lingo-text"
+              className="max-w-full min-w-0 rounded-lg border-2 border-lingo-border bg-lingo-card px-3 py-2 text-sm font-bold text-lingo-text"
             >
               <option value="">All levels</option>
               {filters.levels.map((l) => (

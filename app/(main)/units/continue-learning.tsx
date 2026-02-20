@@ -27,16 +27,16 @@ export function ContinueLearning({ courses }: ContinueLearningProps) {
             <Link
               key={course.id}
               href={`/units/${course.id}`}
-              className="flex items-center gap-4 rounded-2xl border-2 border-lingo-border bg-lingo-card p-4 transition-transform hover:scale-[1.01] active:scale-[0.99]"
+              className="flex min-w-0 items-center gap-4 rounded-2xl border-2 border-lingo-border bg-lingo-card p-4 transition-transform hover:scale-[1.01] active:scale-[0.99]"
             >
               <div className="min-w-0 flex-1">
-                <h3 className="font-bold text-lingo-text">{course.title}</h3>
+                <h3 className="break-words font-bold text-lingo-text">{course.title}</h3>
                 <p className="text-sm text-lingo-text-light">
                   {getLanguageName(course.sourceLanguage)} →{" "}
                   {getLanguageName(course.targetLanguage)}
                 </p>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="shrink-0 flex items-center gap-3">
                 <div className="h-2 w-20 rounded-full bg-lingo-gray overflow-hidden">
                   <div
                     className="h-full rounded-full bg-lingo-green transition-all duration-500"

@@ -42,7 +42,7 @@ export default async function LearnPage() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl">
+    <div className="mx-auto w-full max-w-2xl overflow-x-hidden">
       <div className="mb-6 text-center">
         <h1 className="text-2xl font-black text-lingo-text">Learn</h1>
       </div>

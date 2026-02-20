@@ -24,27 +24,33 @@ export const auth = betterAuth({
     user: {
       create: {
         after: async (user) => {
-          await db
+          const userStatsInsert = db
             .insert(userStats)
             .values({ userId: user.id })
             .onConflictDoNothing();
-          await db
+          const userPreferencesInsert = db
             .insert(userPreferences)
             .values({
               userId: user.id,
               nativeLanguage: DEFAULT_NATIVE_LANGUAGE,
             })
             .onConflictDoNothing();
-            
-          if (process.env.SLACK_WEBHOOK) {
-            fetch(process.env.SLACK_WEBHOOK, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                text: `New user signup: ${user.name} (${user.email})`,
-              }),
-            }).catch(() => {});
-          }
+
+          const slackNotification = process.env.SLACK_WEBHOOK
+            ? fetch(process.env.SLACK_WEBHOOK, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  text: `New user signup: ${user.name} (${user.email})`,
+                }),
+              }).catch(() => {})
+            : Promise.resolve();
+
+          await Promise.all([
+            userStatsInsert,
+            userPreferencesInsert,
+            slackNotification,
+          ]);
         },
       },
     },

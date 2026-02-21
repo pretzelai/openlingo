@@ -156,6 +156,21 @@ export function ChatView({
     adjustHeight();
   }, [input, adjustHeight]);
 
+  // Keep the mobile nav in sync with the current draft text on chat pages.
+  useEffect(() => {
+    window.dispatchEvent(
+      new CustomEvent("chat-draft-change", { detail: { text: input } }),
+    );
+  }, [input]);
+
+  useEffect(() => {
+    return () => {
+      window.dispatchEvent(
+        new CustomEvent("chat-draft-change", { detail: { text: "" } }),
+      );
+    };
+  }, []);
+
   function submitForm() {
     if (!input.trim() || isLoading) return;
     sendMessage({ text: input.trim() });

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import { useMobileKeyboardOpen } from "@/hooks/use-mobile-keyboard-open";
 
 const navItems = [
@@ -15,6 +16,33 @@ const navItems = [
 export function MobileNav() {
   const pathname = usePathname();
   const isKeyboardOpen = useMobileKeyboardOpen();
+  const [chatDraft, setChatDraft] = useState("");
+  const isChatRoute = pathname === "/chat" || pathname.startsWith("/chat/");
+
+  useEffect(() => {
+    const handleDraftChange = (event: Event) => {
+      const customEvent = event as CustomEvent<{ text?: string }>;
+      setChatDraft(customEvent.detail?.text ?? "");
+    };
+
+    window.addEventListener("chat-draft-change", handleDraftChange as EventListener);
+    return () => {
+      window.removeEventListener(
+        "chat-draft-change",
+        handleDraftChange as EventListener,
+      );
+    };
+  }, []);
+
+  if (isKeyboardOpen && isChatRoute) {
+    return (
+      <div className="fixed bottom-0 left-0 right-0 z-30 border-t border-lingo-border/70 bg-white/95 px-3 py-1 md:hidden">
+        <p className="truncate text-[11px] text-lingo-text-light">
+          {chatDraft || "\u2009"}
+        </p>
+      </div>
+    );
+  }
 
   if (isKeyboardOpen) return null;
 

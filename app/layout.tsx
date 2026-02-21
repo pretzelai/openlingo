@@ -15,7 +15,16 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "OpenLingo",
-  description: "A fun, gamified language learning app",
+  description: "OpenSource AI connected to language learning",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    title: "OpenLingo",
+    statusBarStyle: "default",
+  },
+  icons: {
+    apple: "/apple-touch-icon.png",
+  },
 };
 
 export default function RootLayout({

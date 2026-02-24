@@ -170,6 +170,10 @@ export interface StandaloneUnitInfo {
   sourceLanguage: string | null;
   level: string | null;
   lessonCount: number;
+  completedLessons: number;
+  visibility: string | null;
+  creatorName: string | null;
+  isOwner: boolean;
 }
 
 export interface UnitWithContent {

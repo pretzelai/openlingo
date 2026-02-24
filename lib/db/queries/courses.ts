@@ -2,6 +2,7 @@ import { db } from "@/lib/db";
 import {
   course,
   unit,
+  user,
   userCourseEnrollment,
   lessonCompletion,
 } from "@/lib/db/schema";
@@ -13,6 +14,7 @@ import {
   isNull,
   count,
   countDistinct,
+  inArray,
 } from "drizzle-orm";
 import type {
   Course,
@@ -303,9 +305,24 @@ export async function getUserEnrolledCourses(
 export async function getStandaloneUnits(
   userId: string
 ): Promise<StandaloneUnitInfo[]> {
-  const units = await db
-    .select()
+  // Fetch units with creator name via left join on user table
+  const rows = await db
+    .select({
+      id: unit.id,
+      title: unit.title,
+      description: unit.description,
+      icon: unit.icon,
+      color: unit.color,
+      targetLanguage: unit.targetLanguage,
+      sourceLanguage: unit.sourceLanguage,
+      level: unit.level,
+      markdown: unit.markdown,
+      visibility: unit.visibility,
+      createdBy: unit.createdBy,
+      creatorName: user.name,
+    })
     .from(unit)
+    .leftJoin(user, eq(unit.createdBy, user.id))
     .where(
       and(
         isNull(unit.courseId),
@@ -313,7 +330,29 @@ export async function getStandaloneUnits(
       )
     );
 
-  return units.map((u) => ({
+  if (rows.length === 0) return [];
+
+  // Fetch completion counts for the current user across these units
+  const unitIds = rows.map((r) => r.id);
+  const completionCounts = await db
+    .select({
+      unitId: lessonCompletion.unitId,
+      count: count(),
+    })
+    .from(lessonCompletion)
+    .where(
+      and(
+        eq(lessonCompletion.userId, userId),
+        inArray(lessonCompletion.unitId, unitIds)
+      )
+    )
+    .groupBy(lessonCompletion.unitId);
+
+  const completionMap = new Map(
+    completionCounts.map((c) => [c.unitId, Number(c.count)])
+  );
+
+  return rows.map((u) => ({
     id: u.id,
     title: u.title,
     description: u.description,
@@ -323,7 +362,34 @@ export async function getStandaloneUnits(
     sourceLanguage: u.sourceLanguage,
     level: u.level,
     lessonCount: getUnitLessons(u.markdown).length,
+    completedLessons: completionMap.get(u.id) ?? 0,
+    visibility: u.visibility,
+    creatorName: u.creatorName,
+    isOwner: u.createdBy === userId,
   }));
+}
+
+export async function getUnitForEdit(
+  unitId: string,
+  userId: string
+): Promise<{ id: string; title: string; markdown: string } | null> {
+  const [u] = await db
+    .select({
+      id: unit.id,
+      title: unit.title,
+      markdown: unit.markdown,
+      createdBy: unit.createdBy,
+    })
+    .from(unit)
+    .where(eq(unit.id, unitId));
+
+  if (!u || u.createdBy !== userId) return null;
+
+  return {
+    id: u.id,
+    title: u.title,
+    markdown: u.markdown,
+  };
 }
 
 export async function getUnitWithContent(

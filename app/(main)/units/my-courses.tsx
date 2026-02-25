@@ -85,6 +85,7 @@ function OwnedCourseCard({
   >(null);
   const isPublic = course.visibility === "public";
   const isLocked = isPublic && !isAdmin;
+  const isActionPending = isPending || activeAction !== null;
 
   function handleMakePublic() {
     const confirmed = window.confirm(
@@ -95,8 +96,8 @@ function OwnedCourseCard({
     );
     if (!confirmed) return;
 
+    setActiveAction("make-public");
     startTransition(async () => {
-      setActiveAction("make-public");
       try {
         const result = await makeCoursePublic(course.id);
         if (result.success) {
@@ -111,8 +112,8 @@ function OwnedCourseCard({
   }
 
   function handleMakePrivate() {
+    setActiveAction("make-private");
     startTransition(async () => {
-      setActiveAction("make-private");
       try {
         const result = await makeCoursePrivate(course.id);
         if (result.success) {
@@ -134,8 +135,8 @@ function OwnedCourseCard({
     );
     if (!confirmed) return;
 
+    setActiveAction("delete");
     startTransition(async () => {
-      setActiveAction("delete");
       try {
         const result = await deleteCourse(course.id);
         if (result.success) {
@@ -236,10 +237,10 @@ function OwnedCourseCard({
         {!isPublic && (
           <button
             onClick={handleMakePublic}
-            disabled={isPending}
+            disabled={isActionPending}
             className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold text-lingo-green hover:bg-lingo-green/10 transition-colors disabled:opacity-50"
           >
-            {isPending && activeAction === "make-public" ? (
+            {activeAction === "make-public" ? (
               <>
                 <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-lingo-green/30 border-t-lingo-green" />
                 Making Public...
@@ -269,10 +270,10 @@ function OwnedCourseCard({
         {isAdmin && isPublic && (
           <button
             onClick={handleMakePrivate}
-            disabled={isPending}
+            disabled={isActionPending}
             className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold text-red-500 hover:bg-red-50 transition-colors disabled:opacity-50"
           >
-            {isPending && activeAction === "make-private" ? (
+            {activeAction === "make-private" ? (
               <>
                 <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-red-500/30 border-t-red-500" />
                 Making Private...
@@ -301,10 +302,10 @@ function OwnedCourseCard({
         {!isLocked && (
           <button
             onClick={handleDelete}
-            disabled={isPending}
+            disabled={isActionPending}
             className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold text-red-500 hover:bg-red-50 transition-colors disabled:opacity-50"
           >
-            {isPending && activeAction === "delete" ? (
+            {activeAction === "delete" ? (
               <>
                 <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-red-500/30 border-t-red-500" />
                 Deleting...

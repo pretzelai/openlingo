@@ -1,0 +1,1 @@
+Deep analysis of ALL server-side logic that would need to become backend API calls in a frontend-only rewrite. Analyze every server action, API route, auth flow, DB schema, query helper, AI integration, and middleware. Classify each as AUTH, DATA, AI, MEDIA, or CONTENT. Produce a comprehensive catalog.

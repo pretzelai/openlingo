@@ -1,0 +1,1 @@
+Deep analysis of ALL frontend/client-side code to understand what would need to change in a Vite rewrite. Analyze every component, hook, layout, page, provider, and styling approach. For each component, note whether it uses "use client", calls server actions, depends on Next.js features, and what data it needs from the server.

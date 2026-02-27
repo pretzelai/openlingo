@@ -42,13 +42,6 @@ export function getLanguageFlag(code: string): string {
   return languageFlags[code] ?? "";
 }
 
-/** Sort an array of ISO 639-1 codes alphabetically by their English display name. */
-export function sortByDisplayName(codes: string[]): string[] {
-  return [...codes].sort((a, b) =>
-    getLanguageName(a).localeCompare(getLanguageName(b), "en"),
-  );
-}
-
 /** Language codes that have dictionary data available. */
 export const supportedLanguages: Record<string, string> = {
   en: "english",

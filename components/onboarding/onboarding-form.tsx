@@ -9,13 +9,12 @@ import {
   supportedLanguages,
   getLanguageName,
   getLanguageFlag,
-  sortByDisplayName,
 } from "@/lib/languages";
 import { DEFAULT_PATH } from "@/lib/constants";
 
-const TARGET_LANGUAGES = sortByDisplayName(Object.keys(supportedLanguages));
+const TARGET_LANGUAGES = Object.keys(supportedLanguages);
 
-const NATIVE_LANGUAGES = sortByDisplayName([
+const NATIVE_LANGUAGES = [
   "en",
   "es",
   "fr",
@@ -46,7 +45,7 @@ const NATIVE_LANGUAGES = sortByDisplayName([
   "ms",
   "uk",
   "bg",
-]);
+];
 
 export function OnboardingForm({
   nativeLanguage,

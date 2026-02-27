@@ -11,6 +11,7 @@ const TOOL_LABELS: Record<string, string> = {
   createUnit: "Creating learning unit",
   addWordsToSrs: "Adding words to SRS",
   switchLanguage: "Switching language",
+  webSearch: "Searching the web",
   readArticle: "Reading article",
 };
 

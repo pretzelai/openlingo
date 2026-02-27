@@ -405,6 +405,120 @@ export function createTools(userId: string, language?: string) {
       },
     }),
 
+    webSearch: tool({
+      description:
+        "Search the web using Exa to find articles, news, or information. Useful for finding content to translate with readArticle, or for looking up current information. Returns titles, URLs, summaries, and highlights for each result.",
+      inputSchema: z.object({
+        query: z
+          .string()
+          .describe(
+            "The search query. Be specific and descriptive for best results.",
+          ),
+        numResults: z
+          .number()
+          .int()
+          .min(1)
+          .max(10)
+          .default(5)
+          .describe("Number of results to return (default 5, max 10)"),
+        category: z
+          .enum([
+            "news",
+            "research paper",
+            "company",
+            "tweet",
+            "personal site",
+          ])
+          .optional()
+          .describe(
+            "Optional category to focus the search (e.g. 'news' for recent articles)",
+          ),
+        startPublishedDate: z
+          .string()
+          .optional()
+          .describe(
+            "Only return results published after this date. ISO 8601 format, e.g. '2025-01-01T00:00:00.000Z'",
+          ),
+      }),
+      execute: async ({ query, numResults, category, startPublishedDate }) => {
+        const apiKey = process.env.EXA_API_KEY;
+        if (!apiKey) {
+          return {
+            success: false,
+            error:
+              "Exa API key is not configured. Web search is not available.",
+          };
+        }
+
+        try {
+          const body: Record<string, unknown> = {
+            query,
+            numResults,
+            type: "auto",
+            contents: {
+              highlights: {
+                maxCharacters: 3000,
+              },
+              summary: {
+                query,
+              },
+            },
+          };
+
+          if (category) body.category = category;
+          if (startPublishedDate) body.startPublishedDate = startPublishedDate;
+
+          const response = await fetch("https://api.exa.ai/search", {
+            method: "POST",
+            headers: {
+              "x-api-key": apiKey,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(body),
+          });
+
+          if (!response.ok) {
+            const errorText = await response.text();
+            return {
+              success: false,
+              error: `Exa API error (${response.status}): ${errorText}`,
+            };
+          }
+
+          const data = await response.json();
+          const results = (
+            data.results as Array<{
+              title?: string;
+              url?: string;
+              publishedDate?: string;
+              author?: string;
+              summary?: string;
+              highlights?: string[];
+            }>
+          ).map((r) => ({
+            title: r.title || "Untitled",
+            url: r.url || "",
+            publishedDate: r.publishedDate || null,
+            author: r.author || null,
+            summary: r.summary || null,
+            highlights: r.highlights || [],
+          }));
+
+          return {
+            success: true,
+            query,
+            resultCount: results.length,
+            results,
+          };
+        } catch (e) {
+          return {
+            success: false,
+            error: `Web search failed: ${(e as Error).message}`,
+          };
+        }
+      },
+    }),
+
     readArticle: tool({
       description:
         "Read a web article and translate it to a target language at a CEFR level. Creates a saved article the user can read later. Returns immediately with article ID — translation happens in background.",

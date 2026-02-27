@@ -5,6 +5,7 @@ import type { UIMessage } from "@ai-sdk/react";
 import { ChatExercise } from "./chat-exercise";
 import { ChatUnitCard } from "./unit-card";
 import { ArticleCard } from "./article-card";
+import { SearchResultsCard } from "./search-results-card";
 import { ToolCall } from "./tool-call";
 import { HoverableMarkdown } from "@/components/word/hoverable-markdown";
 
@@ -141,6 +142,31 @@ export const ChatMessage = memo(function ChatMessage({
                       lessonCount={output.lessonCount as number}
                       exerciseCount={output.exerciseCount as number}
                       lessonTitles={output.lessonTitles as string[]}
+                    />
+                  );
+                }
+              }
+
+              // Web search tool: render search results card
+              if (toolName === "webSearch") {
+                const output = toolPart.output as {
+                  success?: boolean;
+                  query?: string;
+                  results?: Array<{
+                    title: string;
+                    url: string;
+                    publishedDate: string | null;
+                    author: string | null;
+                    summary: string | null;
+                    highlights: string[];
+                  }>;
+                } | undefined;
+                if (output?.success && output.results) {
+                  return (
+                    <SearchResultsCard
+                      key={toolPart.toolCallId}
+                      query={output.query || (toolPart.input as Record<string, unknown>)?.query as string || "Search"}
+                      results={output.results}
                     />
                   );
                 }

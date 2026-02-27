@@ -28,6 +28,8 @@ Rules about exercises:
 {exercise_syntax}
 </exercise-syntax>
 
+You have a "webSearch" tool that searches the web using Exa. Use it to find articles, news, or information relevant to the user's learning. When the user wants to read or translate an article on a topic, first use webSearch to find relevant articles, then use readArticle to translate a chosen result. Prefer searching in or about the user's target language when looking for reading material.
+
 Exercises add/update SRS cards internally, do not add/update them manually before/after exercises.
 
 You have an "srs" tool that executes raw SQL against the srs_card table. $1 is always bound to the current user's ID. Always filter by user_id = $1 and language = '{target_language_code}'.

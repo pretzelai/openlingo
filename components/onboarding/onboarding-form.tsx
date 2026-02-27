@@ -9,12 +9,13 @@ import {
   supportedLanguages,
   getLanguageName,
   getLanguageFlag,
+  sortByDisplayName,
 } from "@/lib/languages";
 import { DEFAULT_PATH } from "@/lib/constants";
 
-const TARGET_LANGUAGES = Object.keys(supportedLanguages);
+const TARGET_LANGUAGES = sortByDisplayName(Object.keys(supportedLanguages));
 
-const NATIVE_LANGUAGES = [
+const NATIVE_LANGUAGES = sortByDisplayName([
   "en",
   "es",
   "fr",
@@ -45,7 +46,7 @@ const NATIVE_LANGUAGES = [
   "ms",
   "uk",
   "bg",
-];
+]);
 
 export function OnboardingForm({
   nativeLanguage,
@@ -95,7 +96,7 @@ export function OnboardingForm({
           onChange={(e) => setTarget(e.target.value)}
           className="w-full rounded-xl border-2 border-lingo-border bg-white px-4 py-4 text-lg font-bold text-lingo-text focus:border-lingo-green focus:outline-none transition-colors"
         >
-          <option value="">Select a language</option>
+          <option value="" disabled>Select a language</option>
           {TARGET_LANGUAGES.map((code) => (
             <option key={code} value={code}>
               {getLanguageFlag(code)} {getLanguageName(code)}
@@ -113,7 +114,7 @@ export function OnboardingForm({
           onChange={(e) => setNative(e.target.value)}
           className="w-full rounded-xl border-2 border-lingo-border bg-white px-4 py-4 text-lg font-bold text-lingo-text focus:border-lingo-green focus:outline-none transition-colors"
         >
-          <option value="">Select your language</option>
+          <option value="" disabled>Select your language</option>
           {NATIVE_LANGUAGES.map((code) => (
             <option key={code} value={code}>
               {getLanguageFlag(code)} {getLanguageName(code)}

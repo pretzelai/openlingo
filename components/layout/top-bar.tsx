@@ -60,7 +60,7 @@ export function TopBar({ stats, githubStars }: TopBarProps) {
       <div className="flex-1" />
 
       {/* Feedback */}
-      <FeedbackButton className="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-lingo-border bg-white px-3 py-1 text-sm font-semibold text-lingo-text-light hover:text-lingo-text hover:border-lingo-text-light transition-colors cursor-pointer" />
+      <FeedbackButton className="hidden sm:inline-flex items-center rounded-xl bg-lingo-blue px-4 py-1.5 text-sm font-bold text-white border-b-4 border-lingo-blue-dark hover:bg-lingo-blue/90 active:border-b-0 active:mt-1 transition-all duration-100 cursor-pointer mr-3" />
 
       {/* GitHub Link */}
       <a

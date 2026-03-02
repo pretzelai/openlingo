@@ -232,7 +232,7 @@ export function FeedbackButton({ className }: { className?: string }) {
         onClick={() => setOpen(true)}
         className={
           className ??
-          "text-sm font-semibold text-lingo-text-light hover:text-lingo-text transition-colors cursor-pointer"
+          "rounded-xl bg-lingo-blue px-4 py-1.5 text-sm font-bold text-white border-b-4 border-lingo-blue-dark hover:bg-lingo-blue/90 active:border-b-0 active:mt-1 transition-all duration-100 cursor-pointer"
         }
       >
         Send feedback / Ask for help

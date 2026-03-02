@@ -2,6 +2,7 @@ import { createProviderRegistry } from "ai";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { createOpenAI } from "@ai-sdk/openai";
 import { createAnthropic } from "@ai-sdk/anthropic";
+import { createAmazonBedrock } from "@ai-sdk/amazon-bedrock";
 
 const google = createGoogleGenerativeAI({
   apiKey: process.env.GOOGLE_AI_API_KEY,
@@ -15,7 +16,24 @@ const anthropic = createAnthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 });
 
-const registry = createProviderRegistry({ google, openai, anthropic });
+const bedrockApiKey = process.env.AWS_BEDROCK_API_KEY;
+const bedrockEnabled = Boolean(bedrockApiKey);
+
+const bedrock = bedrockEnabled
+  ? createAmazonBedrock({
+      apiKey: bedrockApiKey,
+      ...(process.env.AWS_BEDROCK_URL
+        ? { baseURL: process.env.AWS_BEDROCK_URL }
+        : {}),
+    })
+  : undefined;
+
+const registry = createProviderRegistry({
+  google,
+  openai,
+  anthropic,
+  ...(bedrock ? { bedrock } : {}),
+});
 
 export const AVAILABLE_MODELS: {
   id: string;
@@ -37,6 +55,20 @@ export const AVAILABLE_MODELS: {
     provider: "anthropic",
   },
   { id: "claude-opus-4-6", label: "Claude Opus 4.6", provider: "anthropic" },
+  ...(bedrockEnabled
+    ? [
+        {
+          id: "us.anthropic.claude-sonnet-4-20250514-v1:0",
+          label: "Claude Sonnet 4 (Bedrock)",
+          provider: "bedrock",
+        },
+        {
+          id: "us.anthropic.claude-opus-4-20250514-v1:0",
+          label: "Claude Opus 4 (Bedrock)",
+          provider: "bedrock",
+        },
+      ]
+    : []),
 ];
 
 /** Models available to regular (non-admin) users in the chat UI. */

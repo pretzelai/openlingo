@@ -40,7 +40,7 @@ function parseArgs() {
 
   if (!topic) {
     console.error(
-      "Usage: bun run scripts/generate-unit.ts --provider <google|openai|anthropic> --topic <topic> [--lessons <n>]",
+      "Usage: bun run scripts/generate-unit.ts --provider <google|openai|anthropic|bedrock> --topic <topic> [--lessons <n>]",
     );
     process.exit(1);
   }
@@ -119,6 +119,7 @@ const providerModels: Record<string, string> = {
   google: "gemini-3-flash-preview",
   openai: "gpt-4o",
   anthropic: "claude-sonnet-4-5-20250929",
+  bedrock: "us.anthropic.claude-sonnet-4-20250514-v1:0",
 };
 
 // ---------------------------------------------------------------------------
@@ -131,7 +132,7 @@ async function main() {
   const modelName = providerModels[provider];
   if (!modelName) {
     console.error(
-      `Unknown provider: ${provider}. Use: google, openai, anthropic`,
+      `Unknown provider: ${provider}. Use: google, openai, anthropic, bedrock`,
     );
     process.exit(1);
   }

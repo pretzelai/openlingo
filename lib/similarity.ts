@@ -158,6 +158,37 @@ function levenshteinOps(
     }
   }
 
+  // -----------------------------------------------------------------------
+  // Post-process: improve bold contiguity.
+  //
+  // The backward backtrace greedily matches from the right, which can split
+  // bold regions when duplicate characters exist. For example, "go" → "good"
+  // produces [match g, bold o, match o, bold d] — bolding is non-contiguous.
+  //
+  // If we find a (bold-insertion, match) pair on the same character where
+  // shifting the match left would merge into a contiguous bold run, swap them.
+  // -----------------------------------------------------------------------
+  for (let k = 0; k < ops.length - 1; k++) {
+    if (
+      ops[k] === "bold" &&
+      userIndices[k] === null && // insertion (not substitution)
+      ops[k + 1] === "match" &&
+      correct[k] === correct[k + 1] // same char in correct
+    ) {
+      // Check if swapping creates or extends a contiguous bold region:
+      // there must be a bold at k+2 (or k+1 is the last position).
+      const hasBoldAfter = k + 2 < ops.length && ops[k + 2] === "bold";
+      const isAtEnd = k + 2 >= ops.length;
+      if (hasBoldAfter || isAtEnd) {
+        // Swap: move the match earlier, push the bold later
+        ops[k] = "match";
+        ops[k + 1] = "bold";
+        userIndices[k] = userIndices[k + 1];
+        userIndices[k + 1] = null;
+      }
+    }
+  }
+
   return { distance: dp[m][n], ops, userIndices };
 }
 
@@ -203,7 +234,11 @@ export function checkSimilarity(
   const userMapping = normalizeWithMapping(userTrimmed);
   const correctMapping = normalizeWithMapping(correctTrimmed);
 
-  if (userMapping.normalized === correctMapping.normalized) {
+  // For equality check, also strip spaces so "ichlerne" ≈ "ich lerne"
+  const userSpaceless = userMapping.normalized.replace(/ /g, "");
+  const correctSpaceless = correctMapping.normalized.replace(/ /g, "");
+
+  if (userSpaceless === correctSpaceless) {
     return { isCorrect: true, similarity: 1, correctedMarkdown: correctTrimmed };
   }
 

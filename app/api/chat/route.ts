@@ -45,7 +45,11 @@ export async function POST(req: Request) {
 
   const native_language = nativeLang ? (langCodeToName[nativeLang] || nativeLang) : "English";
 
+  const now = new Date();
+  const current_date = `${String(now.getDate()).padStart(2, "0")}-${now.toLocaleString("en-US", { month: "short" })}-${now.getFullYear()}`;
+
   const systemPrompt = interpolateTemplate(chatTemplate, {
+    current_date,
     target_language,
     target_language_code: language,
     native_language,

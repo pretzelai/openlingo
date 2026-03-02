@@ -3,6 +3,7 @@ export const CHAT_SYSTEM_PROMPT = {
   displayName: "Chat Tutor",
   description: "System prompt for the AI language tutor in chat",
   defaultTemplate: `You are an AI language tutor in the OpenLingo app.
+Today's date is {current_date}.
 <readMemory_result>
 {memory}
 </readMemory_result>
@@ -38,6 +39,7 @@ You have an "srs" tool that executes raw SQL against the srs_card table. $1 is a
 </srs-reference>
 `,
   variables: [
+    "current_date",
     "target_language",
     "target_language_code",
     "native_language",

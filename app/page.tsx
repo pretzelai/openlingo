@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getSession } from "@/lib/auth-server";
 import { DEFAULT_PATH } from "@/lib/constants";
 import { getGitHubStars } from "@/lib/github";
+import { FeedbackButton } from "@/components/feedback/feedback-button";
 
 export default async function LandingPage() {
   const [session, stars] = await Promise.all([getSession(), getGitHubStars()]);
@@ -51,7 +52,7 @@ export default async function LandingPage() {
           href="https://github.com/pretzelai/openlingo"
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 rounded-full border border-lingo-border bg-white px-4 py-2 text-lingo-text-light hover:text-lingo-text hover:border-lingo-text-light transition-colors mb-12"
+          className="inline-flex items-center gap-2 rounded-full border border-lingo-border bg-white px-4 py-2 text-lingo-text-light hover:text-lingo-text hover:border-lingo-text-light transition-colors mb-4"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -84,6 +85,10 @@ export default async function LandingPage() {
             </>
           )}
         </a>
+
+        <div className="mb-12">
+          <FeedbackButton />
+        </div>
 
         {/* Demo Video */}
         <div className="w-full">

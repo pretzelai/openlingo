@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { signOut, useSession } from "@/lib/auth-client";
+import { FeedbackButton } from "@/components/feedback/feedback-button";
 
 interface TopBarProps {
   stats?: {
@@ -57,6 +58,9 @@ export function TopBar({ stats, githubStars }: TopBarProps) {
       )}
 
       <div className="flex-1" />
+
+      {/* Feedback */}
+      <FeedbackButton className="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-lingo-border bg-white px-3 py-1 text-sm font-semibold text-lingo-text-light hover:text-lingo-text hover:border-lingo-text-light transition-colors cursor-pointer" />
 
       {/* GitHub Link */}
       <a

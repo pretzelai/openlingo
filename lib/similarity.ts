@@ -2,7 +2,8 @@
  * String similarity checking with normalization and character-level diff.
  *
  * Normalization: lowercases, strips diacritics (ä→a, é→e, ñ→n, …),
- * strips punctuation (.,;:!?¿¡), and treats ß as "ss" — so "Straße" ≈ "strasse".
+ * strips punctuation (.,;:!?¿¡), normalizes curly quotes/apostrophes,
+ * collapses whitespace, and treats ß as "ss" — so "Straße" ≈ "strasse".
  *
  * The correctedMarkdown bolds every character in the correct answer
  * that the user got wrong or missed.
@@ -30,23 +31,42 @@ interface NormalizedMapping {
   origIndices: number[];
 }
 
+/**
+ * Pre-normalize: curly quotes → straight, collapse whitespace → single space, trim.
+ * Returns the cleaned string so downstream normalization can work on it.
+ */
+function preNormalize(s: string): string {
+  return s
+    .replace(/[\u2018\u2019\u2032]/g, "'") // curly single quotes → straight
+    .replace(/[\u201C\u201D\u2033]/g, '"') // curly double quotes → straight
+    .replace(/\s+/g, " ") // collapse all whitespace (tabs, newlines, multi-space) → single space
+    .trim();
+}
+
 function normalizeWithMapping(s: string): NormalizedMapping {
   const origIndices: number[] = [];
   let normalized = "";
 
-  for (let i = 0; i < s.length; i++) {
-    if (s[i] === "ß") {
+  // Use Array.from to iterate by code point (surrogate-safe)
+  const codePoints = Array.from(s);
+  let charIdx = 0; // index in the original string (by code unit)
+
+  for (const char of codePoints) {
+    const origIdx = charIdx;
+    charIdx += char.length; // surrogate pairs have length 2
+
+    if (char === "ß") {
       normalized += "ss";
-      origIndices.push(i, i);
+      origIndices.push(origIdx, origIdx);
     } else {
-      const base = s[i]
+      const base = char
         .toLowerCase()
         .normalize("NFD")
         .replace(/[\u0300-\u036f]/g, "")
         .replace(/[.,;:!?¿¡]/g, "");
       for (let k = 0; k < base.length; k++) {
         normalized += base[k];
-        origIndices.push(i);
+        origIndices.push(origIdx);
       }
     }
   }
@@ -177,12 +197,14 @@ export function checkSimilarity(
 ): SimilarityResult {
   const { threshold = 1 } = options;
 
-  const userTrimmed = userInput.trim();
+  const userTrimmed = preNormalize(userInput);
+  const correctTrimmed = preNormalize(correctAnswer);
+
   const userMapping = normalizeWithMapping(userTrimmed);
-  const correctMapping = normalizeWithMapping(correctAnswer);
+  const correctMapping = normalizeWithMapping(correctTrimmed);
 
   if (userMapping.normalized === correctMapping.normalized) {
-    return { isCorrect: true, similarity: 1, correctedMarkdown: correctAnswer };
+    return { isCorrect: true, similarity: 1, correctedMarkdown: correctTrimmed };
   }
 
   const { distance, ops, userIndices } = levenshteinOps(
@@ -195,6 +217,10 @@ export function checkSimilarity(
   );
   const similarity = maxLen === 0 ? 1 : 1 - distance / maxLen;
 
+  // Scale threshold for very short strings to avoid contradictory results
+  // (e.g. "a" vs "b" should not be isCorrect with similarity 0)
+  const effectiveThreshold = Math.min(threshold, Math.floor(maxLen / 2));
+
   const boldIndices = new Set<number>();
   for (let k = 0; k < ops.length; k++) {
     const correctOrigIdx = correctMapping.origIndices[k];
@@ -205,7 +231,7 @@ export function checkSimilarity(
       const uNormIdx = userIndices[k];
       if (uNormIdx !== null) {
         const userOrigIdx = userMapping.origIndices[uNormIdx];
-        if (userTrimmed[userOrigIdx] !== correctAnswer[correctOrigIdx]) {
+        if (userTrimmed[userOrigIdx] !== correctTrimmed[correctOrigIdx]) {
           boldIndices.add(correctOrigIdx);
         }
       }
@@ -213,9 +239,9 @@ export function checkSimilarity(
   }
 
   return {
-    isCorrect: distance <= threshold,
+    isCorrect: distance <= effectiveThreshold,
     similarity,
-    correctedMarkdown: buildMarkdown(correctAnswer, boldIndices),
+    correctedMarkdown: buildMarkdown(correctTrimmed, boldIndices),
   };
 }
 
@@ -225,6 +251,10 @@ export function checkBestMatch(
   correctAnswers: string[],
   options: SimilarityOptions = {},
 ): SimilarityResult {
+  if (correctAnswers.length === 0) {
+    throw new Error("checkBestMatch requires at least one correct answer");
+  }
+
   let best: SimilarityResult | null = null;
 
   for (const answer of correctAnswers) {

@@ -1,0 +1,1 @@
+Can you improve the similarity detecting function? I think it is not working fine in all scenarios, in the testing suite I want an array with inputs and expected outputs that I can easily edit to add new cases, and when one of them fails the error message in the test suite should clearly state the input/output pair and why it failed so AI can read it and self improve

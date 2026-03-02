@@ -255,6 +255,24 @@ const normalizationCases: SimilarityTestCase[] = [
     correct: "ich lerne",
     expected: { isCorrect: true, similarity: 1 },
   },
+  {
+    label: "ignores punctuation in correct answer",
+    input: "ich lerne",
+    correct: "ich lerne.",
+    expected: { isCorrect: true, similarity: 1 },
+  },
+  {
+    label: "ignores punctuation in correct answer 2",
+    input: "ich lerne.",
+    correct: "ich lerne",
+    expected: { isCorrect: true, similarity: 1 },
+  },
+  {
+    label: "ignores punctuation in correct answer 2",
+    input: "hallo ich lerne",
+    correct: "hallo, ich lerne",
+    expected: { isCorrect: true, similarity: 1 },
+  }
 ];
 
 // ---------------------------------------------------------------------------
@@ -409,7 +427,7 @@ const markdownCases: SimilarityTestCase[] = [
     label: "bolds missing chars at end",
     input: "I am go",
     correct: "I am good",
-    expected: { correctedMarkdown: "I am g**o**o**d**" },
+    expected: { correctedMarkdown: "I am go**od**" },
   },
   {
     label: "bolds swapped/wrong region",
@@ -418,10 +436,10 @@ const markdownCases: SimilarityTestCase[] = [
     expected: { correctedMarkdown: "t**he**" },
   },
   {
-    label: "bolds missing space",
+    label: "Shows correct answer with missing space",
     input: "ichlerne",
     correct: "ich lerne",
-    expected: { correctedMarkdown: "ich** **lerne" },
+    expected: { isCorrect: true, similarity: 1, correctedMarkdown: "ich lerne" },
   },
   // --- New: curly apostrophe markdown ---
   {

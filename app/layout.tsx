@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { PostHogProvider } from "@/components/providers/posthog";
+import { FeedbackButton } from "@/components/feedback/feedback-button";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -51,7 +52,10 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <PostHogProvider>{children}</PostHogProvider>
+        <PostHogProvider>
+          {children}
+          <FeedbackButton />
+        </PostHogProvider>
       </body>
     </html>
   );

@@ -44,10 +44,13 @@
   --font-mono: var(--font-geist-mono);
 }
 
-html,
-body {
+html {
   overflow-x: hidden;
   overscroll-behavior: none;
+}
+
+body {
+  overflow-x: hidden;
 }
 
 body {

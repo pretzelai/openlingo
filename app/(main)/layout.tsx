@@ -40,16 +40,16 @@ export default async function MainLayout({
   }
 
   return (
-    <div className="min-h-screen bg-lingo-bg">
+    <div className="h-dvh bg-lingo-bg flex flex-col md:flex-row">
       <PostHogIdentify
         userId={session.user.id}
         email={session.user.email}
         name={session.user.name}
       />
       <Sidebar />
-      <div className="md:pl-64">
+      <div className="flex flex-1 flex-col md:pl-64 min-h-0">
         <TopBar stats={stats} githubStars={githubStars} />
-        <main className="p-4 pb-20 md:p-8 md:pb-8">{children}</main>
+        <main className="flex-1 overflow-y-auto p-4 pb-20 md:p-8 md:pb-8">{children}</main>
       </div>
       <MobileNav />
     </div>

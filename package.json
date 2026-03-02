@@ -38,6 +38,7 @@
     "react-dom": "19.2.3",
     "react-markdown": "^10.1.0",
     "remark-breaks": "^4.0.0",
+    "resend": "^6.9.3",
     "zod": "3"
   },
   "devDependencies": {

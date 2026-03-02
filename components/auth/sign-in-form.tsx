@@ -85,6 +85,14 @@ export function SignInForm({ redirectUrl }: SignInFormProps) {
           onChange={(e) => setPassword(e.target.value)}
           required
         />
+        <div className="flex justify-end -mt-2">
+          <Link
+            href="/forgot-password"
+            className="text-sm font-bold text-lingo-blue hover:underline"
+          >
+            Forgot password?
+          </Link>
+        </div>
         <Turnstile
           ref={turnstileRef}
           onVerify={handleTurnstileVerify}

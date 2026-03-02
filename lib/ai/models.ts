@@ -12,7 +12,8 @@ const openai = createOpenAI({
 });
 
 const anthropic = createAnthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
+  baseURL: process.env.LLM_PROXY_URL,
+  apiKey: process.env.LLM_PROXY_API_KEY,
 });
 
 const registry = createProviderRegistry({ google, openai, anthropic });

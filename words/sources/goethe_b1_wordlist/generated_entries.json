@@ -1072,22 +1072,6 @@
     "pos": "pronoun"
   },
   {
-    "word": "Fachmann die Fachfrau",
-    "useful_for_flashcard": true,
-    "goethe_b1_wordlist": true,
-    "cefr_level": "B1",
-    "english_translation": "expert (male, female)",
-    "romanization": "ˈfaxman di ˈfaxfraʊ",
-    "example_sentence_native": "Er ist ein Fachmann auf diesem Gebiet.",
-    "example_sentence_english": "He is an expert in this field.",
-    "gender": "masculine",
-    "is_separable_verb": false,
-    "separable_prefix": "",
-    "base_verb": "",
-    "capitalization_sensitive": true,
-    "pos": "noun"
-  },
-  {
     "word": "Fachleute",
     "useful_for_flashcard": true,
     "goethe_b1_wordlist": true,
@@ -1486,22 +1470,6 @@
     "base_verb": "",
     "capitalization_sensitive": true,
     "pos": "noun"
-  },
-  {
-    "word": "etwas gefallen lassen",
-    "useful_for_flashcard": true,
-    "goethe_b1_wordlist": true,
-    "cefr_level": "B1",
-    "english_translation": "to let something go, to tolerate something",
-    "romanization": "ˈɛtvas ɡəˈfalən ˈlasn̩",
-    "example_sentence_native": "Er lässt sich das nicht gefallen.",
-    "example_sentence_english": "He won't stand for that.",
-    "gender": "",
-    "is_separable_verb": false,
-    "separable_prefix": "",
-    "base_verb": "lassen",
-    "capitalization_sensitive": false,
-    "pos": "verb"
   },
   {
     "word": "gegen",
@@ -2201,22 +2169,6 @@
     "example_sentence_native": "Meine Mutter macht leckere Klopse.",
     "example_sentence_english": "My mother makes delicious meatballs.",
     "gender": "masculine",
-    "is_separable_verb": false,
-    "separable_prefix": "",
-    "base_verb": "",
-    "capitalization_sensitive": true,
-    "pos": "noun"
-  },
-  {
-    "word": "Kriminal die Kriminalpolizei",
-    "useful_for_flashcard": true,
-    "goethe_b1_wordlist": true,
-    "cefr_level": "B1",
-    "english_translation": "criminal police",
-    "romanization": "kriminalpoliˈtsai",
-    "example_sentence_native": "Die Kriminalpolizei ermittelt in diesem Fall.",
-    "example_sentence_english": "The criminal police are investigating this case.",
-    "gender": "feminine",
     "is_separable_verb": false,
     "separable_prefix": "",
     "base_verb": "",

@@ -192,22 +192,6 @@
     "word_frequency": 51
   },
   {
-    "word": "Mal",
-    "pos": "noun",
-    "useful_for_flashcard": true,
-    "cefr_level": "A1",
-    "english_translation": "time (as in 'one time';'many times')",
-    "romanization": "Mal",
-    "example_sentence_native": "Ich war schon viele Male dort.",
-    "example_sentence_english": "I have been there many times.",
-    "gender": "neuter",
-    "is_separable_verb": false,
-    "separable_prefix": "",
-    "base_verb": "",
-    "capitalization_sensitive": true,
-    "word_frequency": 51
-  },
-  {
     "word": "hier",
     "useful_for_flashcard": true,
     "cefr_level": "A1",
@@ -607,7 +591,8 @@
     "base_verb": "",
     "capitalization_sensitive": false,
     "pos": "verb",
-    "word_frequency": 99
+    "word_frequency": 99,
+    "goethe_b1_wordlist": true
   },
   {
     "word": "ander",
@@ -768,7 +753,8 @@
     "base_verb": "",
     "capitalization_sensitive": false,
     "pos": "verb",
-    "word_frequency": 115
+    "word_frequency": 115,
+    "goethe_b1_wordlist": true
   },
   {
     "word": "weit",
@@ -897,7 +883,8 @@
     "base_verb": "",
     "capitalization_sensitive": false,
     "pos": "adverb",
-    "word_frequency": 124
+    "word_frequency": 124,
+    "goethe_b1_wordlist": true
   },
   {
     "word": "sehen",
@@ -1010,22 +997,6 @@
     "base_verb": "",
     "capitalization_sensitive": true,
     "pos": "adjective",
-    "word_frequency": 135
-  },
-  {
-    "word": "Deutsch",
-    "pos": "noun",
-    "useful_for_flashcard": true,
-    "cefr_level": "A1",
-    "english_translation": "German (language)",
-    "romanization": "Deutsch",
-    "example_sentence_native": "Ich lerne Deutsch.",
-    "example_sentence_english": "I am learning German.",
-    "gender": "neuter",
-    "is_separable_verb": false,
-    "separable_prefix": "",
-    "base_verb": "",
-    "capitalization_sensitive": true,
     "word_frequency": 135
   },
   {
@@ -1236,23 +1207,6 @@
     "base_verb": "",
     "capitalization_sensitive": true,
     "pos": "adjective",
-    "word_frequency": 156,
-    "goethe_b1_wordlist": true
-  },
-  {
-    "word": "Recht",
-    "pos": "noun",
-    "useful_for_flashcard": true,
-    "cefr_level": "B1",
-    "english_translation": "right;law",
-    "romanization": "Recht",
-    "example_sentence_native": "Du hast Recht. / Das ist mein Recht.",
-    "example_sentence_english": "You are right. / That is my right.",
-    "gender": "neuter",
-    "is_separable_verb": false,
-    "separable_prefix": "",
-    "base_verb": "",
-    "capitalization_sensitive": true,
     "word_frequency": 156,
     "goethe_b1_wordlist": true
   },
@@ -1526,23 +1480,8 @@
     "base_verb": "",
     "capitalization_sensitive": true,
     "pos": "noun",
-    "word_frequency": 177
-  },
-  {
-    "word": "Paar",
-    "pos": "noun",
-    "useful_for_flashcard": true,
-    "cefr_level": "A2",
-    "english_translation": "pair;couple",
-    "romanization": "Paar",
-    "example_sentence_native": "Ich habe ein neues Paar Schuhe gekauft.",
-    "example_sentence_english": "I bought a new pair of shoes.",
-    "gender": "neuter",
-    "is_separable_verb": false,
-    "separable_prefix": "",
-    "base_verb": "",
-    "capitalization_sensitive": true,
-    "word_frequency": 177
+    "word_frequency": 177,
+    "goethe_b1_wordlist": true
   },
   {
     "word": "gross",
@@ -2093,22 +2032,6 @@
     "word_frequency": 225
   },
   {
-    "word": "Morgen",
-    "pos": "noun",
-    "useful_for_flashcard": true,
-    "cefr_level": "A1",
-    "english_translation": "morning",
-    "romanization": "Morgen",
-    "example_sentence_native": "Guten Morgen!",
-    "example_sentence_english": "Good morning!",
-    "gender": "masculine",
-    "is_separable_verb": false,
-    "separable_prefix": "",
-    "base_verb": "",
-    "capitalization_sensitive": true,
-    "word_frequency": 225
-  },
-  {
     "word": "sonst",
     "useful_for_flashcard": true,
     "cefr_level": "B1",
@@ -2462,7 +2385,8 @@
     "base_verb": "",
     "capitalization_sensitive": false,
     "pos": "noun",
-    "word_frequency": 251
+    "word_frequency": 251,
+    "goethe_b1_wordlist": true
   },
   {
     "word": "Woche",
@@ -2834,7 +2758,8 @@
     "base_verb": "",
     "capitalization_sensitive": false,
     "pos": "verb",
-    "word_frequency": 276
+    "word_frequency": 276,
+    "goethe_b1_wordlist": true
   },
   {
     "word": "Abend",
@@ -3612,7 +3537,8 @@
     "base_verb": "",
     "capitalization_sensitive": false,
     "pos": "verb",
-    "word_frequency": 341
+    "word_frequency": 341,
+    "goethe_b1_wordlist": true
   },
   {
     "word": "treffen",
@@ -4506,7 +4432,8 @@
     "base_verb": "",
     "capitalization_sensitive": false,
     "pos": "verb",
-    "word_frequency": 412
+    "word_frequency": 412,
+    "goethe_b1_wordlist": true
   },
   {
     "word": "suchen",
@@ -4766,7 +4693,8 @@
     "base_verb": "",
     "capitalization_sensitive": false,
     "pos": "noun",
-    "word_frequency": 435
+    "word_frequency": 435,
+    "goethe_b1_wordlist": true
   },
   {
     "word": "Preis",
@@ -5404,22 +5332,6 @@
     "word_frequency": 495
   },
   {
-    "word": "Links",
-    "pos": "noun",
-    "useful_for_flashcard": true,
-    "cefr_level": "B1",
-    "english_translation": "links (hyperlinks)",
-    "romanization": "Links",
-    "example_sentence_native": "Die Webseite hat viele nützliche Links.",
-    "example_sentence_english": "The website has many useful links.",
-    "gender": "masculine",
-    "is_separable_verb": false,
-    "separable_prefix": "",
-    "base_verb": "",
-    "capitalization_sensitive": true,
-    "word_frequency": 495
-  },
-  {
     "word": "Oktober",
     "useful_for_flashcard": true,
     "cefr_level": "A1",
@@ -5644,7 +5556,8 @@
     "base_verb": "",
     "capitalization_sensitive": false,
     "pos": "noun",
-    "word_frequency": 515
+    "word_frequency": 515,
+    "goethe_b1_wordlist": true
   },
   {
     "word": "fallen",
@@ -12062,23 +11975,6 @@
     "goethe_b1_wordlist": true
   },
   {
-    "word": "Schaden",
-    "pos": "noun",
-    "useful_for_flashcard": true,
-    "cefr_level": "B1",
-    "english_translation": "damage;harm",
-    "romanization": "Schaden",
-    "example_sentence_native": "Der Schaden am Auto ist groß.",
-    "example_sentence_english": "The damage to the car is extensive.",
-    "gender": "masculine",
-    "is_separable_verb": false,
-    "separable_prefix": "",
-    "base_verb": "",
-    "capitalization_sensitive": true,
-    "word_frequency": 985,
-    "goethe_b1_wordlist": true
-  },
-  {
     "word": "See",
     "useful_for_flashcard": true,
     "cefr_level": "A2",
@@ -12975,7 +12871,8 @@
     "base_verb": "",
     "capitalization_sensitive": false,
     "pos": "adverb",
-    "word_frequency": 1052
+    "word_frequency": 1052,
+    "goethe_b1_wordlist": true
   },
   {
     "word": "Autor",
@@ -13760,22 +13657,6 @@
     "base_verb": "",
     "capitalization_sensitive": true,
     "pos": "adjektiv",
-    "word_frequency": 1103
-  },
-  {
-    "word": "Arm",
-    "pos": "noun",
-    "useful_for_flashcard": true,
-    "cefr_level": "A1",
-    "english_translation": "arm",
-    "romanization": "Arm",
-    "example_sentence_native": "Er hat sich den Arm gebrochen.",
-    "example_sentence_english": "He broke his arm.",
-    "gender": "masculine",
-    "is_separable_verb": false,
-    "separable_prefix": "",
-    "base_verb": "",
-    "capitalization_sensitive": true,
     "word_frequency": 1103
   },
   {
@@ -15998,22 +15879,6 @@
     "base_verb": "",
     "capitalization_sensitive": true,
     "pos": "adjektiv",
-    "word_frequency": 1261
-  },
-  {
-    "word": "Französisch",
-    "pos": "noun",
-    "useful_for_flashcard": true,
-    "cefr_level": "A1",
-    "english_translation": "French (language)",
-    "romanization": "Französisch",
-    "example_sentence_native": "Sprichst du Französisch?",
-    "example_sentence_english": "Do you speak French?",
-    "gender": "neuter",
-    "is_separable_verb": false,
-    "separable_prefix": "",
-    "base_verb": "",
-    "capitalization_sensitive": true,
     "word_frequency": 1261
   },
   {
@@ -21093,7 +20958,8 @@
     "base_verb": "",
     "capitalization_sensitive": false,
     "pos": "noun",
-    "word_frequency": 1652
+    "word_frequency": 1652,
+    "goethe_b1_wordlist": true
   },
   {
     "word": "anscheinend",
@@ -32757,7 +32623,8 @@
     "base_verb": "",
     "capitalization_sensitive": false,
     "pos": "adjective",
-    "word_frequency": 2540
+    "word_frequency": 2540,
+    "goethe_b1_wordlist": true
   },
   {
     "word": "Master",
@@ -38611,22 +38478,6 @@
     "word_frequency": 3001
   },
   {
-    "word": "Schild",
-    "pos": "noun",
-    "useful_for_flashcard": true,
-    "cefr_level": "A2",
-    "english_translation": "sign;plate",
-    "romanization": "Schild",
-    "example_sentence_native": "Das Schild zeigt den Weg.",
-    "example_sentence_english": "The sign shows the way.",
-    "gender": "neuter",
-    "is_separable_verb": false,
-    "separable_prefix": "",
-    "base_verb": "",
-    "capitalization_sensitive": false,
-    "word_frequency": 3001
-  },
-  {
     "word": "sonstig",
     "useful_for_flashcard": true,
     "cefr_level": "B2",
@@ -40790,22 +40641,6 @@
     "base_verb": "",
     "capitalization_sensitive": true,
     "pos": "adjective",
-    "word_frequency": 3174
-  },
-  {
-    "word": "Spanisch",
-    "pos": "noun",
-    "useful_for_flashcard": true,
-    "cefr_level": "A1",
-    "english_translation": "Spanish (language)",
-    "romanization": "Spanisch",
-    "example_sentence_native": "Ich spreche ein bisschen Spanisch.",
-    "example_sentence_english": "I speak a little Spanish.",
-    "gender": "neuter",
-    "is_separable_verb": false,
-    "separable_prefix": "",
-    "base_verb": "",
-    "capitalization_sensitive": true,
     "word_frequency": 3174
   },
   {
@@ -47006,7 +46841,8 @@
     "base_verb": "",
     "capitalization_sensitive": false,
     "pos": "adjective",
-    "word_frequency": 3682
+    "word_frequency": 3682,
+    "goethe_b1_wordlist": true
   },
   {
     "word": "Orchester",
@@ -47071,22 +46907,6 @@
     "base_verb": "",
     "capitalization_sensitive": true,
     "pos": "adjective",
-    "word_frequency": 3687
-  },
-  {
-    "word": "Polnisch",
-    "pos": "noun",
-    "useful_for_flashcard": true,
-    "cefr_level": "A2",
-    "english_translation": "Polish (language)",
-    "romanization": "Polnisch",
-    "example_sentence_native": "Sie lernt Polnisch.",
-    "example_sentence_english": "She is learning Polish.",
-    "gender": "neuter",
-    "is_separable_verb": false,
-    "separable_prefix": "",
-    "base_verb": "",
-    "capitalization_sensitive": true,
     "word_frequency": 3687
   },
   {
@@ -49836,22 +49656,6 @@
     "word_frequency": 3902
   },
   {
-    "word": "Rasen",
-    "pos": "noun",
-    "useful_for_flashcard": true,
-    "cefr_level": "A2",
-    "english_translation": "lawn;grass",
-    "romanization": "Rasen",
-    "example_sentence_native": "Der Rasen muss gemäht werden.",
-    "example_sentence_english": "The lawn needs to be mowed.",
-    "gender": "masculine",
-    "is_separable_verb": false,
-    "separable_prefix": "",
-    "base_verb": "",
-    "capitalization_sensitive": true,
-    "word_frequency": 3902
-  },
-  {
     "word": "Seminar",
     "useful_for_flashcard": true,
     "cefr_level": "B1",
@@ -50915,22 +50719,6 @@
     "base_verb": "",
     "capitalization_sensitive": true,
     "pos": "noun",
-    "word_frequency": 3994
-  },
-  {
-    "word": "Verdienst",
-    "pos": "noun",
-    "useful_for_flashcard": true,
-    "cefr_level": "B1",
-    "english_translation": "earnings;income",
-    "romanization": "Verdienst",
-    "example_sentence_native": "Sein Verdienst ist sehr gut.",
-    "example_sentence_english": "His earnings are very good.",
-    "gender": "masculine",
-    "is_separable_verb": false,
-    "separable_prefix": "",
-    "base_verb": "",
-    "capitalization_sensitive": true,
     "word_frequency": 3994
   },
   {
@@ -60234,22 +60022,6 @@
     "word_frequency": 4729
   },
   {
-    "word": "Heide",
-    "pos": "noun",
-    "useful_for_flashcard": true,
-    "cefr_level": "B2",
-    "english_translation": "heath;moor",
-    "romanization": "Heide",
-    "example_sentence_native": "Wir wanderten durch die blühende Heide.",
-    "example_sentence_english": "We hiked through the blooming heath.",
-    "gender": "feminine",
-    "is_separable_verb": false,
-    "separable_prefix": "",
-    "base_verb": "",
-    "capitalization_sensitive": false,
-    "word_frequency": 4729
-  },
-  {
     "word": "Heizung",
     "useful_for_flashcard": true,
     "cefr_level": "A2",
@@ -61990,7 +61762,8 @@
     "base_verb": "",
     "capitalization_sensitive": false,
     "pos": "adjective",
-    "word_frequency": 4886
+    "word_frequency": 4886,
+    "goethe_b1_wordlist": true
   },
   {
     "word": "entgehen",
@@ -71908,7 +71681,8 @@
     "base_verb": "",
     "capitalization_sensitive": false,
     "pos": "adjective",
-    "word_frequency": 5739
+    "word_frequency": 5739,
+    "goethe_b1_wordlist": true
   },
   {
     "word": "Wache",
@@ -83941,7 +83715,8 @@
     "base_verb": "",
     "capitalization_sensitive": false,
     "pos": "verb",
-    "word_frequency": 6774
+    "word_frequency": 6774,
+    "goethe_b1_wordlist": true
   },
   {
     "word": "Huhn",
@@ -93123,7 +92898,8 @@
     "base_verb": "",
     "capitalization_sensitive": false,
     "pos": "adjective",
-    "word_frequency": 7588
+    "word_frequency": 7588,
+    "goethe_b1_wordlist": true
   },
   {
     "word": "strafbar",
@@ -97004,7 +96780,8 @@
     "base_verb": "",
     "capitalization_sensitive": false,
     "pos": "verb",
-    "word_frequency": 7929
+    "word_frequency": 7929,
+    "goethe_b1_wordlist": true
   },
   {
     "word": "british",
@@ -104024,7 +103801,8 @@
     "base_verb": "",
     "capitalization_sensitive": false,
     "pos": "noun",
-    "word_frequency": 8566
+    "word_frequency": 8566,
+    "goethe_b1_wordlist": true
   },
   {
     "word": "Sekretär",
@@ -111702,7 +111480,8 @@
     "base_verb": "",
     "capitalization_sensitive": false,
     "pos": "verb",
-    "word_frequency": 9254
+    "word_frequency": 9254,
+    "goethe_b1_wordlist": true
   },
   {
     "word": "Geschäftsmodell",
@@ -117040,22 +116819,6 @@
     "word_frequency": 9782
   },
   {
-    "word": "Macht",
-    "pos": "noun",
-    "useful_for_flashcard": true,
-    "cefr_level": "B1",
-    "english_translation": "power",
-    "romanization": "Macht",
-    "example_sentence_native": "Die Macht des Volkes ist groß.",
-    "example_sentence_english": "The power of the people is great.",
-    "gender": "feminine",
-    "is_separable_verb": false,
-    "separable_prefix": "",
-    "base_verb": "",
-    "capitalization_sensitive": true,
-    "word_frequency": 9782
-  },
-  {
     "word": "Nickel",
     "useful_for_flashcard": true,
     "cefr_level": "B2",
@@ -117213,22 +116976,6 @@
     "base_verb": "",
     "capitalization_sensitive": true,
     "pos": "noun",
-    "word_frequency": 9798
-  },
-  {
-    "word": "Putz",
-    "pos": "noun",
-    "useful_for_flashcard": true,
-    "cefr_level": "B1",
-    "english_translation": "plaster",
-    "romanization": "Putz",
-    "example_sentence_native": "Der Putz an der Wand bröckelt.",
-    "example_sentence_english": "The plaster on the wall is crumbling.",
-    "gender": "masculine",
-    "is_separable_verb": false,
-    "separable_prefix": "",
-    "base_verb": "",
-    "capitalization_sensitive": true,
     "word_frequency": 9798
   },
   {
@@ -134465,7 +134212,8 @@
     "base_verb": "",
     "capitalization_sensitive": false,
     "pos": "noun",
-    "word_frequency": 11394
+    "word_frequency": 11394,
+    "goethe_b1_wordlist": true
   },
   {
     "word": "pervers",
@@ -150398,22 +150146,6 @@
     "base_verb": "",
     "capitalization_sensitive": true,
     "pos": "adj",
-    "word_frequency": 12872
-  },
-  {
-    "word": "Portugiesisch",
-    "pos": "noun",
-    "useful_for_flashcard": true,
-    "cefr_level": "A2",
-    "english_translation": "Portuguese (language)",
-    "romanization": "Portugiesisch",
-    "example_sentence_native": "Ich lerne Portugiesisch.",
-    "example_sentence_english": "I am learning Portuguese.",
-    "gender": "neuter",
-    "is_separable_verb": false,
-    "separable_prefix": "",
-    "base_verb": "",
-    "capitalization_sensitive": true,
     "word_frequency": 12872
   },
   {
@@ -176938,7 +176670,8 @@
     "base_verb": "schreiben",
     "capitalization_sensitive": false,
     "pos": "verb",
-    "word_frequency": 15322
+    "word_frequency": 15322,
+    "goethe_b1_wordlist": true
   },
   {
     "word": "einsammeln",
@@ -249048,22 +248781,6 @@
     "word_frequency": 22305
   },
   {
-    "word": "Happen",
-    "pos": "noun",
-    "useful_for_flashcard": true,
-    "cefr_level": "B1",
-    "english_translation": "bite;morsel",
-    "romanization": "Happen",
-    "example_sentence_native": "Er nahm einen kleinen Happen von seinem Brot.",
-    "example_sentence_english": "He took a small bite of his bread.",
-    "gender": "masculine",
-    "is_separable_verb": false,
-    "separable_prefix": "",
-    "base_verb": "",
-    "capitalization_sensitive": true,
-    "word_frequency": 22305
-  },
-  {
     "word": "Hauptverhandlung",
     "useful_for_flashcard": true,
     "cefr_level": "C1",
@@ -271822,22 +271539,6 @@
     "word_frequency": 24635
   },
   {
-    "word": "Litauisch",
-    "pos": "noun",
-    "useful_for_flashcard": true,
-    "cefr_level": "B1",
-    "english_translation": "Lithuanian (language)",
-    "romanization": "Litauisch",
-    "example_sentence_native": "Ich lerne Litauisch, weil ich dort studieren möchte.",
-    "example_sentence_english": "I am learning Lithuanian because I want to study there.",
-    "gender": "neuter",
-    "is_separable_verb": false,
-    "separable_prefix": "",
-    "base_verb": "",
-    "capitalization_sensitive": true,
-    "word_frequency": 24635
-  },
-  {
     "word": "Literat",
     "useful_for_flashcard": true,
     "cefr_level": "C1",
@@ -272939,22 +272640,6 @@
     "base_verb": "",
     "capitalization_sensitive": true,
     "pos": "adjective",
-    "word_frequency": 24743
-  },
-  {
-    "word": "Slowakisch",
-    "pos": "noun",
-    "useful_for_flashcard": true,
-    "cefr_level": "B1",
-    "english_translation": "Slovak (language)",
-    "romanization": "Slowakisch",
-    "example_sentence_native": "Sprichst du Slowakisch oder Tschechisch?",
-    "example_sentence_english": "Do you speak Slovak or Czech?",
-    "gender": "neuter",
-    "is_separable_verb": false,
-    "separable_prefix": "",
-    "base_verb": "",
-    "capitalization_sensitive": true,
     "word_frequency": 24743
   },
   {
@@ -283421,22 +283106,6 @@
     "base_verb": "",
     "capitalization_sensitive": true,
     "pos": "noun",
-    "word_frequency": 25727
-  },
-  {
-    "word": "Bleiche",
-    "pos": "noun",
-    "useful_for_flashcard": true,
-    "cefr_level": "B1",
-    "english_translation": "bleach;bleaching;bleaching ground",
-    "romanization": "Bleiche",
-    "example_sentence_native": "Die Wäsche braucht eine Bleiche.",
-    "example_sentence_english": "The laundry needs bleaching.",
-    "gender": "feminine",
-    "is_separable_verb": false,
-    "separable_prefix": "",
-    "base_verb": "",
-    "capitalization_sensitive": true,
     "word_frequency": 25727
   },
   {
@@ -326007,38 +325676,6 @@
     "pos": "adverb"
   },
   {
-    "word": "Bitte",
-    "useful_for_flashcard": true,
-    "goethe_b1_wordlist": true,
-    "cefr_level": "B1",
-    "english_translation": "please, favor",
-    "romanization": "Bitte",
-    "example_sentence_native": "Können Sie mir bitte helfen?",
-    "example_sentence_english": "Can you please help me?",
-    "gender": "feminine",
-    "is_separable_verb": false,
-    "separable_prefix": "",
-    "base_verb": "",
-    "capitalization_sensitive": true,
-    "pos": "interjection"
-  },
-  {
-    "word": "Braten",
-    "useful_for_flashcard": true,
-    "goethe_b1_wordlist": true,
-    "cefr_level": "B1",
-    "english_translation": "roast (noun)",
-    "romanization": "brah-tsen",
-    "example_sentence_native": "Ich mag Braten mit Kartoffeln.",
-    "example_sentence_english": "I like roast with potatoes.",
-    "gender": "masculine",
-    "is_separable_verb": false,
-    "separable_prefix": "",
-    "base_verb": "",
-    "capitalization_sensitive": true,
-    "pos": "noun"
-  },
-  {
     "word": "breit",
     "useful_for_flashcard": true,
     "goethe_b1_wordlist": true,
@@ -326359,38 +325996,6 @@
     "pos": "preposition"
   },
   {
-    "word": "Einschreiben",
-    "useful_for_flashcard": true,
-    "goethe_b1_wordlist": true,
-    "cefr_level": "B1",
-    "english_translation": "to register; to enroll",
-    "romanization": "ˈaɪnˌʃraɪbən",
-    "example_sentence_native": "Sie müssen sich für den Kurs online einschreiben.",
-    "example_sentence_english": "You have to register for the course online.",
-    "gender": "neuter",
-    "is_separable_verb": true,
-    "separable_prefix": "ein-",
-    "base_verb": "schreiben",
-    "capitalization_sensitive": true,
-    "pos": "verb"
-  },
-  {
-    "word": "Einzel",
-    "useful_for_flashcard": true,
-    "goethe_b1_wordlist": true,
-    "cefr_level": "B1",
-    "english_translation": "single; individual",
-    "romanization": "ˈaɪntsəl",
-    "example_sentence_native": "Das Hotel bietet Einzelzimmer und Doppelzimmer an.",
-    "example_sentence_english": "The hotel offers single rooms and double rooms.",
-    "gender": "neuter",
-    "is_separable_verb": false,
-    "separable_prefix": "",
-    "base_verb": "",
-    "capitalization_sensitive": true,
-    "pos": "adjective"
-  },
-  {
     "word": "Elektro",
     "useful_for_flashcard": false,
     "goethe_b1_wordlist": true,
@@ -326583,22 +326188,6 @@
     "pos": "noun"
   },
   {
-    "word": "Essen",
-    "useful_for_flashcard": true,
-    "goethe_b1_wordlist": true,
-    "cefr_level": "B1",
-    "english_translation": "food, meal; to eat",
-    "romanization": "ˈɛsn̩",
-    "example_sentence_native": "Wir gehen heute Abend essen.",
-    "example_sentence_english": "We are going to eat out tonight.",
-    "gender": "neuter",
-    "is_separable_verb": false,
-    "separable_prefix": "",
-    "base_verb": "",
-    "capitalization_sensitive": true,
-    "pos": "noun"
-  },
-  {
     "word": "etwas",
     "useful_for_flashcard": true,
     "goethe_b1_wordlist": true,
@@ -326757,38 +326346,6 @@
     "base_verb": "",
     "capitalization_sensitive": false,
     "pos": "verb"
-  },
-  {
-    "word": "Fest",
-    "useful_for_flashcard": true,
-    "goethe_b1_wordlist": true,
-    "cefr_level": "B1",
-    "english_translation": "party, festival, feast",
-    "romanization": "fest",
-    "example_sentence_native": "Wir feiern heute ein großes Fest.",
-    "example_sentence_english": "We are celebrating a big party today.",
-    "gender": "neuter",
-    "is_separable_verb": false,
-    "separable_prefix": "",
-    "base_verb": "",
-    "capitalization_sensitive": true,
-    "pos": "noun"
-  },
-  {
-    "word": "Fett",
-    "useful_for_flashcard": true,
-    "goethe_b1_wordlist": true,
-    "cefr_level": "B1",
-    "english_translation": "fat",
-    "romanization": "fet",
-    "example_sentence_native": "Dieses Essen ist mir zu fett.",
-    "example_sentence_english": "This food is too fatty for me.",
-    "gender": "neuter",
-    "is_separable_verb": false,
-    "separable_prefix": "",
-    "base_verb": "",
-    "capitalization_sensitive": true,
-    "pos": "noun"
   },
   {
     "word": "fleißig",
@@ -327079,22 +326636,6 @@
     "pos": "adverb"
   },
   {
-    "word": "Gesamt",
-    "useful_for_flashcard": true,
-    "goethe_b1_wordlist": true,
-    "cefr_level": "B1",
-    "english_translation": "total, entire",
-    "romanization": "ɡəˈtsamt",
-    "example_sentence_native": "Das ist der Gesamtpreis.",
-    "example_sentence_english": "That is the total price.",
-    "gender": "",
-    "is_separable_verb": false,
-    "separable_prefix": "",
-    "base_verb": "",
-    "capitalization_sensitive": true,
-    "pos": "adjective"
-  },
-  {
     "word": "Geschwindigkeitsbeschränkung",
     "useful_for_flashcard": true,
     "goethe_b1_wordlist": true,
@@ -327311,22 +326852,6 @@
     "romanization": "ˈhɪnˌvaɪ̯zə",
     "example_sentence_native": "Der Lehrer gab uns wichtige Hinweise für die Prüfung.",
     "example_sentence_english": "The teacher gave us important hints for the exam.",
-    "gender": "masculine",
-    "is_separable_verb": false,
-    "separable_prefix": "",
-    "base_verb": "",
-    "capitalization_sensitive": true,
-    "pos": "noun"
-  },
-  {
-    "word": "Husten",
-    "useful_for_flashcard": true,
-    "goethe_b1_wordlist": true,
-    "cefr_level": "B1",
-    "english_translation": "cough",
-    "romanization": "ˈhʊstn̩",
-    "example_sentence_native": "Ich habe seit Tagen einen trockenen Husten.",
-    "example_sentence_english": "I've had a dry cough for days.",
     "gender": "masculine",
     "is_separable_verb": false,
     "separable_prefix": "",
@@ -327575,22 +327100,6 @@
     "pos": "noun"
   },
   {
-    "word": "klasse",
-    "useful_for_flashcard": true,
-    "goethe_b1_wordlist": true,
-    "cefr_level": "B1",
-    "english_translation": "class, grade",
-    "romanization": "klasə",
-    "example_sentence_native": "Wir sind in der gleichen Klasse.",
-    "example_sentence_english": "We are in the same class.",
-    "gender": "feminine",
-    "is_separable_verb": false,
-    "separable_prefix": "",
-    "base_verb": "",
-    "capitalization_sensitive": true,
-    "pos": "noun"
-  },
-  {
     "word": "Klassenarbeit",
     "useful_for_flashcard": true,
     "goethe_b1_wordlist": true,
@@ -327637,22 +327146,6 @@
     "base_verb": "",
     "capitalization_sensitive": true,
     "pos": "noun"
-  },
-  {
-    "word": "Kosten",
-    "useful_for_flashcard": true,
-    "goethe_b1_wordlist": true,
-    "cefr_level": "B1",
-    "english_translation": "to cost, to taste",
-    "romanization": "kɔstn̩",
-    "example_sentence_native": "Wie viel kostet das?",
-    "example_sentence_english": "How much does that cost?",
-    "gender": "",
-    "is_separable_verb": false,
-    "separable_prefix": "",
-    "base_verb": "",
-    "capitalization_sensitive": false,
-    "pos": "verb"
   },
   {
     "word": "Kranke",
@@ -327767,22 +327260,6 @@
     "pos": "adjective/adverb"
   },
   {
-    "word": "Leben",
-    "useful_for_flashcard": true,
-    "goethe_b1_wordlist": true,
-    "cefr_level": "B1",
-    "english_translation": "life / to live",
-    "romanization": "ˈleːbn̩",
-    "example_sentence_native": "Das Leben ist schön. / Ich lebe in Deutschland.",
-    "example_sentence_english": "Life is beautiful. / I live in Germany.",
-    "gender": "neuter",
-    "is_separable_verb": false,
-    "separable_prefix": "",
-    "base_verb": "",
-    "capitalization_sensitive": true,
-    "pos": "noun/verb"
-  },
-  {
     "word": "leid tun",
     "useful_for_flashcard": true,
     "goethe_b1_wordlist": true,
@@ -327813,22 +327290,6 @@
     "base_verb": "",
     "capitalization_sensitive": false,
     "pos": "prefix"
-  },
-  {
-    "word": "Lokal",
-    "useful_for_flashcard": true,
-    "goethe_b1_wordlist": true,
-    "cefr_level": "B1",
-    "english_translation": "local (adj.), pub, restaurant (noun)",
-    "romanization": "loˈkaːl",
-    "example_sentence_native": "Das ist ein gutes Lokal in der Nähe. / Wir suchen ein lokales Geschäft.",
-    "example_sentence_english": "This is a good pub nearby. / We are looking for a local shop.",
-    "gender": "neuter",
-    "is_separable_verb": false,
-    "separable_prefix": "",
-    "base_verb": "",
-    "capitalization_sensitive": true,
-    "pos": "noun/adjective"
   },
   {
     "word": "Lüge",
@@ -328183,22 +327644,6 @@
     "pos": "noun"
   },
   {
-    "word": "Ober",
-    "useful_for_flashcard": true,
-    "goethe_b1_wordlist": true,
-    "cefr_level": "B1",
-    "english_translation": "waiter",
-    "romanization": "ˈoːbɐ",
-    "example_sentence_native": "Der Ober brachte die Rechnung.",
-    "example_sentence_english": "The waiter brought the bill.",
-    "gender": "masculine",
-    "is_separable_verb": false,
-    "separable_prefix": "",
-    "base_verb": "",
-    "capitalization_sensitive": true,
-    "pos": "noun"
-  },
-  {
     "word": "obwohl",
     "useful_for_flashcard": true,
     "goethe_b1_wordlist": true,
@@ -328277,54 +327722,6 @@
     "base_verb": "",
     "capitalization_sensitive": true,
     "pos": "adjective"
-  },
-  {
-    "word": "Orange",
-    "useful_for_flashcard": true,
-    "goethe_b1_wordlist": true,
-    "cefr_level": "B1",
-    "english_translation": "orange",
-    "romanization": "oh-rahn-zhuh",
-    "example_sentence_native": "Ich esse gerne eine Orange.",
-    "example_sentence_english": "I like to eat an orange.",
-    "gender": "feminine",
-    "is_separable_verb": false,
-    "separable_prefix": "",
-    "base_verb": "",
-    "capitalization_sensitive": true,
-    "pos": "noun"
-  },
-  {
-    "word": "Original",
-    "useful_for_flashcard": true,
-    "goethe_b1_wordlist": true,
-    "cefr_level": "B1",
-    "english_translation": "original",
-    "romanization": "oh-ree-gee-nahl",
-    "example_sentence_native": "Das ist das Originalgemälde.",
-    "example_sentence_english": "This is the original painting.",
-    "gender": "neuter",
-    "is_separable_verb": false,
-    "separable_prefix": "",
-    "base_verb": "",
-    "capitalization_sensitive": true,
-    "pos": "noun"
-  },
-  {
-    "word": "paar",
-    "useful_for_flashcard": true,
-    "goethe_b1_wordlist": true,
-    "cefr_level": "B1",
-    "english_translation": "a few, a couple",
-    "romanization": "pahr",
-    "example_sentence_native": "Ich habe ein paar Fragen.",
-    "example_sentence_english": "I have a few questions.",
-    "gender": "neuter",
-    "is_separable_verb": false,
-    "separable_prefix": "",
-    "base_verb": "",
-    "capitalization_sensitive": false,
-    "pos": "numeral"
   },
   {
     "word": "Paradeiser",
@@ -328583,22 +327980,6 @@
     "pos": "determiner"
   },
   {
-    "word": "schaden",
-    "useful_for_flashcard": true,
-    "goethe_b1_wordlist": true,
-    "cefr_level": "B1",
-    "english_translation": "to harm, to damage",
-    "romanization": "ˈʃaːdn̩",
-    "example_sentence_native": "Rauchen kann Ihrer Gesundheit schaden.",
-    "example_sentence_english": "Smoking can harm your health.",
-    "gender": "",
-    "is_separable_verb": false,
-    "separable_prefix": "",
-    "base_verb": "",
-    "capitalization_sensitive": false,
-    "pos": "verb"
-  },
-  {
     "word": "Schinken",
     "useful_for_flashcard": true,
     "goethe_b1_wordlist": true,
@@ -328629,70 +328010,6 @@
     "base_verb": "",
     "capitalization_sensitive": false,
     "pos": "adverb"
-  },
-  {
-    "word": "Schreck",
-    "useful_for_flashcard": true,
-    "goethe_b1_wordlist": true,
-    "cefr_level": "B1",
-    "english_translation": "fright, shock",
-    "romanization": "ʃʁɛk",
-    "example_sentence_native": "Der plötzliche Lärm versetzte uns in einen großen Schreck.",
-    "example_sentence_english": "The sudden noise gave us a big fright.",
-    "gender": "masculine",
-    "is_separable_verb": false,
-    "separable_prefix": "",
-    "base_verb": "",
-    "capitalization_sensitive": true,
-    "pos": "noun"
-  },
-  {
-    "word": "Schreiben",
-    "useful_for_flashcard": true,
-    "goethe_b1_wordlist": true,
-    "cefr_level": "B1",
-    "english_translation": "writing, letter",
-    "romanization": "ˈʃʁaɪbn̩",
-    "example_sentence_native": "Ich habe ein wichtiges Schreiben erhalten.",
-    "example_sentence_english": "I have received an important letter.",
-    "gender": "neuter",
-    "is_separable_verb": false,
-    "separable_prefix": "",
-    "base_verb": "",
-    "capitalization_sensitive": true,
-    "pos": "noun"
-  },
-  {
-    "word": "schuld",
-    "useful_for_flashcard": true,
-    "goethe_b1_wordlist": true,
-    "cefr_level": "B1",
-    "english_translation": "guilt, fault, debt",
-    "romanization": "ʃʊlt",
-    "example_sentence_native": "Er hat keine Schuld an dem Unfall.",
-    "example_sentence_english": "He is not at fault for the accident.",
-    "gender": "feminine",
-    "is_separable_verb": false,
-    "separable_prefix": "",
-    "base_verb": "",
-    "capitalization_sensitive": false,
-    "pos": "noun"
-  },
-  {
-    "word": "Schulden",
-    "useful_for_flashcard": true,
-    "goethe_b1_wordlist": true,
-    "cefr_level": "B1",
-    "english_translation": "debts",
-    "romanization": "ˈʃʊldən",
-    "example_sentence_native": "Er hat viele Schulden gemacht.",
-    "example_sentence_english": "He has incurred many debts.",
-    "gender": "feminine",
-    "is_separable_verb": false,
-    "separable_prefix": "",
-    "base_verb": "",
-    "capitalization_sensitive": true,
-    "pos": "noun"
   },
   {
     "word": "Schularbeit",
@@ -328999,22 +328316,6 @@
     "pos": "noun"
   },
   {
-    "word": "Spezial",
-    "useful_for_flashcard": true,
-    "goethe_b1_wordlist": true,
-    "cefr_level": "B1",
-    "english_translation": "special",
-    "romanization": "ʃpeˈtsi̯aːl",
-    "example_sentence_native": "Das ist ein ganz spezieller Fall.",
-    "example_sentence_english": "This is a very special case.",
-    "gender": "",
-    "is_separable_verb": false,
-    "separable_prefix": "",
-    "base_verb": "",
-    "capitalization_sensitive": false,
-    "pos": "adjective"
-  },
-  {
     "word": "spitz",
     "useful_for_flashcard": true,
     "goethe_b1_wordlist": true,
@@ -329143,22 +328444,6 @@
     "pos": "noun"
   },
   {
-    "word": "stück",
-    "useful_for_flashcard": true,
-    "goethe_b1_wordlist": true,
-    "cefr_level": "B1",
-    "english_translation": "piece, bit, item",
-    "romanization": "shtook",
-    "example_sentence_native": "Ich habe ein Stück Kuchen gegessen.",
-    "example_sentence_english": "I ate a piece of cake.",
-    "gender": "neuter",
-    "is_separable_verb": false,
-    "separable_prefix": "",
-    "base_verb": "",
-    "capitalization_sensitive": false,
-    "pos": "noun"
-  },
-  {
     "word": "Studierende",
     "useful_for_flashcard": true,
     "goethe_b1_wordlist": true,
@@ -329271,22 +328556,6 @@
     "pos": "noun"
   },
   {
-    "word": "unternehmen",
-    "useful_for_flashcard": true,
-    "goethe_b1_wordlist": true,
-    "cefr_level": "B1",
-    "english_translation": "to undertake, to do, to go (on an outing)",
-    "romanization": "un-ter-NEH-men",
-    "example_sentence_native": "Wir wollen am Wochenende etwas unternehmen.",
-    "example_sentence_english": "We want to do something on the weekend.",
-    "gender": "",
-    "is_separable_verb": false,
-    "separable_prefix": "",
-    "base_verb": "",
-    "capitalization_sensitive": false,
-    "pos": "verb"
-  },
-  {
     "word": "untersagt",
     "useful_for_flashcard": true,
     "goethe_b1_wordlist": true,
@@ -329349,22 +328618,6 @@
     "base_verb": "",
     "capitalization_sensitive": false,
     "pos": "adjective"
-  },
-  {
-    "word": "vergnügen",
-    "useful_for_flashcard": true,
-    "goethe_b1_wordlist": true,
-    "cefr_level": "B1",
-    "english_translation": "pleasure, enjoyment",
-    "romanization": "fer-GNU-gen",
-    "example_sentence_native": "Es ist mir ein Vergnügen, Sie kennenzulernen.",
-    "example_sentence_english": "It is my pleasure to meet you.",
-    "gender": "neuter",
-    "is_separable_verb": false,
-    "separable_prefix": "",
-    "base_verb": "",
-    "capitalization_sensitive": true,
-    "pos": "noun"
   },
   {
     "word": "vergrößern",
@@ -329509,22 +328762,6 @@
     "base_verb": "",
     "capitalization_sensitive": false,
     "pos": "pronoun"
-  },
-  {
-    "word": "Vollzeit",
-    "useful_for_flashcard": true,
-    "goethe_b1_wordlist": true,
-    "cefr_level": "B1",
-    "english_translation": "full-time",
-    "romanization": "Fol'tsait",
-    "example_sentence_native": "Sie arbeitet Vollzeit in einer Bank.",
-    "example_sentence_english": "She works full-time in a bank.",
-    "gender": "",
-    "is_separable_verb": false,
-    "separable_prefix": "",
-    "base_verb": "",
-    "capitalization_sensitive": true,
-    "pos": "adverb"
   },
   {
     "word": "Wagen",
@@ -329703,22 +328940,6 @@
     "pos": "pronoun"
   },
   {
-    "word": "wert",
-    "useful_for_flashcard": true,
-    "goethe_b1_wordlist": true,
-    "cefr_level": "B1",
-    "english_translation": "worth, value",
-    "romanization": "vert",
-    "example_sentence_native": "Diese Statue ist sehr wertvoll.",
-    "example_sentence_english": "This statue is very valuable.",
-    "gender": "masculine",
-    "is_separable_verb": false,
-    "separable_prefix": "",
-    "base_verb": "",
-    "capitalization_sensitive": false,
-    "pos": "adjective"
-  },
-  {
     "word": "wie",
     "useful_for_flashcard": true,
     "goethe_b1_wordlist": true,
@@ -329733,22 +328954,6 @@
     "base_verb": "",
     "capitalization_sensitive": false,
     "pos": "adverb"
-  },
-  {
-    "word": "Wissen",
-    "useful_for_flashcard": true,
-    "goethe_b1_wordlist": true,
-    "cefr_level": "B1",
-    "english_translation": "knowledge, to know",
-    "romanization": "visen",
-    "example_sentence_native": "Ich habe viel Wissen über dieses Thema.",
-    "example_sentence_english": "I have a lot of knowledge about this topic.",
-    "gender": "neuter",
-    "is_separable_verb": false,
-    "separable_prefix": "",
-    "base_verb": "",
-    "capitalization_sensitive": true,
-    "pos": "noun"
   },
   {
     "word": "wollen",
@@ -329831,38 +329036,6 @@
     "pos": "noun"
   },
   {
-    "word": "pasta",
-    "useful_for_flashcard": true,
-    "goethe_b1_wordlist": true,
-    "cefr_level": "B1",
-    "english_translation": "pasta",
-    "romanization": "pas-ta",
-    "example_sentence_native": "Wir essen heute Pasta.",
-    "example_sentence_english": "We are eating pasta today.",
-    "gender": "feminine",
-    "is_separable_verb": false,
-    "separable_prefix": "",
-    "base_verb": "",
-    "capitalization_sensitive": true,
-    "pos": "noun"
-  },
-  {
-    "word": "zeug",
-    "useful_for_flashcard": true,
-    "goethe_b1_wordlist": true,
-    "cefr_level": "B1",
-    "english_translation": "stuff, things",
-    "romanization": "tsoyg",
-    "example_sentence_native": "Das ist mein Zeug.",
-    "example_sentence_english": "This is my stuff.",
-    "gender": "neuter",
-    "is_separable_verb": false,
-    "separable_prefix": "",
-    "base_verb": "",
-    "capitalization_sensitive": true,
-    "pos": "noun"
-  },
-  {
     "word": "Zinsen",
     "useful_for_flashcard": true,
     "goethe_b1_wordlist": true,
@@ -329893,22 +329066,6 @@
     "base_verb": "",
     "capitalization_sensitive": true,
     "pos": "noun"
-  },
-  {
-    "word": "Zuhause",
-    "useful_for_flashcard": true,
-    "goethe_b1_wordlist": true,
-    "cefr_level": "B1",
-    "english_translation": "home (as a place, adverb)",
-    "romanization": "tsoo-how-zeh",
-    "example_sentence_native": "Ich bin zuhause.",
-    "example_sentence_english": "I am at home.",
-    "gender": "",
-    "is_separable_verb": false,
-    "separable_prefix": "",
-    "base_verb": "",
-    "capitalization_sensitive": true,
-    "pos": "adverb"
   },
   {
     "word": "Zündholz",

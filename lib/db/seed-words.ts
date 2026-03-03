@@ -1,6 +1,6 @@
 import fs from "fs/promises";
 import path from "path";
-import { and, count, eq, inArray } from "drizzle-orm";
+import { and, count, eq, inArray, isNull } from "drizzle-orm";
 import { db } from "./index";
 import { dictionaryWord } from "./schema";
 import { supportedLanguages } from "../languages";
@@ -22,27 +22,53 @@ async function backfillGoetheB1Wordlist(langCode: string, filePath: string) {
   const raw = await fs.readFile(filePath, "utf-8");
   const allWords: RawWord[] = JSON.parse(raw);
 
-  const goetheWords = allWords
-    .filter((w) => w.word && w.goethe_b1_wordlist === true)
-    .map((w) => w.word);
+  const goetheWordMap = new Map<string, RawWord>();
+  for (const word of allWords) {
+    if (!word.word || !word.english_translation || word.goethe_b1_wordlist !== true) continue;
+    if (!goetheWordMap.has(word.word)) {
+      goetheWordMap.set(word.word, word);
+    }
+  }
+  const goetheWords = Array.from(goetheWordMap.values());
 
   if (goetheWords.length === 0) return;
 
+  // 1) Insert missing Goethe words.
   const CHUNK = 500;
   for (let i = 0; i < goetheWords.length; i += CHUNK) {
     const chunk = goetheWords.slice(i, i + CHUNK);
+    const rows = chunk.map((w) => ({
+      word: w.word,
+      language: langCode,
+      pos: w.pos ?? null,
+      cefrLevel: w.cefr_level ?? null,
+      englishTranslation: w.english_translation,
+      exampleSentenceNative: w.example_sentence_native ?? null,
+      exampleSentenceEnglish: w.example_sentence_english ?? null,
+      gender: w.gender ?? null,
+      wordFrequency: w.word_frequency ?? null,
+      usefulForFlashcard: w.useful_for_flashcard ?? true,
+      goetheB1Wordlist: true,
+    }));
+    await db.insert(dictionaryWord).values(rows).onConflictDoNothing();
+  }
+
+  // 2) For existing rows, set flag only when currently NULL.
+  for (let i = 0; i < goetheWords.length; i += CHUNK) {
+    const chunk = goetheWords.slice(i, i + CHUNK).map((w) => w.word);
     await db
       .update(dictionaryWord)
       .set({ goetheB1Wordlist: true })
       .where(
         and(
           eq(dictionaryWord.language, langCode),
-          inArray(dictionaryWord.word, chunk)
+          inArray(dictionaryWord.word, chunk),
+          isNull(dictionaryWord.goetheB1Wordlist)
         )
       );
   }
 
-  console.log(`  ${langCode}: backfilled goethe_b1_wordlist for ${goetheWords.length} words`);
+  console.log(`  ${langCode}: synced goethe_b1_wordlist for ${goetheWords.length} words`);
 }
 
 export async function seedWords() {

@@ -1,0 +1,4 @@
+@words/enrich_german_certificate.ts this file I want to enrich @words/german.json with a new optional key that says "goethe_wordlist": true if this words shows up in the official goethe wordlist for B1 certificate ingested from @words/goethe-zertifikat-b1-wortliste.csv . But the wordlist is a csv that needs to be parsed and cleaned. All the fields are quotated (parse appropiately) and then you can extract the noun gender if it starts with "die ", "der ", "das ", after removing this is present, just keep the part of the word field before the first comma. Then see if this matches any word in @words/german.json under the .word key. if so, check if the cefr_level === "B1" it should be B1 since this wordlist is only for B1.
+
+any errors should be written in a separate file called logs.txt. types of errors: word not found in @words/german.json , word not matching cefr_level. every error should be a new line in logs.txt with this format
+{word}, {line in csv}: {error}

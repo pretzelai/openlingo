@@ -82,32 +82,63 @@ function parseCsvWithLineNumbers(input: string): CsvRow[] {
   return rows;
 }
 
-function cleanGoetheWord(rawWordField: string): { word: string; nounGender: string } {
+function cleanGoetheWord(rawWordField: string): { words: string[]; nounGender: string } {
   let value = rawWordField.trim();
   let nounGender = "";
+  const stripLeadingParenthetical = (input: string): string =>
+    input.replace(/^\([^)]*\)\s*/, "");
 
-  // Remove leading parenthetical marker, e.g. "(sich) zwingen" -> "zwingen".
+  // Remove leading parenthetical marker, e.g. "(sich) zwingen" or "(Back)Rohr".
   if (value.startsWith("(")) {
-    value = value.replace(/^\([^)]*\)\s*/, "");
+    value = stripLeadingParenthetical(value);
   }
+  // Remove reflexive prefix at start, e.g. "sich freuen" -> "freuen".
+  value = value.replace(/^sich\s+/i, "");
 
   const genderMatch = value.match(/^(der|die|das)\s+/i);
   if (genderMatch) {
     nounGender = genderMatch[1].toLowerCase();
     value = value.slice(genderMatch[0].length);
   }
+  // Handle cases like "das (Back)Rohr" after article removal.
+  if (value.startsWith("(")) {
+    value = stripLeadingParenthetical(value);
+  }
+  value = value.replace(/^sich\s+/i, "");
 
   // Remove cross-reference suffixes like "Abitur (D) → A, CH: Matura".
   value = value.replace(/\s+→.*/g, "");
   // Remove parenthetical variants like "Abgase (Pl.)" and everything after " (".
   value = value.replace(/\s+\(.*/g, "");
 
-  let beforeComma = value.split(",")[0] ?? "";
-  // Remove dashes from the cleaned lookup key.
-  beforeComma = beforeComma.replace(/[-–—]/g, "");
-  beforeComma = beforeComma.replace(/\s+/g, " ").trim();
+  const beforeComma = value.split(",")[0] ?? "";
 
-  return { word: beforeComma, nounGender };
+  const normalizeCandidate = (input: string): string => {
+    let candidate = input.trim();
+    candidate = candidate.replace(/^sich\s+/i, "");
+    if (candidate.startsWith("(")) {
+      candidate = stripLeadingParenthetical(candidate);
+    }
+    // Normalize collocations like "Bescheid sagen" to "Bescheid".
+    candidate = candidate.replace(/\s+(geben|sagen)$/i, "");
+    // Remove exclamation marks from lookup key.
+    candidate = candidate.replace(/!/g, "");
+    // Remove dashes from the cleaned lookup key.
+    candidate = candidate.replace(/[-–—]/g, "");
+    candidate = candidate.replace(/\s+/g, " ").trim();
+    return candidate;
+  };
+
+  const words = Array.from(
+    new Set(
+      beforeComma
+        .split("/")
+        .map(normalizeCandidate)
+        .filter((word) => word.length > 0),
+    ),
+  );
+
+  return { words, nounGender };
 }
 
 function buildWordIndex(entries: GermanWordEntry[]): Map<string, number[]> {
@@ -149,25 +180,27 @@ async function main() {
       continue;
     }
 
-    const { word } = cleanGoetheWord(rawWordField);
-    if (!word) continue;
+    const { words } = cleanGoetheWord(rawWordField);
+    if (words.length === 0) continue;
 
-    const matchingIndices = wordIndex.get(word);
-    if (!matchingIndices || matchingIndices.length === 0) {
-      notFoundErrors.push(`${word}, ${row.line}: word not found in german.json`);
-      continue;
-    }
-
-    for (const idx of matchingIndices) {
-      const entry = germanWords[idx];
-      if (entry.cefr_level !== "B1") {
-        const actualLevel = entry.cefr_level ?? "unknown";
-        differentLevelErrors.push(
-          `${word}, ${row.line}: word not matching cefr_level (${actualLevel})`,
-        );
+    for (const word of words) {
+      const matchingIndices = wordIndex.get(word);
+      if (!matchingIndices || matchingIndices.length === 0) {
+        notFoundErrors.push(`${word}, ${row.line}: word not found in german.json`);
         continue;
       }
-      entry.goethe_b1_wordlist = true;
+
+      for (const idx of matchingIndices) {
+        const entry = germanWords[idx];
+        if (entry.cefr_level !== "B1") {
+          const actualLevel = entry.cefr_level ?? "unknown";
+          differentLevelErrors.push(
+            `${word}, ${row.line}: word not matching cefr_level (${actualLevel})`,
+          );
+          continue;
+        }
+        entry.goethe_b1_wordlist = true;
+      }
     }
   }
 

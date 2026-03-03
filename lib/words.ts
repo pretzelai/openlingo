@@ -20,6 +20,7 @@ export interface WordEntry {
   gender: string;
   useful_for_flashcard?: boolean;
   word_frequency?: number;
+  goethe_b1_wordlist?: boolean;
 }
 
 function rowToWordEntry(row: typeof dictionaryWord.$inferSelect): WordEntry {
@@ -33,6 +34,7 @@ function rowToWordEntry(row: typeof dictionaryWord.$inferSelect): WordEntry {
     gender: row.gender ?? "",
     useful_for_flashcard: row.usefulForFlashcard ?? true,
     word_frequency: row.wordFrequency ?? undefined,
+    goethe_b1_wordlist: row.goetheB1Wordlist ?? undefined,
   };
 }
 

@@ -13,6 +13,7 @@ interface Word {
   example_sentence_english: string;
   gender: string;
   word_frequency?: number;
+  goethe_b1_wordlist?: boolean;
 }
 
 interface SrsCard {
@@ -178,6 +179,16 @@ function AllWordsTab({
     [levelWords, srsSet]
   );
 
+  const goetheWords = useMemo(
+    () => words.filter((w) => w.goethe_b1_wordlist === true),
+    [words]
+  );
+
+  const newGoetheWords = useMemo(
+    () => goetheWords.filter((w) => !srsSet.has(w.word.toLowerCase())),
+    [goetheWords, srsSet]
+  );
+
   function handleLevelClick(level: string) {
     setSelectedLevel((prev) => (prev === level ? "" : level));
     setVisibleCount(PAGE_SIZE);
@@ -187,6 +198,19 @@ function AllWordsTab({
     startTransition(async () => {
       await bulkAddWordsToSrs(
         newWordsInLevel.map((w) => ({
+          word: w.word,
+          translation: w.english_translation,
+        })),
+        language
+      );
+      router.refresh();
+    });
+  }
+
+  function handleGoetheBulkAdd() {
+    startTransition(async () => {
+      await bulkAddWordsToSrs(
+        newGoetheWords.map((w) => ({
           word: w.word,
           translation: w.english_translation,
         })),
@@ -237,6 +261,18 @@ function AllWordsTab({
       </div>
 
       {/* Bulk add button */}
+      {newGoetheWords.length > 0 && (
+        <button
+          onClick={handleGoetheBulkAdd}
+          disabled={isPending}
+          className="mb-4 w-full rounded-xl bg-lingo-blue py-3 text-sm font-bold text-white hover:bg-lingo-blue-dark transition-colors disabled:opacity-50"
+        >
+          {isPending
+            ? "Adding..."
+            : `Add Goethe B1 Wordlist (${newGoetheWords.length} words)`}
+        </button>
+      )}
+
       {selectedLevel && newWordsInLevel.length > 0 && (
         <button
           onClick={handleBulkAdd}

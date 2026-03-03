@@ -204,6 +204,7 @@ export const dictionaryWord = pgTable(
     gender: text("gender"),
     wordFrequency: integer("word_frequency"),
     usefulForFlashcard: boolean("useful_for_flashcard").default(true),
+    goetheB1Wordlist: boolean("goethe_b1_wordlist"),
   },
   (table) => [
     uniqueIndex("dictionary_word_unique").on(table.word, table.language),

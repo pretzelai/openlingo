@@ -1,6 +1,6 @@
 import fs from "fs/promises";
 import path from "path";
-import { count, eq } from "drizzle-orm";
+import { and, count, eq, inArray } from "drizzle-orm";
 import { db } from "./index";
 import { dictionaryWord } from "./schema";
 import { supportedLanguages } from "../languages";
@@ -15,19 +15,56 @@ interface RawWord {
   gender?: string;
   word_frequency?: number;
   useful_for_flashcard?: boolean;
+  goethe_b1_wordlist?: boolean;
+}
+
+async function backfillGoetheB1Wordlist(langCode: string, filePath: string) {
+  const raw = await fs.readFile(filePath, "utf-8");
+  const allWords: RawWord[] = JSON.parse(raw);
+
+  const goetheWords = allWords
+    .filter((w) => w.word && w.goethe_b1_wordlist === true)
+    .map((w) => w.word);
+
+  if (goetheWords.length === 0) return;
+
+  const CHUNK = 500;
+  for (let i = 0; i < goetheWords.length; i += CHUNK) {
+    const chunk = goetheWords.slice(i, i + CHUNK);
+    await db
+      .update(dictionaryWord)
+      .set({ goetheB1Wordlist: true })
+      .where(
+        and(
+          eq(dictionaryWord.language, langCode),
+          inArray(dictionaryWord.word, chunk)
+        )
+      );
+  }
+
+  console.log(`  ${langCode}: backfilled goethe_b1_wordlist for ${goetheWords.length} words`);
 }
 
 export async function seedWords() {
   for (const [langCode, fileName] of Object.entries(supportedLanguages)) {
+    const filePath = path.join(process.cwd(), "words", `${fileName}.json`);
     const [{ n }] = await db
       .select({ n: count() })
       .from(dictionaryWord)
       .where(eq(dictionaryWord.language, langCode));
+
     if (n > 0) {
       console.log(`  ${langCode}: already seeded (${n} rows)`);
+
+      // Keep existing databases in sync with newly added optional flags.
+      try {
+        await backfillGoetheB1Wordlist(langCode, filePath);
+      } catch {
+        console.log(`  ${langCode}: skipping goethe_b1_wordlist backfill`);
+      }
+
       continue;
     }
-    const filePath = path.join(process.cwd(), "words", `${fileName}.json`);
 
     let raw: string;
     try {
@@ -56,6 +93,7 @@ export async function seedWords() {
         gender: w.gender ?? null,
         wordFrequency: w.word_frequency ?? null,
         usefulForFlashcard: w.useful_for_flashcard ?? true,
+        goetheB1Wordlist: w.goethe_b1_wordlist ?? null,
       }));
 
       await db

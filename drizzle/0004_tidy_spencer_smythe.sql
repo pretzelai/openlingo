@@ -1,0 +1,1 @@
+ALTER TABLE "dictionary_word" ADD COLUMN "goethe_b1_wordlist" boolean;

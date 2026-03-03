@@ -1,284 +1,284 @@
-Abfalleimer
-Abgase
-Abwart
-Alternative
-Annonce
-anschließen
-Angestellte
-Aprikose
-Arbeitserlaubnis
-ausschließlich
-außen
-außerhalb
-äußerlich
-außer
-außerdem
-S-Bahn
-Straßenbahn
-U-Bahn
-Bankomat
-Bankleitzahl
-BankomatKarte
-Bar
-Bedienungsanleitung
-befreit
-Bekannte
-besonder
-bevor
-Billett
-ein bisschen
-Bitte
-Braten
-breit
-Breite
-Briefumschlag
-Brötli
-buchstabieren
-Coiffeur
-Couvert
-damit
-danke
-Daten
-derselbe
-dick
-doch
-Doppel
-draußen
-durch
-dürfen
-EC-Karte
-Einbahnstraße
-einschließlich
-Einschreiben
-Einzel
-Elektro
-Eltern
-entgegenkommen
-entlang
-entschließen
-entschlossen
-Erdapfel
-Ergeschoß
-erkälten
-Ermäßigung
-erschöpft
-erwachsen
-Erwachsene
-Essen
-etwas
-Fachmann die Fachfrau
-Fachleute
-falls
-Familienstand
-Faschierte
-faulenzen
-Fauteuil
-Ferien
-fernsehen
-Fernsehen
-Fest
-Fett
-fleißig
-fließend
-Fotoapparat
-Freien
-fremd
-Früchte
-früher
-Führerausweis
-Fundbüro
-Fußball
-Fußgänger
-Fußgängerzone
-geboren werden
-Gebrauchsanweisung
-etwas gefallen lassen
-gegen
-gegenüber
-Gehsteig
-gerne
-Gesamt
-Geschwindigkeitsbeschränkung
-gespannt
-Gewissen
-Glacé
-glauben
-grillieren
-Größe
-Gruß
-halbtags
-hallo
-Halt
-runterwerfen
-hinter
-Hinweise
-Husten
-indem
-innerhalb
-Intensivkurs
-interessiert
-irgendirgendein
-Jause
-jeder
-jedoch
-jemand
-Jugendliche
-jung
-kaputtgehen
-kaputtmachen
-Chipkarte
-Kenntnisse
-klasse
-Klassenarbeit
-Kloß
-Konfitüre
-Kopierer
-Kosten
-Kranke
-Kriminal die Kriminalpolizei
-Kuli
-Kursleiter
-Kuvert
-Laden
-lange
-Leben
-leid tun
-Lieblings
-Lokal
-Lüge
-Marille
-Medien
-mittler
-möbliert
-möchten
-Mobilbox
-mögen
-möglichst
-Müesli
-müssen
-nach
-nachdem
-Nachspeise
-nämlich
-neblig
-neben
-Nerv
-nicht
-niemand
-noch
-Notausgang
-Ober
-obwohl
-oder
-öfter
-ohne
-Öko
-Orange
-Original
-paar
-Paradeiser
-parkieren
-Pensionist
-Perron
-Personalien
-Personenstand
-Pflanze
-Portmonee
-Pöstler
-Poulet
-Profisportler
-Prost
-Reifen
-Reception
-Rüebli
-sämtliche
-schaden
-Schinken
-schließlich
-Schreck
-Schreiben
-schuld
-Schulden
-Schularbeit
-Schwammerl
-Schwieger
-seit
-selb
-Senioren
-Serviceangestellte
-siezen
-Schi
-sobald
-sodass
-solange
-sollen
-sondern
-Sorge
-Soße
-soviel
-Speise
-Speisewagen
-Spezial
-spitz
-Zweitsprache
-statt
-staubsaugen
-Steward
-Stiegenhaus
-Straße
-Straßenbahn
-Streichholz
-stück
-Studierende
-Sucht
-Suchtmittel
-Tote
-Trottoir
-trotz
-Unterlagen
-unternehmen
-untersagt
-Velo
-verabredet
-verdächtig
-vergnügen
-vergrößern
-Verhalten
-verlangen
-verpflegen
-verpflichtet
-Versichertenkarte
-Vertrauen
-Verwandte
-viele
-Vollzeit
-Wagen
-während
-Weg
-wegen
-weil
-weise
-weiter
-welcher
-wenige
-wenn
-wer
-wert
-wie
-Wissen
-wollen
-worüber
-worum
-Zahl
-Zahncreme
-pasta
-zeug
-Zinsen
-Zivilstand
-Zuhause
-Zündholz
-zu sein
-Zutaten
-Zvieri
-Znüni
-zwischen
+Abfalleimer [generated]
+Abgase [generated]
+Abwart [generated]
+Alternative [generated]
+Annonce [generated]
+anschließen [generated]
+Angestellte [generated]
+Aprikose [generated]
+Arbeitserlaubnis [generated]
+ausschließlich [generated]
+außen [generated]
+außerhalb [generated]
+äußerlich [generated]
+außer [generated]
+außerdem [generated]
+S-Bahn [generated]
+Straßenbahn [generated]
+U-Bahn [generated]
+Bankomat [generated]
+Bankleitzahl [generated]
+BankomatKarte [generated]
+Bar [generated]
+Bedienungsanleitung [generated]
+befreit [generated]
+Bekannte [generated]
+besonder [generated]
+bevor [generated]
+Billett [generated]
+ein bisschen [generated]
+Bitte [generated]
+Braten [generated]
+breit [generated]
+Breite [generated]
+Briefumschlag [generated]
+Brötli [generated]
+buchstabieren [generated]
+Coiffeur [generated]
+Couvert [generated]
+damit [generated]
+danke [generated]
+Daten [generated]
+derselbe [generated]
+dick [generated]
+doch [generated]
+Doppel [generated]
+draußen [generated]
+durch [generated]
+dürfen [generated]
+EC-Karte [generated]
+Einbahnstraße [generated]
+einschließlich [generated]
+Einschreiben [generated]
+Einzel [generated]
+Elektro [generated]
+Eltern [generated]
+entgegenkommen [generated]
+entlang [generated]
+entschließen [generated]
+entschlossen [generated]
+Erdapfel [generated]
+Ergeschoß [generated]
+erkälten [generated]
+Ermäßigung [generated]
+erschöpft [generated]
+erwachsen [generated]
+Erwachsene [generated]
+Essen [generated]
+etwas [generated]
+Fachmann die Fachfrau [generated]
+Fachleute [generated]
+falls [generated]
+Familienstand [generated]
+Faschierte [generated]
+faulenzen [generated]
+Fauteuil [generated]
+Ferien [generated]
+fernsehen [generated]
+Fernsehen [generated]
+Fest [generated]
+Fett [generated]
+fleißig [generated]
+fließend [generated]
+Fotoapparat [generated]
+Freien [generated]
+fremd [generated]
+Früchte [generated]
+früher [generated]
+Führerausweis [generated]
+Fundbüro [generated]
+Fußball [generated]
+Fußgänger [generated]
+Fußgängerzone [generated]
+geboren werden [generated]
+Gebrauchsanweisung [generated]
+etwas gefallen lassen [generated]
+gegen [generated]
+gegenüber [generated]
+Gehsteig [generated]
+gerne [generated]
+Gesamt [generated]
+Geschwindigkeitsbeschränkung [generated]
+gespannt [generated]
+Gewissen [generated]
+Glacé [generated]
+glauben [generated]
+grillieren [generated]
+Größe [generated]
+Gruß [generated]
+halbtags [generated]
+hallo [generated]
+Halt [generated]
+runterwerfen [generated]
+hinter [generated]
+Hinweise [generated]
+Husten [generated]
+indem [generated]
+innerhalb [generated]
+Intensivkurs [generated]
+interessiert [generated]
+irgendirgendein [generated]
+Jause [generated]
+jeder [generated]
+jedoch [generated]
+jemand [generated]
+Jugendliche [generated]
+jung [generated]
+kaputtgehen [generated]
+kaputtmachen [generated]
+Chipkarte [generated]
+Kenntnisse [generated]
+klasse [generated]
+Klassenarbeit [generated]
+Kloß [generated]
+Konfitüre [generated]
+Kopierer [generated]
+Kosten [generated]
+Kranke [generated]
+Kriminal die Kriminalpolizei [generated]
+Kuli [generated]
+Kursleiter [generated]
+Kuvert [generated]
+Laden [generated]
+lange [generated]
+Leben [generated]
+leid tun [generated]
+Lieblings [generated]
+Lokal [generated]
+Lüge [generated]
+Marille [generated]
+Medien [generated]
+mittler [generated]
+möbliert [generated]
+möchten [generated]
+Mobilbox [generated]
+mögen [generated]
+möglichst [generated]
+Müesli [generated]
+müssen [generated]
+nach [generated]
+nachdem [generated]
+Nachspeise [generated]
+nämlich [generated]
+neblig [generated]
+neben [generated]
+Nerv [generated]
+nicht [generated]
+niemand [generated]
+noch [generated]
+Notausgang [generated]
+Ober [generated]
+obwohl [generated]
+oder [generated]
+öfter [generated]
+ohne [generated]
+Öko [generated]
+Orange [generated]
+Original [generated]
+paar [generated]
+Paradeiser [generated]
+parkieren [generated]
+Pensionist [generated]
+Perron [generated]
+Personalien [generated]
+Personenstand [generated]
+Pflanze [generated]
+Portmonee [generated]
+Pöstler [generated]
+Poulet [generated]
+Profisportler [generated]
+Prost [generated]
+Reifen [generated]
+Reception [generated]
+Rüebli [generated]
+sämtliche [generated]
+schaden [generated]
+Schinken [generated]
+schließlich [generated]
+Schreck [generated]
+Schreiben [generated]
+schuld [generated]
+Schulden [generated]
+Schularbeit [generated]
+Schwammerl [generated]
+Schwieger [generated]
+seit [generated]
+selb [generated]
+Senioren [generated]
+Serviceangestellte [generated]
+siezen [generated]
+Schi [generated]
+sobald [generated]
+sodass [generated]
+solange [generated]
+sollen [generated]
+sondern [generated]
+Sorge [generated]
+Soße [generated]
+soviel [generated]
+Speise [generated]
+Speisewagen [generated]
+Spezial [generated]
+spitz [generated]
+Zweitsprache [generated]
+statt [generated]
+staubsaugen [generated]
+Steward [generated]
+Stiegenhaus [generated]
+Straße [generated]
+Straßenbahn [generated]
+Streichholz [generated]
+stück [generated]
+Studierende [generated]
+Sucht [generated]
+Suchtmittel [generated]
+Tote [generated]
+Trottoir [generated]
+trotz [generated]
+Unterlagen [generated]
+unternehmen [generated]
+untersagt [generated]
+Velo [generated]
+verabredet [generated]
+verdächtig [generated]
+vergnügen [generated]
+vergrößern [generated]
+Verhalten [generated]
+verlangen [generated]
+verpflegen [generated]
+verpflichtet [generated]
+Versichertenkarte [generated]
+Vertrauen [generated]
+Verwandte [generated]
+viele [generated]
+Vollzeit [generated]
+Wagen [generated]
+während [generated]
+Weg [generated]
+wegen [generated]
+weil [generated]
+weise [generated]
+weiter [generated]
+welcher [generated]
+wenige [generated]
+wenn [generated]
+wer [generated]
+wert [generated]
+wie [generated]
+Wissen [generated]
+wollen [generated]
+worüber [generated]
+worum [generated]
+Zahl [generated]
+Zahncreme [generated]
+pasta [generated]
+zeug [generated]
+Zinsen [generated]
+Zivilstand [generated]
+Zuhause [generated]
+Zündholz [generated]
+zu sein [generated]
+Zutaten [generated]
+Zvieri [generated]
+Znüni [generated]
+zwischen [generated]

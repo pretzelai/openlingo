@@ -8,6 +8,7 @@ import { Sidebar } from "@/components/layout/sidebar";
 import { TopBar } from "@/components/layout/top-bar";
 import { MobileNav } from "@/components/layout/mobile-nav";
 import { PostHogIdentify } from "@/components/providers/posthog-identify";
+import { BackgroundRoutePrefetch } from "@/components/providers/background-route-prefetch";
 
 export default async function MainLayout({
   children,
@@ -46,6 +47,7 @@ export default async function MainLayout({
         email={session.user.email}
         name={session.user.name}
       />
+      <BackgroundRoutePrefetch />
       <Sidebar />
       <div className="flex flex-1 flex-col md:pl-64 min-h-0">
         <TopBar stats={stats} githubStars={githubStars} />

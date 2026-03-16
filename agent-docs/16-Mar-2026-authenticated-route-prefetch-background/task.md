@@ -1,0 +1,1 @@
+Can you do an automatic prefetch of all the routes after the user is authenticated so when clicking around the pages load instantly? do not block the main thread while doing this, this must happen in the background without blocking the user

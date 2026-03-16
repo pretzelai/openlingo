@@ -1,0 +1,1 @@
+If I load a route like /units it shows a skeleton and then after some time it loads, if I change routes and go back again it needs to load again. Do we have any system in place to deal with this? Maybe we can use TanStack Query? What is the most appropriate solution?

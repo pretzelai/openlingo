@@ -1,6 +1,6 @@
 "use client";
 
-import { memo } from "react";
+import { memo, type ReactNode } from "react";
 import type { UIMessage } from "@ai-sdk/react";
 import { ChatExercise } from "./chat-exercise";
 import { ChatUnitCard } from "./unit-card";
@@ -21,6 +21,7 @@ interface ChatMessageProps {
   ) => void;
   autoplayAudio?: boolean;
   hideAssistantText?: boolean;
+  assistantPlaceholder?: ReactNode;
   canReplayAudio?: boolean;
   isReplayAudioPlaying?: boolean;
   onReplayAudio?: () => void;
@@ -33,6 +34,7 @@ export const ChatMessage = memo(function ChatMessage({
   onExerciseComplete,
   autoplayAudio = true,
   hideAssistantText = false,
+  assistantPlaceholder,
   canReplayAudio = false,
   isReplayAudioPlaying = false,
   onReplayAudio,
@@ -50,7 +52,23 @@ export const ChatMessage = memo(function ChatMessage({
   }
 
   if (!isUser && hideAssistantText) {
-    return null;
+    if (!assistantPlaceholder) {
+      return null;
+    }
+
+    return (
+      <div
+        className="group/message w-full animate-in fade-in duration-200"
+        data-role={message.role}
+      >
+        <div className="flex w-full items-start gap-2 md:gap-3">
+          <div className="-mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-lingo-green/10 ring-1 ring-lingo-green/20">
+            <span className="text-sm">🤖</span>
+          </div>
+          <div className="w-full">{assistantPlaceholder}</div>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -86,7 +104,7 @@ export const ChatMessage = memo(function ChatMessage({
                 className="inline-flex items-center gap-1 rounded-full border border-lingo-border bg-white px-2 py-1 text-xs font-medium text-lingo-text-light transition-colors hover:border-lingo-blue hover:text-lingo-blue"
               >
                 <ReplayIcon className="h-3.5 w-3.5" />
-                <span>{isReplayAudioPlaying ? "Playing" : "Replay"}</span>
+                <span>{isReplayAudioPlaying ? "Stop" : "Replay"}</span>
               </button>
             </div>
           )}

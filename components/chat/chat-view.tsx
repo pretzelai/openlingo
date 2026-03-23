@@ -461,6 +461,12 @@ export function ChatView({
       const text = getSpeakableMessageText(message);
       if (!text) return;
 
+      if (activeReplayMessageId === message.id) {
+        stopAssistantAudio();
+        setActiveReplayMessageId(null);
+        return;
+      }
+
       stopAssistantAudio();
       setActiveReplayMessageId(message.id);
 
@@ -474,7 +480,7 @@ export function ChatView({
         );
       }
     },
-    [effectiveLanguage, playAssistantAudioAndWait, stopAssistantAudio],
+    [activeReplayMessageId, effectiveLanguage, playAssistantAudioAndWait, stopAssistantAudio],
   );
 
   function handleExerciseComplete(
@@ -559,6 +565,13 @@ export function ChatView({
                   (message.id === hiddenAssistantMessageId ||
                     message.id === pendingStreamingAssistantId)
                 }
+                assistantPlaceholder={
+                  message.role === "assistant" &&
+                  message.id === hiddenAssistantMessageId &&
+                  voiceReplyState === "speaking" ? (
+                    <AssistantSpeakingPlaceholder />
+                  ) : undefined
+                }
                 canReplayAudio={Boolean(replayableAssistantMessages[message.id])}
                 isReplayAudioPlaying={activeReplayMessageId === message.id}
                 onReplayAudio={() => void replayAssistantMessage(message)}
@@ -642,25 +655,15 @@ export function ChatView({
           <div className="flex flex-col gap-2">
             {voiceMode && (
               <div className="rounded-2xl bg-lingo-blue/5 p-3">
-                {activeVoiceStatus ? (
+                {activeVoiceStatus === "transcribing" ||
+                activeVoiceStatus === "generating" ? (
                   <div className="flex min-h-24 flex-col items-center justify-center rounded-2xl border-2 border-lingo-blue bg-white px-5 py-5 text-center">
-                    {activeVoiceStatus === "speaking" ? (
-                      <>
-                        <VoiceWave />
-                        <p className="mt-4 text-sm font-semibold text-lingo-text">
-                          Speaking...
-                        </p>
-                      </>
-                    ) : (
-                      <>
-                        <div className="h-8 w-8 animate-spin rounded-full border-4 border-lingo-blue border-t-transparent" />
-                        <p className="mt-4 text-sm font-semibold text-lingo-text">
-                          {activeVoiceStatus === "transcribing"
-                            ? "Transcribing text..."
-                            : "Generating answer..."}
-                        </p>
-                      </>
-                    )}
+                    <div className="h-8 w-8 animate-spin rounded-full border-4 border-lingo-blue border-t-transparent" />
+                    <p className="mt-4 text-sm font-semibold text-lingo-text">
+                      {activeVoiceStatus === "transcribing"
+                        ? "Transcribing text..."
+                        : "Generating answer..."}
+                    </p>
                   </div>
                 ) : (
                   <button
@@ -902,6 +905,14 @@ function VoiceWave() {
           }
         }
       `}</style>
+    </div>
+  );
+}
+
+function AssistantSpeakingPlaceholder() {
+  return (
+    <div className="rounded-2xl border border-lingo-border bg-white px-4 py-4 shadow-sm">
+      <VoiceWave />
     </div>
   );
 }

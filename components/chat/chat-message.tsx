@@ -12,7 +12,6 @@ import { HoverableMarkdown } from "@/components/word/hoverable-markdown";
 interface ChatMessageProps {
   message: UIMessage;
   language: string;
-  isLoading: boolean;
   completedExercises: Record<string, { correct: boolean; answer: string }>;
   onExerciseComplete: (
     toolCallId: string,
@@ -21,15 +20,22 @@ interface ChatMessageProps {
     exercise: import("@/lib/content/types").Exercise,
   ) => void;
   autoplayAudio?: boolean;
+  hideAssistantText?: boolean;
+  canReplayAudio?: boolean;
+  isReplayAudioPlaying?: boolean;
+  onReplayAudio?: () => void;
 }
 
 export const ChatMessage = memo(function ChatMessage({
   message,
   language,
-  isLoading,
   completedExercises,
   onExerciseComplete,
   autoplayAudio = true,
+  hideAssistantText = false,
+  canReplayAudio = false,
+  isReplayAudioPlaying = false,
+  onReplayAudio,
 }: ChatMessageProps) {
   const isUser = message.role === "user";
 
@@ -40,6 +46,10 @@ export const ChatMessage = memo(function ChatMessage({
     firstText?.type === "text" &&
     firstText.text.startsWith("Exercise result:")
   ) {
+    return null;
+  }
+
+  if (!isUser && hideAssistantText) {
     return null;
   }
 
@@ -68,6 +78,19 @@ export const ChatMessage = memo(function ChatMessage({
               : "w-full gap-2 md:gap-3"
           }`}
         >
+          {!isUser && canReplayAudio && !hideAssistantText && (
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={onReplayAudio}
+                className="inline-flex items-center gap-1 rounded-full border border-lingo-border bg-white px-2 py-1 text-xs font-medium text-lingo-text-light transition-colors hover:border-lingo-blue hover:text-lingo-blue"
+              >
+                <ReplayIcon className="h-3.5 w-3.5" />
+                <span>{isReplayAudioPlaying ? "Playing" : "Replay"}</span>
+              </button>
+            </div>
+          )}
+
           {message.parts.map((part, index) => {
             const key = `msg-${message.id}-part-${index}`;
 
@@ -82,6 +105,10 @@ export const ChatMessage = memo(function ChatMessage({
                     {part.text}
                   </div>
                 );
+              }
+
+              if (hideAssistantText) {
+                return null;
               }
 
               return (
@@ -207,3 +234,21 @@ export const ChatMessage = memo(function ChatMessage({
     </div>
   );
 });
+
+function ReplayIcon({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v6h6" />
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M20 11a8 8 0 00-14.9-4M20 20v-6h-6"
+      />
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M4 13a8 8 0 0014.9 4"
+      />
+    </svg>
+  );
+}

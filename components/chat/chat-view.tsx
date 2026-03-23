@@ -24,6 +24,7 @@ interface ChatViewProps {
 }
 
 type VoiceCaptureState = "idle" | "requesting" | "recording" | "transcribing";
+type VoiceReplyState = "idle" | "generating" | "speaking";
 
 export function ChatView({
   language,
@@ -42,19 +43,25 @@ export function ChatView({
   const audioChunksRef = useRef<Blob[]>([]);
   const shouldHoldToTalkRef = useRef(false);
   const shouldTranscribeRef = useRef(false);
-  const voiceModeRef = useRef(false);
+  const voiceReplyPendingRef = useRef(false);
   const [input, setInput] = useState("");
   const [isAtBottom, setIsAtBottom] = useState(true);
   const [voiceMode, setVoiceMode] = useState(false);
   const [voiceState, setVoiceState] = useState<VoiceCaptureState>("idle");
+  const [voiceReplyState, setVoiceReplyState] = useState<VoiceReplyState>("idle");
+  const [voiceReplyPending, setVoiceReplyPending] = useState(false);
   const [voiceError, setVoiceError] = useState<string | null>(null);
-  const [lastTranscript, setLastTranscript] = useState<string | null>(null);
+  const [hiddenAssistantMessageId, setHiddenAssistantMessageId] = useState<string | null>(null);
+  const [replayableAssistantMessages, setReplayableAssistantMessages] = useState<
+    Record<string, true>
+  >({});
+  const [activeReplayMessageId, setActiveReplayMessageId] = useState<string | null>(null);
   const isMobile = useIsMobile();
   const isKeyboardOpen = useMobileKeyboardOpen();
   const {
-    play: playAssistantAudio,
+    playAndWait: playAssistantAudioAndWait,
     stop: stopAssistantAudio,
-    loading: assistantAudioLoading,
+    playing: assistantAudioPlaying,
   } = useAudio();
   const [completedExercises, setCompletedExercises] = useState<
     Record<string, { correct: boolean; answer: string }>
@@ -107,15 +114,45 @@ export function ChatView({
   );
 
   const playVoiceReply = useCallback(
-    (message: UIMessage | undefined) => {
-      if (!voiceModeRef.current || !message || message.role !== "assistant") return;
+    async (message: UIMessage | undefined) => {
+      if (!message || message.role !== "assistant") {
+        setVoiceReplyPending(false);
+        voiceReplyPendingRef.current = false;
+        setVoiceReplyState("idle");
+        setHiddenAssistantMessageId(null);
+        return;
+      }
 
       const text = getSpeakableMessageText(message);
-      if (!text) return;
+      if (!text) {
+        setHiddenAssistantMessageId(null);
+        setVoiceReplyPending(false);
+        voiceReplyPendingRef.current = false;
+        setVoiceReplyState("idle");
+        return;
+      }
 
-      void playAssistantAudio(text, effectiveLanguage).catch(() => {});
+      setHiddenAssistantMessageId(message.id);
+      setVoiceReplyState("generating");
+
+      try {
+        await playAssistantAudioAndWait(text, effectiveLanguage);
+      } catch {
+        // Fall through and reveal text even if playback fails.
+      } finally {
+        setReplayableAssistantMessages((prev) => ({
+          ...prev,
+          [message.id]: true,
+        }));
+        setHiddenAssistantMessageId((current) =>
+          current === message.id ? null : current,
+        );
+        setVoiceReplyPending(false);
+        voiceReplyPendingRef.current = false;
+        setVoiceReplyState("idle");
+      }
     },
-    [effectiveLanguage, playAssistantAudio],
+    [effectiveLanguage, playAssistantAudioAndWait],
   );
 
   const { messages, sendMessage, status } = useChat({
@@ -123,7 +160,13 @@ export function ChatView({
     id: chatId,
     messages: initialMessages,
     onFinish: async ({ messages: allMessages, isError, isAbort }) => {
-      if (isError || isAbort) return;
+      if (isError || isAbort) {
+        setVoiceReplyPending(false);
+        voiceReplyPendingRef.current = false;
+        setVoiceReplyState("idle");
+        setHiddenAssistantMessageId(null);
+        return;
+      }
 
       if (convIdRef.current) {
         await saveMessages(convIdRef.current, allMessages);
@@ -144,23 +187,34 @@ export function ChatView({
         router.replace(`/chat/${newId}`);
       }
 
-      const lastAssistantMessage = [...allMessages]
-        .reverse()
-        .find((message) => message.role === "assistant");
-      playVoiceReply(lastAssistantMessage);
+      if (voiceReplyPendingRef.current) {
+        const lastAssistantMessage = [...allMessages]
+          .reverse()
+          .find((message) => message.role === "assistant");
+        await playVoiceReply(lastAssistantMessage);
+      }
     },
   });
 
   const isLoading = status === "streaming" || status === "submitted";
 
   const submitMessage = useCallback(
-    (text: string) => {
+    (text: string, options?: { fromVoice?: boolean }) => {
       const trimmed = text.trim();
       if (!trimmed || isLoading) {
         return false;
       }
 
       stopAssistantAudio();
+
+      if (options?.fromVoice) {
+        setVoiceReplyPending(true);
+        voiceReplyPendingRef.current = true;
+        setVoiceReplyState("generating");
+        setHiddenAssistantMessageId(null);
+        setVoiceError(null);
+      }
+
       sendMessage({ text: trimmed });
       return true;
     },
@@ -236,10 +290,24 @@ export function ChatView({
   }, [input, adjustHeight]);
 
   useEffect(() => {
-    voiceModeRef.current = voiceMode;
+    voiceReplyPendingRef.current = voiceReplyPending;
+  }, [voiceReplyPending]);
+
+  useEffect(() => {
+    if (voiceReplyPending && assistantAudioPlaying) {
+      setVoiceReplyState("speaking");
+    }
+  }, [assistantAudioPlaying, voiceReplyPending]);
+
+  useEffect(() => {
     if (!voiceMode) {
       stopAssistantAudio();
       stopVoiceRecording(true);
+      setVoiceReplyPending(false);
+      voiceReplyPendingRef.current = false;
+      setVoiceReplyState("idle");
+      setHiddenAssistantMessageId(null);
+      setActiveReplayMessageId(null);
     }
   }, [voiceMode, stopAssistantAudio, stopVoiceRecording]);
 
@@ -271,7 +339,6 @@ export function ChatView({
     shouldHoldToTalkRef.current = true;
     shouldTranscribeRef.current = true;
     setVoiceError(null);
-    setLastTranscript(null);
     stopAssistantAudio();
     setVoiceState("requesting");
 
@@ -340,10 +407,11 @@ export function ChatView({
             return;
           }
 
-          setLastTranscript(transcribedText);
-
-          if (!submitMessage(transcribedText)) {
+          if (!submitMessage(transcribedText, { fromVoice: true })) {
             setInput(transcribedText);
+            setVoiceReplyPending(false);
+            voiceReplyPendingRef.current = false;
+            setVoiceReplyState("idle");
           }
 
           setVoiceState("idle");
@@ -388,6 +456,27 @@ export function ChatView({
     [stopVoiceRecording],
   );
 
+  const replayAssistantMessage = useCallback(
+    async (message: UIMessage) => {
+      const text = getSpeakableMessageText(message);
+      if (!text) return;
+
+      stopAssistantAudio();
+      setActiveReplayMessageId(message.id);
+
+      try {
+        await playAssistantAudioAndWait(text, effectiveLanguage);
+      } catch {
+        // Ignore replay failures.
+      } finally {
+        setActiveReplayMessageId((current) =>
+          current === message.id ? null : current,
+        );
+      }
+    },
+    [effectiveLanguage, playAssistantAudioAndWait, stopAssistantAudio],
+  );
+
   function handleExerciseComplete(
     toolCallId: string,
     correct: boolean,
@@ -424,6 +513,19 @@ export function ChatView({
   const isRecording = voiceState === "recording";
   const isTranscribing = voiceState === "transcribing";
   const isRequestingMic = voiceState === "requesting";
+  const pendingStreamingAssistantId =
+    voiceReplyPending && messages[messages.length - 1]?.role === "assistant"
+      ? messages[messages.length - 1]?.id
+      : null;
+  const voiceReplyInProgress =
+    voiceReplyState === "generating" || voiceReplyState === "speaking";
+  const activeVoiceStatus = isTranscribing
+    ? "transcribing"
+    : voiceReplyState === "generating"
+      ? "generating"
+      : voiceReplyState === "speaking"
+        ? "speaking"
+        : null;
 
   return (
     <div className="mx-auto flex h-full max-w-3xl flex-col">
@@ -444,33 +546,39 @@ export function ChatView({
               />
             )}
 
-            {messages.map((message, index) => (
+            {messages.map((message) => (
               <ChatMessage
                 key={message.id}
                 message={message}
                 language={effectiveLanguage}
-                isLoading={
-                  status === "streaming" && messages.length - 1 === index
-                }
                 completedExercises={completedExercises}
                 onExerciseComplete={handleExerciseComplete}
                 autoplayAudio={!initialMessageIds.has(message.id)}
+                hideAssistantText={
+                  message.role === "assistant" &&
+                  (message.id === hiddenAssistantMessageId ||
+                    message.id === pendingStreamingAssistantId)
+                }
+                canReplayAudio={Boolean(replayableAssistantMessages[message.id])}
+                isReplayAudioPlaying={activeReplayMessageId === message.id}
+                onReplayAudio={() => void replayAssistantMessage(message)}
               />
             ))}
 
-            {(status === "submitted" ||
-              (status === "streaming" &&
-                (() => {
-                  const last = messages[messages.length - 1];
-                  if (!last || last.role !== "assistant") return false;
-                  const lastPart = last.parts[last.parts.length - 1] as
-                    | { type: string; state?: string }
-                    | undefined;
-                  return (
-                    lastPart?.type?.startsWith("tool-") &&
-                    lastPart.state === "output-available"
-                  );
-                })())) && <ThinkingMessage />}
+            {!voiceReplyInProgress &&
+              (status === "submitted" ||
+                (status === "streaming" &&
+                  (() => {
+                    const last = messages[messages.length - 1];
+                    if (!last || last.role !== "assistant") return false;
+                    const lastPart = last.parts[last.parts.length - 1] as
+                      | { type: string; state?: string }
+                      | undefined;
+                    return (
+                      lastPart?.type?.startsWith("tool-") &&
+                      lastPart.state === "output-available"
+                    );
+                  })())) && <ThinkingMessage />}
 
             <div ref={endRef} className="min-h-[24px] shrink-0" />
           </div>
@@ -534,63 +642,68 @@ export function ChatView({
           <div className="flex flex-col gap-2">
             {voiceMode && (
               <div className="rounded-2xl bg-lingo-blue/5 p-3">
-                <button
-                  type="button"
-                  disabled={isLoading || isTranscribing}
-                  onPointerDown={handleVoicePointerDown}
-                  onPointerUp={handleVoicePointerUp}
-                  onPointerCancel={handleVoicePointerUp}
-                  onLostPointerCapture={handleVoicePointerUp}
-                  className={`flex min-h-24 w-full items-center justify-center gap-3 rounded-2xl border-2 px-5 py-5 text-left transition-all ${
-                    isRecording
-                      ? "border-lingo-red bg-lingo-red text-white shadow-lg shadow-lingo-red/20"
-                      : "border-lingo-blue bg-white text-lingo-blue hover:bg-lingo-blue/5 disabled:border-lingo-border disabled:bg-lingo-gray disabled:text-lingo-text-light"
-                  }`}
-                >
-                  <div
-                    className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-full ${
-                      isRecording ? "bg-white/15" : "bg-lingo-blue/10"
+                {activeVoiceStatus ? (
+                  <div className="flex min-h-24 flex-col items-center justify-center rounded-2xl border-2 border-lingo-blue bg-white px-5 py-5 text-center">
+                    {activeVoiceStatus === "speaking" ? (
+                      <>
+                        <VoiceWave />
+                        <p className="mt-4 text-sm font-semibold text-lingo-text">
+                          Speaking...
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        <div className="h-8 w-8 animate-spin rounded-full border-4 border-lingo-blue border-t-transparent" />
+                        <p className="mt-4 text-sm font-semibold text-lingo-text">
+                          {activeVoiceStatus === "transcribing"
+                            ? "Transcribing text..."
+                            : "Generating answer..."}
+                        </p>
+                      </>
+                    )}
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    disabled={isLoading}
+                    onPointerDown={handleVoicePointerDown}
+                    onPointerUp={handleVoicePointerUp}
+                    onPointerCancel={handleVoicePointerUp}
+                    onLostPointerCapture={handleVoicePointerUp}
+                    className={`flex min-h-24 w-full items-center justify-center gap-3 rounded-2xl border-2 px-5 py-5 text-left transition-all ${
+                      isRecording
+                        ? "border-lingo-red bg-lingo-red text-white shadow-lg shadow-lingo-red/20"
+                        : "border-lingo-blue bg-white text-lingo-blue hover:bg-lingo-blue/5 disabled:border-lingo-border disabled:bg-lingo-gray disabled:text-lingo-text-light"
                     }`}
                   >
-                    <MicIcon className="h-7 w-7" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-semibold">
-                      {isRecording
-                        ? "Recording... release to send"
-                        : isRequestingMic
-                          ? "Waiting for microphone access..."
-                          : isTranscribing
-                            ? "Transcribing your voice..."
-                            : "Hold to talk"}
-                    </p>
-                    <p
-                      className={`mt-1 text-xs ${
-                        isRecording ? "text-white/80" : "text-lingo-text-light"
+                    <div
+                      className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-full ${
+                        isRecording ? "bg-white/15" : "bg-lingo-blue/10"
                       }`}
                     >
-                      Press and hold the microphone, then release to send.
-                    </p>
-                  </div>
-                </button>
+                      <MicIcon className="h-7 w-7" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-semibold">
+                        {isRecording
+                          ? "Recording... release to send"
+                          : isRequestingMic
+                            ? "Waiting for microphone access..."
+                            : "Hold to talk"}
+                      </p>
+                      <p
+                        className={`mt-1 text-xs ${
+                          isRecording ? "text-white/80" : "text-lingo-text-light"
+                        }`}
+                      >
+                        Press and hold the microphone, then release to send.
+                      </p>
+                    </div>
+                  </button>
+                )}
 
-                {(lastTranscript || voiceError || assistantAudioLoading) && (
-                  <div className="mt-3 space-y-1 text-sm">
-                    {lastTranscript && (
-                      <p className="text-lingo-text-light">
-                        <span className="font-medium text-lingo-text">You said:</span>{" "}
-                        {lastTranscript}
-                      </p>
-                    )}
-                    {assistantAudioLoading && !isLoading && (
-                      <p className="text-lingo-text-light">
-                        Preparing spoken reply...
-                      </p>
-                    )}
-                    {voiceError && (
-                      <p className="text-lingo-red">{voiceError}</p>
-                    )}
-                  </div>
+                {voiceError && (
+                  <p className="mt-3 text-sm text-lingo-red">{voiceError}</p>
                 )}
               </div>
             )}
@@ -760,6 +873,36 @@ function MicIcon({ className = "h-4 w-4" }: { className?: string }) {
     <svg className={className} fill="currentColor" viewBox="0 0 24 24">
       <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm-1-9c0-.55.45-1 1-1s1 .45 1 1v6c0 .55-.45 1-1 1s-1-.45-1-1V5zm6 6c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z" />
     </svg>
+  );
+}
+
+function VoiceWave() {
+  return (
+    <div className="flex h-12 items-end justify-center gap-1.5">
+      {[0, 1, 2, 3, 4].map((bar) => (
+        <span
+          key={bar}
+          className="w-2 rounded-full bg-lingo-blue"
+          style={{
+            height: `${18 + ((bar % 3) + 1) * 8}px`,
+            animation: `voice-wave 0.9s ${bar * 0.12}s ease-in-out infinite`,
+          }}
+        />
+      ))}
+      <style jsx>{`
+        @keyframes voice-wave {
+          0%,
+          100% {
+            transform: scaleY(0.55);
+            opacity: 0.45;
+          }
+          50% {
+            transform: scaleY(1.15);
+            opacity: 1;
+          }
+        }
+      `}</style>
+    </div>
   );
 }
 

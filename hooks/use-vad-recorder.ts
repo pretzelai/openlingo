@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { analyzeVADSample, getAudioUploadFilename } from "@/lib/audio/voice";
 
 type VADStatus = "idle" | "listening" | "processing";
 type StopReason = "manual" | "silence" | "no-speech" | "max-duration" | "cancel";
@@ -12,8 +13,6 @@ interface UseVADRecorderOptions {
   maxDurationMs?: number;
   onTranscription?: (text: string) => void;
 }
-
-const MIN_THRESHOLD = 0.018;
 
 function getSupportedMimeType() {
   if (typeof MediaRecorder === "undefined") return null;
@@ -76,7 +75,7 @@ export function useVADRecorder({
     analyserRef.current = null;
 
     if (streamRef.current) {
-      streamRef.current.getTracks().forEach((track) => track.stop());
+      streamRef.current.getTracks().forEach((track: MediaStreamTrack) => track.stop());
       streamRef.current = null;
     }
   }, []);
@@ -84,7 +83,7 @@ export function useVADRecorder({
   const transcribe = useCallback(
     async (blob: Blob) => {
       const formData = new FormData();
-      formData.append("audio", blob);
+      formData.append("audio", blob, getAudioUploadFilename(blob.type));
       formData.append("language", language);
 
       const res = await fetch("/api/stt", {
@@ -138,23 +137,23 @@ export function useVADRecorder({
       const now = performance.now();
       const elapsed = now - startTimeRef.current;
 
-      if (!speechStartedRef.current && elapsed < 700) {
-        noiseFloorRef.current =
-          noiseFloorRef.current === 0
-            ? rms
-            : noiseFloorRef.current * 0.9 + rms * 0.1;
-      }
+      const analysis = analyzeVADSample({
+        rms,
+        elapsedMs: elapsed,
+        noiseFloor: noiseFloorRef.current,
+        speechStarted: speechStartedRef.current,
+      });
 
-      const threshold = Math.max(MIN_THRESHOLD, noiseFloorRef.current * 3);
+      noiseFloorRef.current = analysis.nextNoiseFloor;
 
-      if (rms > threshold) {
+      if (analysis.speechDetected) {
         speechStartedRef.current = true;
         lastSpeechAtRef.current = now;
       }
 
       if (now - levelUpdatedAtRef.current > 80) {
         levelUpdatedAtRef.current = now;
-        setLevel(Math.min(1, rms / (threshold * 2)));
+        setLevel(Math.min(1, rms / (analysis.threshold * 2)));
       }
 
       if (!speechStartedRef.current && elapsed >= noSpeechTimeoutMs) {
@@ -310,11 +309,11 @@ export function useVADRecorder({
   }, [stopWithReason]);
 
   const cancel = useCallback(() => {
-    cycleIdRef.current += 1;
     const recorder = mediaRecorderRef.current;
     if (recorder && recorder.state === "recording") {
       stopWithReason("cancel");
     } else {
+      cycleIdRef.current += 1;
       cleanupRealtimeResources();
       mediaRecorderRef.current = null;
       chunksRef.current = [];

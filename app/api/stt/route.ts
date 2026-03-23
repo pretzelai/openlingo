@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
+import { normalizeUploadedAudioFile } from "@/lib/audio/voice";
 
 const openai = new OpenAI();
 
@@ -16,9 +17,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "language is required" }, { status: 400 });
     }
 
-    const file = new File([audio], "recording.webm", {
-      type: audio.type || "audio/webm",
-    });
+    const file = normalizeUploadedAudioFile(audio);
 
     const transcription = await openai.audio.transcriptions.create({
       model: "whisper-1",

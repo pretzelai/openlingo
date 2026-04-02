@@ -13,17 +13,36 @@ import { DEFAULT_AI_MODEL } from "@/lib/constants";
 
 const DEFAULT_CHAT_MODEL = DEFAULT_AI_MODEL;
 
+type InteractionMode = "text" | "voice";
+
 export async function POST(req: Request) {
   const session = await requireSession();
-  const { messages, language: lang, model: requestedModel } = await req.json();
+  const {
+    messages,
+    language: lang,
+    model: requestedModel,
+    interactionMode: requestedInteractionMode,
+  } = await req.json();
 
   const language: string = lang || (await getTargetLanguage(session.user.id)) || "en";
   const userModels = getModelsForUser(session.user.email);
   const modelId = userModels.some((m) => m.id === requestedModel)
     ? requestedModel
     : DEFAULT_CHAT_MODEL;
+  const interactionMode: InteractionMode =
+    requestedInteractionMode === "voice" ? "voice" : "text";
   const target_language = langCodeToName[language] || language;
-  const tools = createTools(session.user.id, language);
+  const allTools = createTools(session.user.id, language);
+  const tools =
+    interactionMode === "voice"
+      ? {
+          readMemory: allTools.readMemory,
+          addMemory: allTools.addMemory,
+          rewriteAllMemory: allTools.rewriteAllMemory,
+          srs: allTools.srs,
+          switchLanguage: allTools.switchLanguage,
+        }
+      : allTools;
 
   const [chatTemplate, memoryRow, nativeLang] = await Promise.all([
     getUserPromptTemplate(session.user.id, "chat-system"),
@@ -53,6 +72,7 @@ export async function POST(req: Request) {
     target_language,
     target_language_code: language,
     native_language,
+    interaction_mode: interactionMode,
     memory,
     exercise_syntax: EXERCISE_SYNTAX,
     srs_reference: SRS_REFERENCE,

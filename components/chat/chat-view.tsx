@@ -9,25 +9,26 @@ import { ChatMessage } from "./chat-message";
 import { ThinkingMessage } from "./thinking-message";
 import { createConversation, saveMessages } from "@/lib/actions/chat";
 import { recordChatExerciseResult } from "@/lib/actions/srs";
-import { updatePreferredModel } from "@/lib/actions/preferences";
 
 import type { Exercise } from "@/lib/content/types";
 import { useIsMobile } from "@/hooks/use-media-query";
 import { useMobileKeyboardOpen } from "@/hooks/use-mobile-keyboard-open";
+import { useAudio } from "@/hooks/use-audio";
 
 interface ChatViewProps {
   language?: string;
   preferredModel: string;
-  availableModels: { id: string; label: string; provider: string }[];
   conversationId?: string;
   initialMessages?: UIMessage[];
   initialPrompt?: string;
 }
 
+type VoiceCaptureState = "idle" | "requesting" | "recording" | "transcribing";
+type VoiceReplyState = "idle" | "generating" | "speaking";
+
 export function ChatView({
   language,
   preferredModel,
-  availableModels,
   conversationId,
   initialMessages,
   initialPrompt,
@@ -37,11 +38,31 @@ export function ChatView({
   const containerRef = useRef<HTMLDivElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const mediaStreamRef = useRef<MediaStream | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const shouldHoldToTalkRef = useRef(false);
+  const shouldTranscribeRef = useRef(false);
+  const voiceReplyPendingRef = useRef(false);
   const [input, setInput] = useState("");
-  const [model, setModel] = useState(preferredModel);
   const [isAtBottom, setIsAtBottom] = useState(true);
+  const [voiceMode, setVoiceMode] = useState(false);
+  const [voiceState, setVoiceState] = useState<VoiceCaptureState>("idle");
+  const [voiceReplyState, setVoiceReplyState] = useState<VoiceReplyState>("idle");
+  const [voiceReplyPending, setVoiceReplyPending] = useState(false);
+  const [voiceError, setVoiceError] = useState<string | null>(null);
+  const [hiddenAssistantMessageId, setHiddenAssistantMessageId] = useState<string | null>(null);
+  const [replayableAssistantMessages, setReplayableAssistantMessages] = useState<
+    Record<string, true>
+  >({});
+  const [activeReplayMessageId, setActiveReplayMessageId] = useState<string | null>(null);
   const isMobile = useIsMobile();
   const isKeyboardOpen = useMobileKeyboardOpen();
+  const {
+    playAndWait: playAssistantAudioAndWait,
+    stop: stopAssistantAudio,
+    playing: assistantAudioPlaying,
+  } = useAudio();
   const [completedExercises, setCompletedExercises] = useState<
     Record<string, { correct: boolean; answer: string }>
   >({});
@@ -54,9 +75,84 @@ export function ChatView({
   const transport = useMemo(
     () =>
       new DefaultChatTransport({
-        body: { language: effectiveLanguage, model },
+        body: {
+          language: effectiveLanguage,
+          model: preferredModel,
+          interactionMode: voiceMode ? "voice" : "text",
+        },
       }),
-    [effectiveLanguage, model],
+    [effectiveLanguage, preferredModel, voiceMode],
+  );
+
+  const cleanupRecorderResources = useCallback(() => {
+    mediaRecorderRef.current = null;
+    audioChunksRef.current = [];
+    if (mediaStreamRef.current) {
+      mediaStreamRef.current.getTracks().forEach((track) => track.stop());
+      mediaStreamRef.current = null;
+    }
+  }, []);
+
+  const stopVoiceRecording = useCallback(
+    (cancel = false) => {
+      shouldHoldToTalkRef.current = false;
+      shouldTranscribeRef.current = !cancel;
+
+      const recorder = mediaRecorderRef.current;
+      if (recorder?.state === "recording") {
+        recorder.stop();
+        return;
+      }
+
+      if (cancel) {
+        cleanupRecorderResources();
+      }
+
+      setVoiceState("idle");
+    },
+    [cleanupRecorderResources],
+  );
+
+  const playVoiceReply = useCallback(
+    async (message: UIMessage | undefined) => {
+      if (!message || message.role !== "assistant") {
+        setVoiceReplyPending(false);
+        voiceReplyPendingRef.current = false;
+        setVoiceReplyState("idle");
+        setHiddenAssistantMessageId(null);
+        return;
+      }
+
+      const text = getSpeakableMessageText(message);
+      if (!text) {
+        setHiddenAssistantMessageId(null);
+        setVoiceReplyPending(false);
+        voiceReplyPendingRef.current = false;
+        setVoiceReplyState("idle");
+        return;
+      }
+
+      setHiddenAssistantMessageId(message.id);
+      setVoiceReplyState("generating");
+
+      try {
+        await playAssistantAudioAndWait(text, effectiveLanguage);
+      } catch {
+        // Fall through and reveal text even if playback fails.
+      } finally {
+        setReplayableAssistantMessages((prev) => ({
+          ...prev,
+          [message.id]: true,
+        }));
+        setHiddenAssistantMessageId((current) =>
+          current === message.id ? null : current,
+        );
+        setVoiceReplyPending(false);
+        voiceReplyPendingRef.current = false;
+        setVoiceReplyState("idle");
+      }
+    },
+    [effectiveLanguage, playAssistantAudioAndWait],
   );
 
   const { messages, sendMessage, status } = useChat({
@@ -64,7 +160,13 @@ export function ChatView({
     id: chatId,
     messages: initialMessages,
     onFinish: async ({ messages: allMessages, isError, isAbort }) => {
-      if (isError || isAbort) return;
+      if (isError || isAbort) {
+        setVoiceReplyPending(false);
+        voiceReplyPendingRef.current = false;
+        setVoiceReplyState("idle");
+        setHiddenAssistantMessageId(null);
+        return;
+      }
 
       if (convIdRef.current) {
         await saveMessages(convIdRef.current, allMessages);
@@ -84,10 +186,40 @@ export function ChatView({
         convIdRef.current = newId;
         router.replace(`/chat/${newId}`);
       }
+
+      if (voiceReplyPendingRef.current) {
+        const lastAssistantMessage = [...allMessages]
+          .reverse()
+          .find((message) => message.role === "assistant");
+        await playVoiceReply(lastAssistantMessage);
+      }
     },
   });
 
   const isLoading = status === "streaming" || status === "submitted";
+
+  const submitMessage = useCallback(
+    (text: string, options?: { fromVoice?: boolean }) => {
+      const trimmed = text.trim();
+      if (!trimmed || isLoading) {
+        return false;
+      }
+
+      stopAssistantAudio();
+
+      if (options?.fromVoice) {
+        setVoiceReplyPending(true);
+        voiceReplyPendingRef.current = true;
+        setVoiceReplyState("generating");
+        setHiddenAssistantMessageId(null);
+        setVoiceError(null);
+      }
+
+      sendMessage({ text: trimmed });
+      return true;
+    },
+    [isLoading, sendMessage, stopAssistantAudio],
+  );
 
   // Scroll management
   const scrollToBottom = useCallback((behavior: ScrollBehavior = "instant") => {
@@ -157,11 +289,199 @@ export function ChatView({
     adjustHeight();
   }, [input, adjustHeight]);
 
+  useEffect(() => {
+    voiceReplyPendingRef.current = voiceReplyPending;
+  }, [voiceReplyPending]);
+
+  useEffect(() => {
+    if (voiceReplyPending && assistantAudioPlaying) {
+      setVoiceReplyState("speaking");
+    }
+  }, [assistantAudioPlaying, voiceReplyPending]);
+
+  useEffect(() => {
+    if (!voiceMode) {
+      stopAssistantAudio();
+      stopVoiceRecording(true);
+      setVoiceReplyPending(false);
+      voiceReplyPendingRef.current = false;
+      setVoiceReplyState("idle");
+      setHiddenAssistantMessageId(null);
+      setActiveReplayMessageId(null);
+    }
+  }, [voiceMode, stopAssistantAudio, stopVoiceRecording]);
+
+  useEffect(() => {
+    return () => {
+      shouldHoldToTalkRef.current = false;
+      shouldTranscribeRef.current = false;
+      stopAssistantAudio();
+      cleanupRecorderResources();
+    };
+  }, [cleanupRecorderResources, stopAssistantAudio]);
+
   function submitForm() {
-    if (!input.trim() || isLoading) return;
-    sendMessage({ text: input.trim() });
+    if (!submitMessage(input)) return;
     setInput("");
   }
+
+  const startVoiceRecording = useCallback(async () => {
+    if (isLoading || voiceState === "transcribing") return;
+    if (
+      typeof window === "undefined" ||
+      !navigator.mediaDevices?.getUserMedia ||
+      typeof MediaRecorder === "undefined"
+    ) {
+      setVoiceError("Voice recording is not supported in this browser.");
+      return;
+    }
+
+    shouldHoldToTalkRef.current = true;
+    shouldTranscribeRef.current = true;
+    setVoiceError(null);
+    stopAssistantAudio();
+    setVoiceState("requesting");
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+      if (!shouldHoldToTalkRef.current) {
+        stream.getTracks().forEach((track) => track.stop());
+        setVoiceState("idle");
+        return;
+      }
+
+      const mimeType = MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
+        ? "audio/webm;codecs=opus"
+        : "audio/webm";
+      const recorder = new MediaRecorder(stream, { mimeType });
+
+      mediaStreamRef.current = stream;
+      mediaRecorderRef.current = recorder;
+      audioChunksRef.current = [];
+
+      recorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
+      };
+
+      recorder.onstop = async () => {
+        const shouldTranscribe = shouldTranscribeRef.current;
+        const blob = new Blob(audioChunksRef.current, { type: mimeType });
+        cleanupRecorderResources();
+
+        if (!shouldTranscribe) {
+          setVoiceState("idle");
+          return;
+        }
+
+        if (blob.size === 0) {
+          setVoiceError("I couldn't hear anything. Please try again.");
+          setVoiceState("idle");
+          return;
+        }
+
+        setVoiceState("transcribing");
+
+        try {
+          const formData = new FormData();
+          formData.append("audio", blob, "voice-message.webm");
+          formData.append("language", effectiveLanguage);
+
+          const res = await fetch("/api/stt", {
+            method: "POST",
+            body: formData,
+          });
+
+          if (!res.ok) {
+            throw new Error("Transcription failed");
+          }
+
+          const data = (await res.json()) as { text?: string };
+          const transcribedText = data.text?.trim() ?? "";
+
+          if (!transcribedText) {
+            setVoiceError("I couldn't understand that. Please try again.");
+            setVoiceState("idle");
+            return;
+          }
+
+          if (!submitMessage(transcribedText, { fromVoice: true })) {
+            setInput(transcribedText);
+            setVoiceReplyPending(false);
+            voiceReplyPendingRef.current = false;
+            setVoiceReplyState("idle");
+          }
+
+          setVoiceState("idle");
+        } catch {
+          setVoiceError("Could not transcribe audio. Please try again.");
+          setVoiceState("idle");
+        }
+      };
+
+      recorder.start();
+      setVoiceState("recording");
+    } catch {
+      setVoiceError(
+        "Microphone access denied. Please allow microphone access and try again.",
+      );
+      setVoiceState("idle");
+    }
+  }, [
+    cleanupRecorderResources,
+    effectiveLanguage,
+    isLoading,
+    stopAssistantAudio,
+    submitMessage,
+    voiceState,
+  ]);
+
+  const handleVoicePointerDown = useCallback(
+    (event: React.PointerEvent<HTMLButtonElement>) => {
+      if (event.button !== 0) return;
+      event.preventDefault();
+      event.currentTarget.setPointerCapture(event.pointerId);
+      void startVoiceRecording();
+    },
+    [startVoiceRecording],
+  );
+
+  const handleVoicePointerUp = useCallback(
+    (event?: React.PointerEvent<HTMLButtonElement>) => {
+      event?.preventDefault();
+      stopVoiceRecording();
+    },
+    [stopVoiceRecording],
+  );
+
+  const replayAssistantMessage = useCallback(
+    async (message: UIMessage) => {
+      const text = getSpeakableMessageText(message);
+      if (!text) return;
+
+      if (activeReplayMessageId === message.id) {
+        stopAssistantAudio();
+        setActiveReplayMessageId(null);
+        return;
+      }
+
+      stopAssistantAudio();
+      setActiveReplayMessageId(message.id);
+
+      try {
+        await playAssistantAudioAndWait(text, effectiveLanguage);
+      } catch {
+        // Ignore replay failures.
+      } finally {
+        setActiveReplayMessageId((current) =>
+          current === message.id ? null : current,
+        );
+      }
+    },
+    [activeReplayMessageId, effectiveLanguage, playAssistantAudioAndWait, stopAssistantAudio],
+  );
 
   function handleExerciseComplete(
     toolCallId: string,
@@ -196,6 +516,23 @@ export function ChatView({
     }
   }
 
+  const isRecording = voiceState === "recording";
+  const isTranscribing = voiceState === "transcribing";
+  const isRequestingMic = voiceState === "requesting";
+  const pendingStreamingAssistantId =
+    voiceReplyPending && messages[messages.length - 1]?.role === "assistant"
+      ? messages[messages.length - 1]?.id
+      : null;
+  const voiceReplyInProgress =
+    voiceReplyState === "generating" || voiceReplyState === "speaking";
+  const activeVoiceStatus = isTranscribing
+    ? "transcribing"
+    : voiceReplyState === "generating"
+      ? "generating"
+      : voiceReplyState === "speaking"
+        ? "speaking"
+        : null;
+
   return (
     <div className="mx-auto flex h-full max-w-3xl flex-col">
       {/* Messages area */}
@@ -208,37 +545,53 @@ export function ChatView({
             {messages.length === 0 && (
               <Greeting
                 language={effectiveLanguage}
-                onSend={(text) => sendMessage({ text })}
+                voiceMode={voiceMode}
+                onSend={(text) => {
+                  submitMessage(text);
+                }}
               />
             )}
 
-            {messages.map((message, index) => (
+            {messages.map((message) => (
               <ChatMessage
                 key={message.id}
                 message={message}
                 language={effectiveLanguage}
-                isLoading={
-                  status === "streaming" && messages.length - 1 === index
-                }
                 completedExercises={completedExercises}
                 onExerciseComplete={handleExerciseComplete}
                 autoplayAudio={!initialMessageIds.has(message.id)}
+                hideAssistantText={
+                  message.role === "assistant" &&
+                  (message.id === hiddenAssistantMessageId ||
+                    message.id === pendingStreamingAssistantId)
+                }
+                assistantPlaceholder={
+                  message.role === "assistant" &&
+                  message.id === hiddenAssistantMessageId &&
+                  voiceReplyState === "speaking" ? (
+                    <AssistantSpeakingPlaceholder />
+                  ) : undefined
+                }
+                canReplayAudio={Boolean(replayableAssistantMessages[message.id])}
+                isReplayAudioPlaying={activeReplayMessageId === message.id}
+                onReplayAudio={() => void replayAssistantMessage(message)}
               />
             ))}
 
-            {(status === "submitted" ||
-              (status === "streaming" &&
-                (() => {
-                  const last = messages[messages.length - 1];
-                  if (!last || last.role !== "assistant") return false;
-                  const lastPart = last.parts[last.parts.length - 1] as
-                    | { type: string; state?: string }
-                    | undefined;
-                  return (
-                    lastPart?.type?.startsWith("tool-") &&
-                    lastPart.state === "output-available"
-                  );
-                })())) && <ThinkingMessage />}
+            {!voiceReplyInProgress &&
+              (status === "submitted" ||
+                (status === "streaming" &&
+                  (() => {
+                    const last = messages[messages.length - 1];
+                    if (!last || last.role !== "assistant") return false;
+                    const lastPart = last.parts[last.parts.length - 1] as
+                      | { type: string; state?: string }
+                      | undefined;
+                    return (
+                      lastPart?.type?.startsWith("tool-") &&
+                      lastPart.state === "output-available"
+                    );
+                  })())) && <ThinkingMessage />}
 
             <div ref={endRef} className="min-h-[24px] shrink-0" />
           </div>
@@ -278,76 +631,136 @@ export function ChatView({
         }`}
       >
         <div className={`mb-1.5 justify-end ${isKeyboardOpen ? "hidden" : "flex"}`}>
-          <select
-            value={model}
-            onChange={(e) => {
-              const value = e.target.value;
-              setModel(value);
-              updatePreferredModel(value);
-            }}
-            className="rounded-lg border border-lingo-border bg-white px-2 py-1 text-xs text-lingo-text-light"
+          <button
+            type="button"
+            aria-pressed={voiceMode}
+            onClick={() => setVoiceMode((current) => !current)}
+            className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
+              voiceMode
+                ? "border-lingo-blue bg-lingo-blue text-white"
+                : "border-lingo-border bg-white text-lingo-text-light hover:border-lingo-blue hover:text-lingo-blue"
+            }`}
           >
-            {availableModels.map((m) => (
-              <option key={m.id} value={m.id}>
-                {m.label}
-              </option>
-            ))}
-          </select>
+            <MicIcon className="h-3.5 w-3.5" />
+            <span>{voiceMode ? "Voice mode on" : "Voice mode"}</span>
+          </button>
         </div>
         <form
           onSubmit={(e) => {
             e.preventDefault();
             submitForm();
           }}
-          className="flex items-end gap-2 rounded-xl border-2 border-lingo-border bg-white p-2 shadow-sm transition-all duration-200 focus-within:border-lingo-blue hover:border-lingo-text-light/30"
+          className="rounded-xl border-2 border-lingo-border bg-white p-2 shadow-sm transition-all duration-200 focus-within:border-lingo-blue hover:border-lingo-text-light/30"
         >
-          <textarea
-            ref={inputRef}
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="Send a message..."
-            rows={1}
-            className="flex-1 resize-none border-none bg-transparent px-2 py-1.5 text-base text-lingo-text placeholder:text-lingo-text-light/50 focus:outline-none md:text-sm"
-            style={{ height: "44px", maxHeight: "200px" }}
-          />
-          {isLoading ? (
-            <button
-              type="button"
-              onClick={() => {
-                /* stop not needed for now */
-              }}
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-lingo-text text-white transition-colors hover:bg-lingo-text/80"
-            >
-              <svg
-                className="h-3.5 w-3.5"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-              >
-                <rect x="6" y="6" width="12" height="12" rx="2" />
-              </svg>
-            </button>
-          ) : (
-            <button
-              type="submit"
-              disabled={!input.trim()}
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-lingo-green text-white transition-colors hover:bg-lingo-green/90 disabled:bg-lingo-gray disabled:text-lingo-text-light"
-            >
-              <svg
-                className="h-4 w-4"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2.5}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M4.5 10.5L12 3m0 0l7.5 7.5M12 3v18"
-                />
-              </svg>
-            </button>
-          )}
+          <div className="flex flex-col gap-2">
+            {voiceMode && (
+              <div className="rounded-2xl bg-lingo-blue/5 p-3">
+                {activeVoiceStatus === "transcribing" ||
+                activeVoiceStatus === "generating" ? (
+                  <div className="flex min-h-24 flex-col items-center justify-center rounded-2xl border-2 border-lingo-blue bg-white px-5 py-5 text-center">
+                    <div className="h-8 w-8 animate-spin rounded-full border-4 border-lingo-blue border-t-transparent" />
+                    <p className="mt-4 text-sm font-semibold text-lingo-text">
+                      {activeVoiceStatus === "transcribing"
+                        ? "Transcribing text..."
+                        : "Generating answer..."}
+                    </p>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    disabled={isLoading}
+                    onPointerDown={handleVoicePointerDown}
+                    onPointerUp={handleVoicePointerUp}
+                    onPointerCancel={handleVoicePointerUp}
+                    onLostPointerCapture={handleVoicePointerUp}
+                    className={`flex min-h-24 w-full items-center justify-center gap-3 rounded-2xl border-2 px-5 py-5 text-left transition-all ${
+                      isRecording
+                        ? "border-lingo-red bg-lingo-red text-white shadow-lg shadow-lingo-red/20"
+                        : "border-lingo-blue bg-white text-lingo-blue hover:bg-lingo-blue/5 disabled:border-lingo-border disabled:bg-lingo-gray disabled:text-lingo-text-light"
+                    }`}
+                  >
+                    <div
+                      className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-full ${
+                        isRecording ? "bg-white/15" : "bg-lingo-blue/10"
+                      }`}
+                    >
+                      <MicIcon className="h-7 w-7" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-semibold">
+                        {isRecording
+                          ? "Recording... release to send"
+                          : isRequestingMic
+                            ? "Waiting for microphone access..."
+                            : "Hold to talk"}
+                      </p>
+                      <p
+                        className={`mt-1 text-xs ${
+                          isRecording ? "text-white/80" : "text-lingo-text-light"
+                        }`}
+                      >
+                        Press and hold the microphone, then release to send.
+                      </p>
+                    </div>
+                  </button>
+                )}
+
+                {voiceError && (
+                  <p className="mt-3 text-sm text-lingo-red">{voiceError}</p>
+                )}
+              </div>
+            )}
+
+            <div className="flex items-end gap-2">
+              <textarea
+                ref={inputRef}
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder={voiceMode ? "Or type a message..." : "Send a message..."}
+                rows={1}
+                className="flex-1 resize-none border-none bg-transparent px-2 py-1.5 text-base text-lingo-text placeholder:text-lingo-text-light/50 focus:outline-none md:text-sm"
+                style={{ height: "44px", maxHeight: "200px" }}
+              />
+              {isLoading ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    /* stop not needed for now */
+                  }}
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-lingo-text text-white transition-colors hover:bg-lingo-text/80"
+                >
+                  <svg
+                    className="h-3.5 w-3.5"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                  >
+                    <rect x="6" y="6" width="12" height="12" rx="2" />
+                  </svg>
+                </button>
+              ) : (
+                <button
+                  type="submit"
+                  disabled={!input.trim()}
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-lingo-green text-white transition-colors hover:bg-lingo-green/90 disabled:bg-lingo-gray disabled:text-lingo-text-light"
+                >
+                  <svg
+                    className="h-4 w-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2.5}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M4.5 10.5L12 3m0 0l7.5 7.5M12 3v18"
+                    />
+                  </svg>
+                </button>
+              )}
+            </div>
+          </div>
         </form>
       </div>
     </div>
@@ -386,13 +799,50 @@ const LANG_NAMES: Record<string, string> = {
 
 function Greeting({
   language,
+  voiceMode,
   onSend,
 }: {
   language: string;
+  voiceMode: boolean;
   onSend: (text: string) => void;
 }) {
   const flag = LANG_FLAGS[language] ?? "\u{1F30D}";
   const name = LANG_NAMES[language] ?? language;
+  const starters = voiceMode
+    ? [
+        {
+          label: "Let's talk",
+          prompt: `Let's have a short conversation in ${name}.`,
+        },
+        {
+          label: "Correct me gently",
+          prompt: `Let's practice speaking ${name}. Please gently correct my mistakes.`,
+        },
+        {
+          label: "Teach me a phrase",
+          prompt: `Teach me a useful everyday phrase in ${name}.`,
+        },
+        {
+          label: "Explain a word",
+          prompt: `Explain an interesting ${name} word I should know today.`,
+        },
+      ]
+    : [
+        {
+          label: "Make a new learning unit",
+          prompt: "I want to create a new personalised unit",
+        },
+        {
+          label: "Translate an article",
+          prompt: "I want to create a new translated article",
+        },
+        { label: "Let's practice!", prompt: "Let's practice!" },
+        {
+          label: "How many words are due?",
+          prompt: "How many words are due?",
+        },
+        { label: "Teach me something new", prompt: "Teach me something new" },
+      ];
 
   return (
     <div className="flex flex-col items-center justify-center py-16 text-center px-4">
@@ -401,26 +851,12 @@ function Greeting({
       </div>
       <h2 className="text-lg font-bold text-lingo-text mb-2">AI Tutor</h2>
       <p className="text-sm text-lingo-text-light max-w-sm leading-relaxed">
-        Practice vocabulary, review due words, or create custom lessons. Your
-        current language is {name}.
+        {voiceMode
+          ? `Hold the voice button and speak naturally. I'll reply in ${name} and read my response aloud.`
+          : `Practice vocabulary, review due words, or create custom lessons. Your current language is ${name}.`}
       </p>
       <div className="mt-6 flex flex-wrap justify-center gap-2">
-        {[
-          {
-            label: "Make a new learning unit",
-            prompt: "I want to create a new personalised unit",
-          },
-          {
-            label: "Translate an article",
-            prompt: "I want to create a new translated article",
-          },
-          { label: "Let's practice!", prompt: "Let's practice!" },
-          {
-            label: "How many words are due?",
-            prompt: "How many words are due?",
-          },
-          { label: "Teach me something new", prompt: "Teach me something new" },
-        ].map(({ label, prompt }) => (
+        {starters.map(({ label, prompt }) => (
           <button
             key={label}
             type="button"
@@ -433,4 +869,60 @@ function Greeting({
       </div>
     </div>
   );
+}
+
+function MicIcon({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg className={className} fill="currentColor" viewBox="0 0 24 24">
+      <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm-1-9c0-.55.45-1 1-1s1 .45 1 1v6c0 .55-.45 1-1 1s-1-.45-1-1V5zm6 6c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z" />
+    </svg>
+  );
+}
+
+function VoiceWave() {
+  return (
+    <div className="flex h-12 items-end justify-center gap-1.5">
+      {[0, 1, 2, 3, 4].map((bar) => (
+        <span
+          key={bar}
+          className="w-2 rounded-full bg-lingo-blue"
+          style={{
+            height: `${18 + ((bar % 3) + 1) * 8}px`,
+            animation: `voice-wave 0.9s ${bar * 0.12}s ease-in-out infinite`,
+          }}
+        />
+      ))}
+      <style jsx>{`
+        @keyframes voice-wave {
+          0%,
+          100% {
+            transform: scaleY(0.55);
+            opacity: 0.45;
+          }
+          50% {
+            transform: scaleY(1.15);
+            opacity: 1;
+          }
+        }
+      `}</style>
+    </div>
+  );
+}
+
+function AssistantSpeakingPlaceholder() {
+  return (
+    <div className="rounded-2xl border border-lingo-border bg-white px-4 py-4 shadow-sm">
+      <VoiceWave />
+    </div>
+  );
+}
+
+function getSpeakableMessageText(message: UIMessage): string {
+  return message.parts
+    .flatMap((part) => (part.type === "text" ? [part.text] : []))
+    .join(" ")
+    .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1")
+    .replace(/[`*_>#]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
 }

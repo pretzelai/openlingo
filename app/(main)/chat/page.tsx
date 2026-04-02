@@ -4,7 +4,6 @@ import {
   getTargetLanguage,
   getPreferredModel,
 } from "@/lib/actions/preferences";
-import { getModelsForUser } from "@/lib/ai/models";
 
 
 export default async function ChatPage({
@@ -19,14 +18,11 @@ export default async function ChatPage({
     searchParams,
   ]);
 
-  const availableModels = getModelsForUser(session.user.email);
-
   return (
     <ChatView
       key={params.prompt ? `prompt-${params.prompt}` : "new"}
       language={language ?? undefined}
       preferredModel={preferredModel}
-      availableModels={availableModels}
       initialPrompt={params.prompt}
     />
   );

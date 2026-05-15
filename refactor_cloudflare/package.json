@@ -1,0 +1,13 @@
+{
+  "name": "openlingo-refactor-cloudflare",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "sh -c 'npm --prefix backend run dev & npm --prefix vite run dev'",
+    "build": "npm --prefix vite run build && npm --prefix backend run build",
+    "typecheck": "npm --prefix vite run build -- --mode development && npx --prefix backend tsc --noEmit",
+    "deploy:backend": "npm --prefix backend run deploy",
+    "deploy:frontend": "npm --prefix vite run build && npx wrangler pages deploy vite/dist --project-name openlingo-refactor-cloudflare",
+    "deploy": "npm run deploy:backend && npm run deploy:frontend"
+  }
+}

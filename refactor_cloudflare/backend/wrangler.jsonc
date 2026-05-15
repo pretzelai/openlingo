@@ -1,0 +1,16 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "openlingo-refactor-cloudflare-api",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-03-31",
+  "compatibility_flags": ["nodejs_compat"],
+
+  // Add your real binding configuration before deploying, for example:
+  // "hyperdrive": [{ "binding": "HYPERDRIVE", "id": "<hyperdrive-id>" }],
+  // "r2_buckets": [{ "binding": "AUDIO_BUCKET", "bucket_name": "<bucket-name>" }],
+
+  "vars": {
+    "BETTER_AUTH_BASE_URL": "http://localhost:8787",
+    "FRONTEND_URL": "http://localhost:5173"
+  }
+}

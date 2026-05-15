@@ -1,0 +1,28 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "lib": ["ES2022", "WebWorker"],
+    "strict": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "react-jsx",
+    "paths": {
+      "@/*": ["../../*"],
+      "drizzle-orm": ["../../node_modules/drizzle-orm"],
+      "drizzle-orm/*": ["../../node_modules/drizzle-orm/*"],
+      "postgres": ["../../node_modules/postgres"],
+      "postgres/*": ["../../node_modules/postgres/*"],
+      "better-auth": ["../../node_modules/better-auth"],
+      "better-auth/*": ["../../node_modules/better-auth/*"],
+      "@better-auth/*": ["../../node_modules/@better-auth/*"],
+      "better-call": ["../../node_modules/better-call"],
+      "better-call/*": ["../../node_modules/better-call/*"]
+    }
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx", "drizzle.config.ts"]
+}

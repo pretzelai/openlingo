@@ -1,0 +1,33 @@
+{
+  "name": "openlingo-backend",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev --port 8787",
+    "build": "wrangler deploy --dry-run",
+    "deploy": "wrangler deploy",
+    "types": "wrangler types"
+  },
+  "dependencies": {
+    "@ai-sdk/anthropic": "^3.0.44",
+    "@ai-sdk/google": "^3.0.29",
+    "@ai-sdk/openai": "^3.0.29",
+    "@google/genai": "^1.41.0",
+    "@mozilla/readability": "^0.6.0",
+    "ai": "^6.0.86",
+    "better-auth": "1.4.18",
+    "drizzle-orm": "0.45.1",
+    "gray-matter": "^4.0.3",
+    "hono": "^4.9.7",
+    "linkedom": "^0.18.12",
+    "openai": "^6.21.0",
+    "postgres": "^3.4.8",
+    "resend": "^6.9.3",
+    "zod": "3"
+  },
+  "devDependencies": {
+    "drizzle-kit": "^0.31.9",
+    "typescript": "^5.9.2",
+    "wrangler": "^4.9.1"
+  }
+}

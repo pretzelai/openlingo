@@ -1,0 +1,12 @@
+{
+  "name": "OpenLingo",
+  "short_name": "OpenLingo",
+  "description": "OpenSource AI connected to language learning",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f7f7f7",
+  "theme_color": "#58CC02",
+  "icons": [
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}

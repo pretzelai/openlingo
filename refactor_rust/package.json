@@ -1,0 +1,10 @@
+{
+  "name": "openlingo-refactor",
+  "private": true,
+  "scripts": {
+    "dev": "bash ./dev.sh",
+    "build": "npm --prefix frontend run build && cargo build --manifest-path backend/Cargo.toml --release",
+    "check": "npm --prefix frontend run build && cargo check --manifest-path backend/Cargo.toml",
+    "smoke": "node scripts/smoke-test.mjs"
+  }
+}
